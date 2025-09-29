@@ -1,0 +1,10 @@
+{
+  "name": "MJ CHAUFFAGE",
+  "short_name": "MJ CHAUFFAGE",
+  "description": "Professional heating solutions for Algeria",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f2937",
+  "icons": []
+}

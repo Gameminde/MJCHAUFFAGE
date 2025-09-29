@@ -1,0 +1,78 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "filter": "Filter",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close"
+  },
+  "navigation": {
+    "home": "Home",
+    "products": "Products",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "cart": "Cart",
+    "account": "My Account"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "createAccount": "Create Account",
+    "signInLink": "Sign in here",
+    "signUpLink": "Sign up here",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "No account?",
+    "haveAccount": "Already have an account?",
+    "signInDescription": "Sign in to your account",
+    "signUpDescription": "Create a new account to get started",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password"
+  },
+  "home": {
+    "hero": {
+      "title": "Professional Heating Solutions",
+      "subtitle": "Quality boilers, expert installation, and reliable maintenance services",
+      "cta": "Shop Now",
+      "ctaSecondary": "Learn More"
+    }
+  },
+  "products": {
+    "title": "Our Products",
+    "categories": "Categories",
+    "price": "Price",
+    "addToCart": "Add to Cart",
+    "viewDetails": "View Details",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "customers": "Customers",
+    "services": "Services",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  }
+}

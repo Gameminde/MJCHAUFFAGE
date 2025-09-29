@@ -1,0 +1,200 @@
+import * as nodemailer from 'nodemailer';
+import { config } from '@/config/environment';
+
+export class // EmailService {
+  private static transporter = nodemailer.createTransport({
+    host: config.email.host,
+    port: config.email.port,
+    secure: config.email.port === 465,
+    auth: {
+      user: config.email.user,
+      pass: config.email.password,
+    },
+  });
+
+  /**
+   * Send verification email
+   */
+  static async sendVerificationEmail(email: string, firstName: string): Promise<void> {
+    const verificationLink = `${config.frontend.url}/verify-email?token=verify_${Date.now()}`;
+
+    const mailOptions = {
+      from: config.email.from,
+      to: email,
+      subject: 'Verify your MJ CHAUFFAGE account',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #0ea5e9;">Welcome to MJ CHAUFFAGE!</h2>
+          <p>Hello ${firstName},</p>
+          <p>Thank you for registering with MJ CHAUFFAGE. Please verify your email address to complete your registration.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" 
+               style="background-color: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              Verify Email Address
+            </a>
+          </div>
+          <p>If you didn't create an account with MJ CHAUFFAGE, please ignore this email.</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="font-size: 12px; color: #666;">
+            MJ CHAUFFAGE - Professional Heating Solutions<br>
+            This is an automated message, please do not reply.
+          </p>
+        </div>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`Verification email sent to ${email}`);
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      throw new Error('Failed to send verification email');
+    }
+  }
+
+  /**
+   * Send password reset email
+   */
+  static async sendPasswordResetEmail(
+    email: string,
+    firstName: string,
+    resetToken: string
+  ): Promise<void> {
+    const resetLink = `${config.frontend.url}/reset-password?token=${resetToken}`;
+
+    const mailOptions = {
+      from: config.email.from,
+      to: email,
+      subject: 'Reset your MJ CHAUFFAGE password',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #0ea5e9;">Password Reset Request</h2>
+          <p>Hello ${firstName},</p>
+          <p>We received a request to reset your password for your MJ CHAUFFAGE account.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" 
+               style="background-color: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              Reset Password
+            </a>
+          </div>
+          <p><strong>This link will expire in 1 hour.</strong></p>
+          <p>If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="font-size: 12px; color: #666;">
+            MJ CHAUFFAGE - Professional Heating Solutions<br>
+            This is an automated message, please do not reply.
+          </p>
+        </div>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`Password reset email sent to ${email}`);
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      throw new Error('Failed to send password reset email');
+    }
+  }
+
+  /**
+   * Send order confirmation email
+   */
+  static async sendOrderConfirmationEmail(
+    email: string,
+    firstName: string,
+    orderNumber: string,
+    orderTotal: number
+  ): Promise<void> {
+    const orderLink = `${config.frontend.url}/orders/${orderNumber}`;
+
+    const mailOptions = {
+      from: config.email.from,
+      to: email,
+      subject: `Order Confirmation - ${orderNumber}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #0ea5e9;">Order Confirmation</h2>
+          <p>Hello ${firstName},</p>
+          <p>Thank you for your order! We're pleased to confirm that we've received your order.</p>
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0;">Order Details</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            <p><strong>Total Amount:</strong> €${orderTotal.toFixed(2)}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${orderLink}" 
+               style="background-color: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              View Order Details
+            </a>
+          </div>
+          <p>We'll send you another email with tracking information once your order ships.</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="font-size: 12px; color: #666;">
+            MJ CHAUFFAGE - Professional Heating Solutions<br>
+            Questions? Contact us at support@mjchauffage.com
+          </p>
+        </div>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`Order confirmation email sent to ${email}`);
+    } catch (error) {
+      console.error('Error sending order confirmation email:', error);
+      // Don't throw error for order confirmation emails to avoid blocking order process
+    }
+  }
+
+  /**
+   * Send service appointment confirmation email
+   */
+  static async sendServiceConfirmationEmail(
+    email: string,
+    firstName: string,
+    serviceName: string,
+    scheduledDate: Date
+  ): Promise<void> {
+    const formattedDate = scheduledDate.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const mailOptions = {
+      from: config.email.from,
+      to: email,
+      subject: 'Service Appointment Confirmation',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #0ea5e9;">Service Appointment Confirmed</h2>
+          <p>Hello ${firstName},</p>
+          <p>Your service appointment has been confirmed!</p>
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0;">Appointment Details</h3>
+            <p><strong>Service:</strong> ${serviceName}</p>
+            <p><strong>Date & Time:</strong> ${formattedDate}</p>
+          </div>
+          <p>Our technician will arrive at the scheduled time. Please ensure someone is available to provide access.</p>
+          <p>If you need to reschedule or have any questions, please contact us at least 24 hours in advance.</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="font-size: 12px; color: #666;">
+            MJ CHAUFFAGE - Professional Heating Solutions<br>
+            Contact: +33 1 23 45 67 89 | service@mjchauffage.com
+          </p>
+        </div>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`Service confirmation email sent to ${email}`);
+    } catch (error) {
+      console.error('Error sending service confirmation email:', error);
+    }
+  }
+}

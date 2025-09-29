@@ -1,0 +1,115 @@
+{
+  "name": "MJ CHAUFFAGE - حلول التدفئة المهنية",
+  "short_name": "MJ CHAUFFAGE",
+  "description": "Professional heating solutions for Algeria - حلول التدفئة المهنية للجزائر",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0ea5e9",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["business", "shopping", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Products - المنتجات",
+      "short_name": "Products",
+      "description": "Browse heating products",
+      "url": "/products",
+      "icons": [
+        {
+          "src": "/icons/products-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Services - الخدمات",
+      "short_name": "Services",
+      "description": "Book maintenance services",
+      "url": "/services",
+      "icons": [
+        {
+          "src": "/icons/services-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Cart - السلة",
+      "short_name": "Cart",
+      "description": "View shopping cart",
+      "url": "/cart",
+      "icons": [
+        {
+          "src": "/icons/cart-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

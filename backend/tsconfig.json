@@ -1,0 +1,64 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "removeComments": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "typeRoots": ["./node_modules/@types"],
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/controllers/*": ["./src/controllers/*"],
+      "@/middleware/*": ["./src/middleware/*"],
+      "@/models/*": ["./src/models/*"],
+      "@/routes/*": ["./src/routes/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/config/*": ["./src/config/*"],
+      "@shared/*": ["../shared/src/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "src/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "node_modules/@aws-sdk/**/*",
+    "src/services/emailService.ts"
+  ],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
+}

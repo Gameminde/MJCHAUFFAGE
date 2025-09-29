@@ -1,0 +1,136 @@
+/* Admin Dashboard Styles */
+
+/* Form Styles */
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-checkbox {
+  @apply h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors;
+}
+
+/* Card Styles */
+.card {
+  @apply bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200;
+}
+
+.card-header {
+  @apply px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between;
+}
+
+.card-body {
+  @apply px-6 py-4;
+}
+
+/* Badge Styles */
+.badge-success {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800;
+}
+
+.badge-error {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+}
+
+/* Color Utility Classes */
+.text-primary-500 {
+  @apply text-blue-500;
+}
+
+.text-primary-600 {
+  @apply text-blue-600;
+}
+
+.bg-primary-500 {
+  @apply bg-blue-500;
+}
+
+.bg-primary-600 {
+  @apply bg-blue-600;
+}
+
+.text-success-600 {
+  @apply text-green-600;
+}
+
+.text-error-500 {
+  @apply text-red-500;
+}
+
+.bg-error-500 {
+  @apply bg-red-500;
+}
+
+.text-warning-600 {
+  @apply text-yellow-600;
+}
+
+.bg-warning-100 {
+  @apply bg-yellow-100;
+}
+
+.bg-success-100 {
+  @apply bg-green-100;
+}
+
+.bg-primary-100 {
+  @apply bg-blue-100;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-blue-600;
+}
+
+/* Neutral Colors */
+.text-neutral-900 {
+  @apply text-gray-900;
+}
+
+.text-neutral-600 {
+  @apply text-gray-600;
+}
+
+.text-neutral-500 {
+  @apply text-gray-500;
+}
+
+.text-neutral-400 {
+  @apply text-gray-400;
+}
+
+.bg-neutral-50 {
+  @apply bg-gray-50;
+}
+
+.bg-neutral-100 {
+  @apply bg-gray-100;
+}
+
+.bg-neutral-200 {
+  @apply bg-gray-200;
+}
+
+.border-neutral-200 {
+  @apply border-gray-200;
+}
+
+.border-neutral-300 {
+  @apply border-gray-300;
+}
