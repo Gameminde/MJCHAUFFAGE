@@ -6,5 +6,14 @@
   "agentCanManageProcesses": true,
   "backgroundMode": "enabled",
   "autoSave": true,
-  "continuousMode": true
+  "continuousMode": true,
+  "githubIntegration": {
+    "enabled": true,
+    "usePersonalAccessToken": true,
+    "fallbackToSSH": true
+  },
+  "authentication": {
+    "timeoutSeconds": 300,
+    "retryAttempts": 3
+  }
 }
