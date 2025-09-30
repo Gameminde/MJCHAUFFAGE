@@ -1,0 +1,10 @@
+{
+  "agentCanUpdateSnapshot": true,
+  "agentCanRunBackgroundTasks": true,
+  "agentCanAccessFileSystem": true,
+  "agentCanExecuteCommands": true,
+  "agentCanManageProcesses": true,
+  "backgroundMode": "enabled",
+  "autoSave": true,
+  "continuousMode": true
+}
