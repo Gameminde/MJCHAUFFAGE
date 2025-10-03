@@ -215,7 +215,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       // In a real app, this would call an API to check stock
       // For now, we'll just log the validation
-      console.log('Validating cart stock for', state.items.length, 'items')
+  
       
       // TODO: Implement real stock validation API call
     }
@@ -266,7 +266,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       // TODO: Implement API call to refresh stock information
       // This would update the maxStock for the item in cart
-      console.log('Refreshing stock for product:', productId)
+  
     } catch (error) {
       console.error('Error refreshing stock:', error)
     }

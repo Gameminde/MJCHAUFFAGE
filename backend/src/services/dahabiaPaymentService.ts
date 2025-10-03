@@ -84,7 +84,6 @@ export class DahabiaPaymentService {
       }
 
     } catch (error) {
-      console.error('Dahabia payment creation failed:', error)
       throw new Error('Failed to create Dahabia payment session')
     }
   }
@@ -118,7 +117,6 @@ export class DahabiaPaymentService {
       }
 
     } catch (error) {
-      console.error('Failed to check Dahabia payment status:', error)
       throw new Error('Failed to check payment status')
     }
   }
@@ -128,9 +126,7 @@ export class DahabiaPaymentService {
    */
   static async processWebhook(payload: any, signature: string): Promise<boolean> {
     try {
-      // Verify webhook signature
       if (!this.verifyWebhookSignature(payload, signature)) {
-        console.error('Invalid webhook signature')
         return false
       }
 
@@ -138,12 +134,10 @@ export class DahabiaPaymentService {
 
       // Update order payment status in database
       // This would be implemented in the order service
-      console.log(`Payment ${payment_id} status updated to ${status}`)
 
       return true
 
     } catch (error) {
-      console.error('Webhook processing failed:', error)
       return false
     }
   }

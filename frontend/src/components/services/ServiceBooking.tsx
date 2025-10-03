@@ -164,7 +164,7 @@ export function ServiceBooking({ locale }: ServiceBookingProps) {
     setIsSubmitting(true)
     try {
       // TODO: Submit booking to API
-      console.log('Booking submitted:', bookingForm)
+  
       // Redirect to confirmation page
     } catch (error) {
       console.error('Booking submission error:', error)

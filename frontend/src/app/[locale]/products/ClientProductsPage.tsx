@@ -39,12 +39,7 @@ export default function ClientProductsPage({ locale }: Props) {
     async function fetchData() {
       try {
         setLoading(true);
-        console.log('🔄 Fetching products from API...');
-        
         const productsData = await ProductService.getProducts();
-        
-        console.log('✅ Products fetched:', productsData.length);
-        console.log('📋 Products data:', productsData);
         setProducts(productsData);
         
       } catch (err) {

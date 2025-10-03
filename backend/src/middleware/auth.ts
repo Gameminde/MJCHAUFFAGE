@@ -36,8 +36,7 @@ export const authenticateToken = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = req.cookies.accessToken;
 
     if (!token) {
       res.status(401).json({
@@ -145,8 +144,7 @@ export const optionalAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = req.cookies.accessToken;
 
     if (token) {
       const decoded = AuthService.verifyToken(token);

@@ -249,11 +249,7 @@ export function ProductsManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      console.log('Form submitted:', { ...formData, images: uploadedImages })
-      console.log('Images to send:', uploadedImages.length, 'images')
-      if (uploadedImages.length > 0) {
-        console.log('First image preview:', uploadedImages[0].substring(0, 50) + '...')
-      }
+
       
       // Validate required fields
       if (!formData.name || !formData.categoryId || !formData.price || !formData.stockQuantity) {

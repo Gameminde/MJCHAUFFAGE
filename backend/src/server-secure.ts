@@ -140,13 +140,6 @@ app.use('*', (req, res) => {
 
 // Middleware de gestion des erreurs globales
 app.use((error: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Global error handler:', error);
-
-  // Log de sécurité pour les erreurs suspectes
-  if (error.status === 401 || error.status === 403) {
-    console.warn(`[SECURITY] Unauthorized access attempt - IP: ${req.ip}, URL: ${req.originalUrl}`);
-  }
-
   // Ne pas exposer les détails des erreurs en production
   const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -162,24 +155,6 @@ app.use((error: any, req: express.Request, res: express.Response, _next: express
 // ==============================================================================
 
 app.listen(PORT, () => {
-  console.log('🚀 Serveur MJ Chauffage démarré avec sécurité renforcée');
-  console.log(`📡 Port: ${PORT}`);
-  console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔒 Sécurité: Activée (Helmet, Rate Limiting, JWT)`);
-  console.log(`⏰ Démarré à: ${new Date().toISOString()}`);
-  
-  // Vérifications de sécurité au démarrage
-  if (!process.env.JWT_SECRET) {
-    console.warn('⚠️  JWT_SECRET non défini - utilisation d\'une clé par défaut (NON SÉCURISÉ)');
-  }
-  
-  if (!process.env.JWT_REFRESH_SECRET) {
-    console.warn('⚠️  JWT_REFRESH_SECRET non défini - utilisation d\'une clé par défaut (NON SÉCURISÉ)');
-  }
-  
-  if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
-    console.warn('⚠️  FRONTEND_URL non défini en production - CORS pourrait être mal configuré');
-  }
 });
 
 export default app;

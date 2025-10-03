@@ -141,8 +141,6 @@ const getMockPaymentMethodData = () => ({
 
 // Development mode - no authentication required
 if (process.env.NODE_ENV !== 'production') {
-  console.log('📊 Analytics routes running in DEVELOPMENT mode - no auth required');
-  
   // Dashboard KPIs
   router.get('/dashboard', (_req: Request, res: Response) => {
     res.json(getMockDashboardData());
@@ -188,8 +186,6 @@ if (process.env.NODE_ENV !== 'production') {
   });
 } else {
   // Production mode - authentication required
-  console.log('🔐 Analytics routes running in PRODUCTION mode - auth required');
-  
   // Import middleware only in production
   const { authenticateToken, requireRole } = require('../middleware/auth');
   const { AnalyticsController } = require('../controllers/analyticsController');

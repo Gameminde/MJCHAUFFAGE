@@ -24,10 +24,7 @@ export default function DashboardPage({ params: { locale } }: Props) {
     address: 'حي البدر، الجزائر العاصمة',
   }
 
-  // Check authentication (in real app, this would be server-side)
-  if (!authService.isAuthenticated()) {
-    redirect(`/${locale}/auth/login`)
-  }
+  // Note: In a real app, route protection should be handled by middleware or a Higher-Order Component.
 
   return (
     <CustomerDashboard locale={locale} user={user} />

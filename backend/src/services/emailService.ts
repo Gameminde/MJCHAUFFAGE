@@ -45,9 +45,7 @@ export class // EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Verification email sent to ${email}`);
     } catch (error) {
-      console.error('Error sending verification email:', error);
       throw new Error('Failed to send verification email');
     }
   }
@@ -90,9 +88,7 @@ export class // EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Password reset email sent to ${email}`);
     } catch (error) {
-      console.error('Error sending password reset email:', error);
       throw new Error('Failed to send password reset email');
     }
   }
@@ -140,9 +136,7 @@ export class // EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Order confirmation email sent to ${email}`);
     } catch (error) {
-      console.error('Error sending order confirmation email:', error);
       // Don't throw error for order confirmation emails to avoid blocking order process
     }
   }
@@ -192,9 +186,7 @@ export class // EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Service confirmation email sent to ${email}`);
     } catch (error) {
-      console.error('Error sending service confirmation email:', error);
     }
   }
 }

@@ -214,7 +214,7 @@ NEXTAUTH_SECRET=your-super-secret-key
 NEXTAUTH_URL=http://localhost:3000
 
 # Database (si utilisée côté frontend)
-DATABASE_URL="postgresql://user:pass@localhost:5432/mjchauffage"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 
 # Upload
 NEXT_PUBLIC_MAX_FILE_SIZE=5242880  # 5MB
@@ -228,7 +228,7 @@ PORT=3001
 NODE_ENV=development
 
 # Database
-DATABASE_URL="postgresql://user:pass@localhost:5432/mjchauffage"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 
 # JWT
 JWT_SECRET=your-jwt-secret-key

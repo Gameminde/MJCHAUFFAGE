@@ -172,7 +172,7 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
       await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
       
       // Redirect to order confirmation
-      console.log('Order placed successfully')
+
     } catch (error) {
       console.error('Error placing order:', error)
     } finally {

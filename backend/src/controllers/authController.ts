@@ -67,11 +67,13 @@ export class AuthController {
       });
 
       // Generate tokens
-      const tokens = AuthService.generateTokens(result.user);
-      await AuthService.storeRefreshToken(result.user.id, tokens.refreshToken);
+      const { accessToken, refreshToken } = AuthService.generateTokens(result.user);
+      await AuthService.storeRefreshToken(result.user.id, refreshToken);
 
       // Send verification email
       // await // EmailService.sendVerificationEmail(result.user.email, result.user.firstName);
+
+      AuthService.setAuthCookies(res, { accessToken, refreshToken });
 
       res.status(201).json({
         success: true,
@@ -85,7 +87,6 @@ export class AuthController {
             role: result.user.role,
             isVerified: result.user.isVerified,
           },
-          tokens,
         },
       });
     } catch (error) {
@@ -142,8 +143,8 @@ export class AuthController {
       }
 
       // Generate tokens
-      const tokens = AuthService.generateTokens(user);
-      await AuthService.storeRefreshToken(user.id, tokens.refreshToken);
+      const { accessToken, refreshToken } = AuthService.generateTokens(user);
+      await AuthService.storeRefreshToken(user.id, refreshToken);
 
       // Create session
       const sessionToken = await AuthService.createSession(
@@ -154,6 +155,8 @@ export class AuthController {
 
       // Update last login
       await AuthService.updateLastLogin(user.id);
+
+      AuthService.setAuthCookies(res, { accessToken, refreshToken });
 
       res.json({
         success: true,
@@ -168,7 +171,6 @@ export class AuthController {
             isVerified: user.isVerified,
             profile: user.customer || user.technician,
           },
-          tokens,
           sessionToken,
         },
       });
@@ -186,7 +188,7 @@ export class AuthController {
    */
   static async refreshToken(req: Request, res: Response): Promise<void> {
     try {
-      const { refreshToken } = req.body;
+      const { refreshToken } = req.cookies;
 
       if (!refreshToken) {
         res.status(401).json({
@@ -223,13 +225,14 @@ export class AuthController {
       }
 
       // Generate new tokens
-      const tokens = AuthService.generateTokens(user);
-      await AuthService.storeRefreshToken(user.id, tokens.refreshToken);
+      const { accessToken, refreshToken: newRefreshToken } = AuthService.generateTokens(user);
+      await AuthService.storeRefreshToken(user.id, newRefreshToken);
+
+      AuthService.setAuthCookies(res, { accessToken, refreshToken: newRefreshToken });
 
       res.json({
         success: true,
         message: 'Token refreshed successfully',
-        data: { tokens },
       });
     } catch (error) {
       console.error('Token refresh error:', error);
@@ -245,18 +248,15 @@ export class AuthController {
    */
   static async logout(req: Request, res: Response): Promise<void> {
     try {
-      const { sessionToken } = req.body;
+      const { refreshToken } = req.cookies;
       const userId = req.user?.id;
 
-      if (userId) {
+      if (userId && refreshToken) {
         // Revoke refresh token
         await AuthService.revokeRefreshToken(userId);
       }
 
-      if (sessionToken) {
-        // Revoke session
-        await AuthService.revokeSession(sessionToken);
-      }
+      AuthService.clearAuthCookies(res);
 
       res.json({
         success: true,

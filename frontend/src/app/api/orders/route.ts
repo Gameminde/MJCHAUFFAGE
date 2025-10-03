@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 
 // Iron session configuration for API routes
 const ironSessionOptions = {
-  password: process.env.SECRET_COOKIE_PASSWORD || "complex_password_at_least_32_characters_long",
+  password: process.env.SECRET_COOKIE_PASSWORD!,
   cookieName: "MJ_CHAUFFAGE_SESSION",
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",

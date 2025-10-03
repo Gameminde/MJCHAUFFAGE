@@ -10,24 +10,17 @@ const redisClient = createClient({
   },
 });
 
-redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err);
-});
+redisClient.on('error', () => {});
 
-redisClient.on('connect', () => {
-  console.log('✅ Redis connected successfully');
-});
+redisClient.on('connect', () => {});
 
-redisClient.on('disconnect', () => {
-  console.log('🔌 Redis disconnected');
-});
+redisClient.on('disconnect', () => {});
 
 // Connect to Redis
 export async function connectRedis() {
   try {
     await redisClient.connect();
   } catch (error) {
-    console.error('❌ Redis connection failed:', error);
     // Don't exit process for Redis connection failure in development
     if (config.env === 'production') {
       process.exit(1);

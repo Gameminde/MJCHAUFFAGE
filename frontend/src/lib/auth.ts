@@ -1,38 +1,13 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import prisma from '@/lib/prisma';
 import type { NextAuthOptions } from "next-auth";
-import type { AdapterUser } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import { authService } from "@/services/authService";
 
-// Iron session configuration
-export const sessionOptions = {
-  password: process.env.SECRET_COOKIE_PASSWORD || "complex_password_at_least_32_characters_long",
-  cookieName: "MJ_CHAUFFAGE_SESSION",
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
-  },
-};
-
-export interface SessionData {
-  isLoggedIn: boolean;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  token?: string;
-}
-
-// NextAuth configuration
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -45,52 +20,51 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        try {
+          // Appel au service d'authentification du backend
+          const user = await authService.login(credentials.email, credentials.password);
+
+          if (user && user.id) {
+            // Retourner les informations utilisateur nécessaires pour la session
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+            };
           }
-        });
-
-        if (!user || !user.password) {
+          
+          return null;
+        } catch (error) {
+          console.error("Authorize error:", error);
+          // Gérer les erreurs d'authentification, par exemple, logger et retourner null
           return null;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          role: user.role
-        };
       }
     })
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // L'objet `user` est celui retourné par `authorize`
       if (user) {
-        token.id = (user as any).id;
+        token.id = user.id;
         token.role = (user as any).role;
+        token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
+      // Le `token` est celui retourné par le callback `jwt`
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
       }
       return session;
     },
   },
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/auth/login',
     error: '/auth/error',
   },
   session: {

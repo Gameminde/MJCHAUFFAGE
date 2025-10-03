@@ -4,8 +4,6 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
-
   // Create admin user
   const hashedPassword = await bcrypt.hash('Admin123!', 12);
   
@@ -22,8 +20,6 @@ async function main() {
       isVerified: true,
     },
   });
-
-  console.log('✅ Admin user created:', adminUser.email);
 
   // Create manufacturers
   const manufacturers = [
@@ -60,8 +56,6 @@ async function main() {
       create: manufacturer,
     });
   }
-
-  console.log('✅ Manufacturers created');
 
   // Create categories
   const categories = [
@@ -105,8 +99,6 @@ async function main() {
     });
   }
 
-  console.log('✅ Categories created');
-
   // Create service types
   const serviceTypes = [
     {
@@ -148,8 +140,6 @@ async function main() {
       create: serviceType,
     });
   }
-
-  console.log('✅ Service types created');
 
   // Get created manufacturers and categories for products
   const viessmann = await prisma.manufacturer.findUnique({ where: { slug: 'viessmann' } });
@@ -237,8 +227,6 @@ async function main() {
     });
   }
 
-  console.log('✅ Sample products created');
-
   // Create demo customer
   const customerPassword = await bcrypt.hash('Customer123!', 12);
   
@@ -264,8 +252,6 @@ async function main() {
       customerType: 'B2C',
     },
   });
-
-  console.log('✅ Demo customer created');
 
   // Create technician
   const technicianPassword = await bcrypt.hash('Tech123!', 12);
@@ -293,15 +279,10 @@ async function main() {
       specialties: 'Boiler Installation,Heat Pump Service,System Maintenance',
     },
   });
-
-  console.log('✅ Demo technician created');
-
-  console.log('🎉 Database seeding completed!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeding failed:', e);
     process.exit(1);
   })
   .finally(async () => {

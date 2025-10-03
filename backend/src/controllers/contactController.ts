@@ -11,8 +11,7 @@ export class ContactController {
 
     const { firstName, lastName, email, phone, serviceType, message, wilaya } = req.body;
 
-    // Simulate contact form submission (email functionality disabled due to AWS SDK conflicts)
-    console.log('Contact form submitted:', { firstName, lastName, email, phone, serviceType, message, wilaya });
+
     
     // In a real implementation, we would send an email here
     // For now, we'll just return a success response

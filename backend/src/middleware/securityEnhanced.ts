@@ -82,8 +82,8 @@ interface TokenPair {
 export class SecureTokenManager {
   private static readonly ACCESS_TOKEN_EXPIRY = '15m';
   private static readonly REFRESH_TOKEN_EXPIRY = '7d';
-  private static readonly JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
-  private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret';
+  private static readonly JWT_SECRET = process.env.JWT_SECRET!;
+  private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 
   /**
    * Génère une paire de tokens (access + refresh)
@@ -93,7 +93,7 @@ export class SecureTokenManager {
       userId: user.id,
       email: user.email,
       role: user.role as 'SUPER_ADMIN' | 'ADMIN' | 'USER'
-    };
+    
 
     const accessToken = jwt.sign(payload, this.JWT_SECRET, {
       expiresIn: this.ACCESS_TOKEN_EXPIRY,
@@ -212,7 +212,6 @@ export const secureAuthMiddleware = async (
 
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
     res.status(401).json({
       error: 'Authentification échouée',
       code: 'AUTH_FAILED'
@@ -363,18 +362,14 @@ export class SecurePasswordManager {
 
 export class SecurityLogger {
   static logAuthAttempt(ip: string, email: string, success: boolean): void {
-    console.log(`[SECURITY] Auth attempt - IP: ${ip}, Email: ${email}, Success: ${success}`);
-    
     // En production, utiliser un vrai système de logging
     // comme Winston avec rotation des logs
   }
 
   static logSuspiciousActivity(ip: string, action: string, details: any): void {
-    console.warn(`[SECURITY] Suspicious activity - IP: ${ip}, Action: ${action}`, details);
   }
 
   static logAdminAction(userId: string, action: string, target: string): void {
-    console.log(`[SECURITY] Admin action - User: ${userId}, Action: ${action}, Target: ${target}`);
   }
 }
 
@@ -386,8 +381,6 @@ export class SecurityLogger {
  * Fonction pour installer les dépendances de sécurité manquantes
  */
 export const installSecurityDependencies = async (): Promise<void> => {
-  console.log('🔒 Installation des dépendances de sécurité...');
-  
   const dependencies = [
     'helmet',
     'express-rate-limit', 
@@ -395,7 +388,8 @@ export const installSecurityDependencies = async (): Promise<void> => {
     'jsonwebtoken',
     '@types/jsonwebtoken'
   ];
-  
+  };
+
   console.log('Dépendances requises:', dependencies.join(', '));
   console.log('Exécutez: npm install ' + dependencies.join(' '));
 };

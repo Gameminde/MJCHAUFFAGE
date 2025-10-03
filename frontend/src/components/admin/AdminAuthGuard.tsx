@@ -16,31 +16,30 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const user = authService.getUser()
-        const token = authService.getToken()
+        const user = await authService.getProfile();
 
-        if (!token || !user) {
-          router.push('/admin/login')
-          return
+        if (!user) {
+          router.push('/admin/login');
+          return;
         }
 
         // Check if user has admin role
         if (user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN') {
-          router.push('/admin/login')
-          return
+          router.push('/admin/login');
+          return;
         }
 
-        setIsAuthenticated(true)
+        setIsAuthenticated(true);
       } catch (error) {
-        console.error('Auth check failed:', error)
-        router.push('/admin/login')
+        console.error('Auth check failed:', error);
+        router.push('/admin/login');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    checkAuth()
-  }, [router])
+    checkAuth();
+  }, [router]);
 
   if (isLoading) {
     return (

@@ -8,7 +8,7 @@ import {
   changePasswordValidation,
   requestPasswordResetValidation,
   resetPasswordValidation,
-} from '@/utils/validation';
+} from '../utils/validation';
 
 const router = Router();
 

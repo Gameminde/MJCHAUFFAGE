@@ -9,14 +9,7 @@ const setup = () => {
 
   // Ensure the test database is up-to-date before running tests
   try {
-    console.log('Setting up test database...');
-    // The --skip-seed flag is used because we will seed data specifically for each test.
-    execSync('npx prisma migrate reset --force --skip-seed', { stdio: 'inherit' });
-    console.log('Test database setup complete.');
-  } catch (error) {
-    console.error('Failed to set up the test database:', error);
-    process.exit(1);
-  }
+    execSync('npx prisma migrate reset --force --skip-seed', { stdio: 'ignore' });
 };
 
 export default setup;

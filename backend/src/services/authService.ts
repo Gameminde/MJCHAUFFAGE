@@ -4,6 +4,7 @@ import { config } from '@/config/environment';
 import { prisma } from '@/config/database';
 import { redisClient } from '@/config/redis';
 import { User } from '@prisma/client';
+import { Response } from 'express';
 
 interface TokenPayload {
   userId: string;
@@ -36,6 +37,29 @@ export class AuthService {
     } as jwt.SignOptions);
 
     return { accessToken, refreshToken };
+  }
+
+  static setAuthCookies(res: Response, tokens: AuthTokens): void {
+    res.cookie('accessToken', tokens.accessToken, {
+      httpOnly: true, // Accessible by client-side scripts
+      secure: config.env === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/',
+    });
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true, // Not accessible by client-side scripts
+      secure: config.env === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth/refresh',
+    });
+  }
+
+  static clearAuthCookies(res: Response): void {
+    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
   }
 
   /**

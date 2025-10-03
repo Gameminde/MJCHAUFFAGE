@@ -275,7 +275,6 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Error:', err);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error',
@@ -285,26 +284,11 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 // Start server
 const server = app.listen(PORT, () => {
-  console.log(`
-╔═══════════════════════════════════════════╗
-║                                           ║
-║   🚀 Development Server Started           ║
-║   📍 Port: ${PORT}                           ║
-║   🌍 URL: http://localhost:${PORT}          ║
-║   📊 Analytics: http://localhost:${PORT}/api/analytics/dashboard
-║   ❤️  Health: http://localhost:${PORT}/health ║
-║                                           ║
-║   Press Ctrl+C to stop                   ║
-║                                           ║
-╚═══════════════════════════════════════════╝
-  `);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
   server.close(() => {
-    console.log('HTTP server closed');
     process.exit(0);
   });
 });

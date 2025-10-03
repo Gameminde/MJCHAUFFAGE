@@ -24,7 +24,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    console.log('Login attempt:', { email, password });
+    
     
     if (email !== adminUser.email) {
       return res.status(401).json({
@@ -111,11 +111,7 @@ app.get('/api/products', (req, res) => {
 app.post('/api/products', (req, res) => {
   try {
     const productData = req.body;
-    console.log('Creating product:', productData.name);
-    console.log('Images received:', productData.images ? productData.images.length : 0);
-    if (productData.images && productData.images.length > 0) {
-      console.log('First image preview:', productData.images[0].substring(0, 50) + '...');
-    }
+
     
     // Generate unique ID
     const newId = Date.now().toString();
@@ -143,9 +139,7 @@ app.post('/api/products', (req, res) => {
     // Add to products array
     products.push(newProduct);
     
-    console.log('Product created successfully:', newProduct.id);
-    console.log('Images in created product:', newProduct.images.length);
-    console.log('Total products:', products.length);
+    
     
     res.status(201).json({
       success: true,
@@ -249,6 +243,5 @@ app.get('/api/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Simple server running on http://localhost:${PORT}`);
-  console.log('📧 Admin login: admin@mjchauffage.com / Admin123!');
+  
 });

@@ -5,6 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import session from 'express-session';
+import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import 'express-async-errors';
@@ -47,11 +48,34 @@ app.use(cors({
   origin: allowedOrigins, 
   credentials: true 
 }));
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", ...allowedOrigins],
+      frameSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  frameguard: { action: 'deny' },
+  xssFilter: true,
+  noSniff: true,
+  ieNoOpen: true,
+}));
 app.use(compression());
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
 // Rate Limiting
 const apiLimiter = rateLimit({
@@ -115,5 +139,27 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
+const startServer = async () => {
+  try {
+    await prisma.$connect();
+    logger.info('Database connected successfully.');
+    
+    await redisClient.connect();
+    logger.info('Redis connected successfully.');
+
+    const port = config.api.port || 3001;
+    server.listen(port, () => {
+      logger.info(`Server listening on port ${port}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    prisma.$disconnect();
+    redisClient.quit();
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export { app, server, io };
