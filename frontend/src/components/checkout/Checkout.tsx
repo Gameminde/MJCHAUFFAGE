@@ -49,7 +49,7 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
   const isRTL = locale === 'ar'
 
   const [currentStep, setCurrentStep] = useState(1)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('CASH_ON_DELIVERY')
+  const [selectedPaymentMethod] = useState('CASH_ON_DELIVERY')
   const [isProcessing, setIsProcessing] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -62,13 +62,6 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
     city: '',
     postalCode: '',
     wilaya: '',
-  })
-
-  const [dahabiaCard, setDahabiaCard] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardHolder: '',
   })
 
   // Algerian wilayas (provinces)
@@ -125,25 +118,7 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
   }
 
   const validateStep2 = () => {
-    if (selectedPaymentMethod === 'DAHABIA_CARD') {
-      const newErrors: Record<string, string> = {}
-
-      if (!dahabiaCard.cardNumber.trim()) {
-        newErrors.cardNumber = t('fieldRequired')
-      }
-      if (!dahabiaCard.expiryDate.trim()) {
-        newErrors.expiryDate = t('fieldRequired')
-      }
-      if (!dahabiaCard.cvv.trim()) {
-        newErrors.cvv = t('fieldRequired')
-      }
-      if (!dahabiaCard.cardHolder.trim()) {
-        newErrors.cardHolder = t('fieldRequired')
-      }
-
-      setErrors(newErrors)
-      return Object.keys(newErrors).length === 0
-    }
+    // No validation needed for cash on delivery
     return true
   }
 
@@ -360,136 +335,54 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {t('selectPaymentMethod')}
+          {t('paymentMethod')}
         </h2>
 
         <div className="space-y-4">
-          {/* Cash on Delivery */}
-          <div
-            className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-              selectedPaymentMethod === 'CASH_ON_DELIVERY'
-                ? 'border-primary-500 bg-primary-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onClick={() => setSelectedPaymentMethod('CASH_ON_DELIVERY')}
-          >
+          {/* Cash on Delivery - Only Option */}
+          <div className="border-2 border-primary-500 bg-primary-50 rounded-lg p-4">
             <div className="flex items-center">
               <input
                 type="radio"
                 name="paymentMethod"
                 value="CASH_ON_DELIVERY"
-                checked={selectedPaymentMethod === 'CASH_ON_DELIVERY'}
-                onChange={() => setSelectedPaymentMethod('CASH_ON_DELIVERY')}
+                checked={true}
+                readOnly
                 className="text-primary-600 focus:ring-primary-500"
               />
               <div className={`${isRTL ? 'mr-3' : 'ml-3'} flex items-center`}>
                 <Truck className="h-6 w-6 text-gray-600 mr-2" />
                 <div>
                   <p className="font-medium text-gray-900">
-                    {locale === 'ar' ? paymentMethods.CASH_ON_DELIVERY.nameAr : paymentMethods.CASH_ON_DELIVERY.nameFr}
+                    {locale === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
                   </p>
-                  <p className="text-sm text-gray-600">{t('paymentOnDeliveryDesc')}</p>
+                  <p className="text-sm text-gray-600">
+                    {locale === 'ar' 
+                      ? 'ستدفع نقداً عند وصول طلبك إلى عنوانك' 
+                      : 'Vous paierez en espèces à la réception de votre commande'
+                    }
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Dahabia Card */}
-          <div
-            className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-              selectedPaymentMethod === 'DAHABIA_CARD'
-                ? 'border-primary-500 bg-primary-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onClick={() => setSelectedPaymentMethod('DAHABIA_CARD')}
-          >
-            <div className="flex items-center">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="DAHABIA_CARD"
-                checked={selectedPaymentMethod === 'DAHABIA_CARD'}
-                onChange={() => setSelectedPaymentMethod('DAHABIA_CARD')}
-                className="text-primary-600 focus:ring-primary-500"
-              />
-              <div className={`${isRTL ? 'mr-3' : 'ml-3'} flex items-center`}>
-                <CreditCard className="h-6 w-6 text-gray-600 mr-2" />
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {locale === 'ar' ? paymentMethods.DAHABIA_CARD.nameAr : paymentMethods.DAHABIA_CARD.nameFr}
-                  </p>
-                  <p className="text-sm text-gray-600">{t('dahabiaCardDesc')}</p>
-                </div>
+          {/* Payment Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">
+                  {locale === 'ar' ? 'معلومات الدفع' : 'Informations de paiement'}
+                </h4>
+                <p className="text-sm text-blue-700">
+                  {locale === 'ar' 
+                    ? 'سيتصل بك فريق التوصيل قبل الوصول لتأكيد الطلب والمبلغ المطلوب'
+                    : 'Notre équipe de livraison vous contactera avant la livraison pour confirmer la commande et le montant à payer'
+                  }
+                </p>
               </div>
             </div>
-
-            {selectedPaymentMethod === 'DAHABIA_CARD' && (
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('cardNumber')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={dahabiaCard.cardNumber}
-                    onChange={(e) => setDahabiaCard(prev => ({ ...prev, cardNumber: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="XXXX XXXX XXXX XXXX"
-                  />
-                  {errors.cardNumber && (
-                    <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('cardHolder')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={dahabiaCard.cardHolder}
-                    onChange={(e) => setDahabiaCard(prev => ({ ...prev, cardHolder: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder={t('cardHolderPlaceholder')}
-                  />
-                  {errors.cardHolder && (
-                    <p className="mt-1 text-sm text-red-600">{errors.cardHolder}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('expiryDate')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={dahabiaCard.expiryDate}
-                    onChange={(e) => setDahabiaCard(prev => ({ ...prev, expiryDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="MM/YY"
-                  />
-                  {errors.expiryDate && (
-                    <p className="mt-1 text-sm text-red-600">{errors.expiryDate}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('cvv')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={dahabiaCard.cvv}
-                    onChange={(e) => setDahabiaCard(prev => ({ ...prev, cvv: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="XXX"
-                  />
-                  {errors.cvv && (
-                    <p className="mt-1 text-sm text-red-600">{errors.cvv}</p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -516,7 +409,7 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
                   </p>
                 </div>
                 <p className="font-medium text-gray-900">
-                  {formatCurrency(item.price * item.quantity, locale)}
+                  {formatCurrency(item.price * item.quantity, locale as 'fr' | 'ar')}
                 </p>
               </div>
             ))}
@@ -541,10 +434,7 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
         <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
           <h3 className="font-medium text-gray-900 mb-4">{t('paymentMethod')}</h3>
           <p className="text-sm text-gray-600">
-            {selectedPaymentMethod === 'CASH_ON_DELIVERY'
-              ? (locale === 'ar' ? paymentMethods.CASH_ON_DELIVERY.nameAr : paymentMethods.CASH_ON_DELIVERY.nameFr)
-              : (locale === 'ar' ? paymentMethods.DAHABIA_CARD.nameAr : paymentMethods.DAHABIA_CARD.nameFr)
-            }
+            {locale === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
           </p>
         </div>
 
@@ -552,7 +442,7 @@ export function Checkout({ locale, cartItems, total }: CheckoutProps) {
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <div className="flex justify-between items-center text-lg font-semibold text-gray-900">
             <span>{t('total')}</span>
-            <span>{formatCurrency(total, locale)}</span>
+            <span>{formatCurrency(total, locale as 'fr' | 'ar')}</span>
           </div>
         </div>
       </div>

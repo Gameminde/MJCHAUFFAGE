@@ -1,66 +1,99 @@
+import { NextRequest, NextResponse } from 'next/server'
 
-import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { SessionData } from '@/lib/auth';
-import { cookies } from 'next/headers';
-import { revalidatePath } from 'next/cache';
+interface OrderItem {
+  productId: string
+  quantity: number
+  unitPrice: number
+}
 
-// Iron session configuration for API routes
-const ironSessionOptions = {
-  password: process.env.SECRET_COOKIE_PASSWORD!,
-  cookieName: "MJ_CHAUFFAGE_SESSION",
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
-  },
-};
+interface ShippingAddress {
+  street: string
+  city: string
+  postalCode: string
+  region: string
+  country: string
+}
 
-export async function POST(request: Request) {
-  const session = await getIronSession<SessionData>(cookies(), ironSessionOptions);
+interface CustomerInfo {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+}
 
-  // 1. Check for user authentication
-  if (!session.isLoggedIn || !session.user?.id) {
-    return new NextResponse(JSON.stringify({ message: 'Authentication required' }), { status: 401 });
-  }
+interface OrderRequest {
+  items: OrderItem[]
+  shippingAddress: ShippingAddress
+  customerInfo: CustomerInfo
+  paymentMethod: string
+  subtotal: number
+  shippingAmount: number
+  totalAmount: number
+  currency: string
+}
 
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: OrderRequest = await request.json()
 
-    // 2. Prepare the data for the backend
-    const backendData = {
-      ...body,
-      // The backend expects the user ID to be inferred from the token,
-      // so we don't need to pass it explicitly.
-    };
-
-    const backendUrl = `${process.env.BACKEND_API_URL}/orders`;
-    
-    // 3. Call the backend API
-    const backendResponse = await fetch(backendUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.token}`, // Pass the user's token
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(backendData),
-    });
-
-    // 4. Handle the backend response
-    if (!backendResponse.ok) {
-      const errorData = await backendResponse.json();
-      console.error('Backend API error:', errorData);
-      return new NextResponse(JSON.stringify({ message: errorData.message || 'Failed to create order on backend' }), { status: backendResponse.status });
+    // Validate required fields
+    if (!body.items || body.items.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Order must contain at least one item' },
+        { status: 400 }
+      )
     }
 
-    const responseData = await backendResponse.json();
+    if (!body.shippingAddress || !body.customerInfo) {
+      return NextResponse.json(
+        { success: false, message: 'Shipping address and customer info are required' },
+        { status: 400 }
+      )
+    }
 
-    // Optional: Revalidate paths if you want to update user's order history page
-    revalidatePath('/dashboard/orders');
+    // Create order data for backend
+    const orderData = {
+      items: body.items,
+      shippingAddress: body.shippingAddress,
+      customerInfo: body.customerInfo,
+      paymentMethod: body.paymentMethod,
+      subtotal: body.subtotal,
+      shippingAmount: body.shippingAmount,
+      totalAmount: body.totalAmount,
+      currency: body.currency
+    }
 
-    // 5. Return a success response to the client
-    return NextResponse.json(responseData);
+    // Call backend API
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${backendUrl}/api/orders/guest`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return NextResponse.json(
+        { success: false, message: errorData.message || 'Failed to create order' },
+        { status: response.status }
+      )
+    }
+
+    const result = await response.json()
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Order created successfully',
+      data: result.data
+    })
 
   } catch (error) {
-    console.error('Error processing order request:', error);
-    return new NextResponse(JSON.stringify({ message: 'Internal Server Error' }), { status: 500 });
+    console.error('Order creation error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

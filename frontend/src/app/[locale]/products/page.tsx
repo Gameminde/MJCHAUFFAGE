@@ -1,4 +1,5 @@
 import ClientProductsPage from './ClientProductsPage';
+import { setRequestLocale } from 'next-intl/server';
 
 type Props = {
   params: { locale: string };
@@ -6,6 +7,7 @@ type Props = {
 
 export default function ProductsPage({ params }: Props) {
   const { locale } = params;
+  setRequestLocale(locale);
   
   return <ClientProductsPage locale={locale} />;
 }

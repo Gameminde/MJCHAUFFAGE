@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Upload, Image, X, Plus, Edit, Trash2, Search, Filter, Eye } from 'lucide-react'
+import { useProductRealtime } from '@/hooks/useRealtime'
 
 interface Product {
   id: string
@@ -93,6 +94,16 @@ export function ProductsManagement() {
   const [loadingCategories, setLoadingCategories] = useState(false)
   const [loadingManufacturers, setLoadingManufacturers] = useState(false)
 
+  // Real-time updates
+  const { 
+    onProductCreated, 
+    onProductUpdated, 
+    onProductDeleted, 
+    notifyProductChange,
+    isConnected,
+    cleanup 
+  } = useProductRealtime()
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
@@ -133,6 +144,25 @@ export function ProductsManagement() {
     }
     fetchData()
   }, [])
+
+  // Set up real-time listeners
+  useEffect(() => {
+    onProductCreated((newProduct: any) => {
+      const frontendProduct = convertProduct(newProduct)
+      setProducts(prev => [frontendProduct, ...prev])
+    })
+
+    onProductUpdated((updatedProduct: any) => {
+      const frontendProduct = convertProduct(updatedProduct)
+      setProducts(prev => prev.map(p => p.id === frontendProduct.id ? frontendProduct : p))
+    })
+
+    onProductDeleted((productId: string) => {
+      setProducts(prev => prev.filter(p => p.id !== productId))
+    })
+
+    return cleanup
+  }, [onProductCreated, onProductUpdated, onProductDeleted, cleanup])
 
   // Fallback categories if API fails
   const fallbackCategories = [
@@ -283,11 +313,13 @@ export function ProductsManagement() {
 
       if (editingProduct) {
         // Update existing product
-        await ProductService.updateProduct(editingProduct.id, productData)
+        const updatedProduct = await ProductService.updateProduct(editingProduct.id, productData)
+        notifyProductChange('updated', editingProduct.id, updatedProduct)
         alert('Produit mis à jour avec succès!')
       } else {
         // Create new product
-        await ProductService.createProduct(productData)
+        const newProduct = await ProductService.createProduct(productData)
+        notifyProductChange('created', newProduct.id, newProduct)
         alert('Produit créé avec succès!')
       }
       
@@ -327,6 +359,7 @@ export function ProductsManagement() {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       try {
         await ProductService.deleteProduct(id)
+        notifyProductChange('deleted', id)
         alert('Produit supprimé avec succès!')
         
         // Refresh products list

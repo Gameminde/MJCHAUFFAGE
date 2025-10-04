@@ -1,4 +1,4 @@
-import { CustomersManagement } from '@/components/admin/CustomersManagement'
+import { DynamicCustomersManagement } from '@/components/common/DynamicImports'
 
 export default function AdminCustomersPage() {
   return (
@@ -31,7 +31,7 @@ export default function AdminCustomersPage() {
       {/* Main Content */}
       <main className="p-8">
         <div className="max-w-7xl mx-auto">
-          <CustomersManagement />
+          <DynamicCustomersManagement />
         </div>
       </main>
     </div>

@@ -208,19 +208,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [state.items])
 
-  // Validate cart items against current stock (simulated)
+  // Validate cart items against current stock
   useEffect(() => {
     const validateCartStock = async () => {
       if (state.items.length === 0) return
       
-      // In a real app, this would call an API to check stock
-      // For now, we'll just log the validation
-  
-      
-      // TODO: Implement real stock validation API call
+      try {
+        // Check stock for each item in cart
+        for (const item of state.items) {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${item.productId}`)
+          if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.data.product) {
+              const currentStock = result.data.product.stockQuantity
+              if (currentStock < item.quantity) {
+                // Update item with correct stock info
+                dispatch({ 
+                  type: 'UPDATE_QUANTITY', 
+                  payload: { id: item.id, quantity: Math.max(0, currentStock) }
+                })
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error validating cart stock:', error)
+      }
     }
     
-    validateCartStock()
+    // Validate stock every 5 minutes
+    const interval = setInterval(validateCartStock, 5 * 60 * 1000)
+    validateCartStock() // Initial validation
+    
+    return () => clearInterval(interval)
   }, [state.items])
 
   const addItem = (item: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number }) => {
@@ -249,8 +269,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const validateStock = async (productId: string, quantity: number): Promise<boolean> => {
     try {
-      // TODO: Implement API call to validate stock
-      // For now, check against current cart item maxStock
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${productId}`)
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data.product) {
+          return quantity <= result.data.product.stockQuantity
+        }
+      }
+      
+      // Fallback to cart item maxStock
       const cartItem = state.items.find(item => item.productId === productId)
       if (cartItem) {
         return quantity <= cartItem.maxStock
@@ -264,9 +291,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const refreshItemStock = async (productId: string): Promise<void> => {
     try {
-      // TODO: Implement API call to refresh stock information
-      // This would update the maxStock for the item in cart
-  
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${productId}`)
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data.product) {
+          // Update the maxStock for items in cart
+          const updatedItems = state.items.map(item => 
+            item.productId === productId 
+              ? { ...item, maxStock: result.data.product.stockQuantity }
+              : item
+          )
+          dispatch({ type: 'LOAD_CART', payload: updatedItems })
+        }
+      }
     } catch (error) {
       console.error('Error refreshing stock:', error)
     }

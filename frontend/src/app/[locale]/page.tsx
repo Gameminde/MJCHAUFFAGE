@@ -1,11 +1,12 @@
 import LocalizedHomePageClient from './LocalizedHomePageClient';
-import { useTranslations } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
 
 type Props = {
   params: { locale: string };
 };
 
 export default function LocalizedHomePage({ params }: Props) {
+  setRequestLocale(params.locale);
   return <LocalizedHomePageClient params={params} />;
 }
 

@@ -326,7 +326,7 @@ export class ProductController {
       }
 
       const { id } = req.params;
-      const customerId = req.user?.id;
+      const customerId = (req as any).user?.id;
       const { rating, title, comment } = req.body;
 
       if (!customerId) {
@@ -380,6 +380,37 @@ export class ProductController {
       });
     } catch (error) {
       console.error('Get featured products error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Get multiple products by IDs
+   */
+  static async getBatchProducts(req: Request, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { productIds } = req.body;
+      const products = await ProductService.getBatchProducts(productIds);
+
+      res.json({
+        success: true,
+        data: { products },
+      });
+    } catch (error) {
+      console.error('Get batch products error:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error',

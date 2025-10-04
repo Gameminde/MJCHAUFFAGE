@@ -1,14 +1,12 @@
 import { Router } from 'express';
 import { AuthController } from '@/controllers/authController';
-import { authenticateToken, rateLimitSensitive } from '@/middleware/auth';
-import {
-  registerValidation,
-  loginValidation,
-  updateProfileValidation,
-  changePasswordValidation,
-  requestPasswordResetValidation,
-  resetPasswordValidation,
-} from '../utils/validation';
+import { authenticateToken, rateLimitAuth } from '@/middleware/auth';
+import { 
+  authValidation, 
+  handleValidationErrors,
+  authRateLimit,
+  strictRateLimit 
+} from '@/middleware/validation';
 
 const router = Router();
 
@@ -53,7 +51,12 @@ const router = Router();
  *       409:
  *         description: User already exists
  */
-router.post('/register', registerValidation, AuthController.register);
+router.post('/register', 
+  authRateLimit,
+  authValidation.register, 
+  handleValidationErrors, 
+  AuthController.register
+);
 
 /**
  * @swagger
@@ -82,7 +85,12 @@ router.post('/register', registerValidation, AuthController.register);
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', loginValidation, AuthController.login);
+router.post('/login', 
+  rateLimitAuth,
+  authValidation.login, 
+  handleValidationErrors, 
+  AuthController.login
+);
 
 /**
  * @swagger
@@ -174,7 +182,12 @@ router.get('/profile', authenticateToken, AuthController.getProfile);
  *       400:
  *         description: Validation error
  */
-router.put('/profile', authenticateToken, updateProfileValidation, AuthController.updateProfile);
+router.put('/profile', 
+  authenticateToken, 
+  authValidation.register.slice(2, 4), // firstName and lastName validation
+  handleValidationErrors,
+  AuthController.updateProfile
+);
 
 /**
  * @swagger
@@ -210,8 +223,9 @@ router.put('/profile', authenticateToken, updateProfileValidation, AuthControlle
 router.post(
   '/change-password',
   authenticateToken,
-  rateLimitSensitive,
-  changePasswordValidation,
+  strictRateLimit,
+  authValidation.changePassword,
+  handleValidationErrors,
   AuthController.changePassword
 );
 
@@ -239,8 +253,9 @@ router.post(
  */
 router.post(
   '/request-password-reset',
-  rateLimitSensitive,
-  requestPasswordResetValidation,
+  strictRateLimit,
+  authValidation.login.slice(0, 1), // email validation only
+  handleValidationErrors,
   AuthController.requestPasswordReset
 );
 
@@ -275,8 +290,9 @@ router.post(
  */
 router.post(
   '/reset-password',
-  rateLimitSensitive,
-  resetPasswordValidation,
+  strictRateLimit,
+  authValidation.resetPassword,
+  handleValidationErrors,
   AuthController.resetPassword
 );
 

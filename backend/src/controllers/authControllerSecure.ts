@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 import { 
   SecureTokenManager, 
   SecurePasswordManager, 
@@ -155,7 +155,7 @@ export class AuthControllerSecure {
         const hashedPassword = await SecurePasswordManager.hashPassword(password);
 
         // Créer l'utilisateur et le client dans une transaction
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: any) => {
           const user = await tx.user.create({
             data: {
               email: email.toLowerCase(),

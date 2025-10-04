@@ -2,6 +2,7 @@ import { CustomerDashboard } from '@/components/customer/CustomerDashboard'
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { authService } from '@/services/authService'
+import { setRequestLocale } from 'next-intl/server'
 
 interface Props {
   params: { locale: string }
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 }
 
 export default function DashboardPage({ params: { locale } }: Props) {
+  setRequestLocale(locale);
   // Note: In a real app, you'd get the user from server-side authentication
   // This is a simplified example for demonstration
   const user = {

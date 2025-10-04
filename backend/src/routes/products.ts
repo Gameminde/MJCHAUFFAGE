@@ -182,6 +182,34 @@ router.get('/manufacturers', ProductController.getManufacturers);
 
 /**
  * @swagger
+ * /api/products/batch:
+ *   post:
+ *     summary: Get multiple products by IDs
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - productIds
+ *             properties:
+ *               productIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Products retrieved successfully
+ */
+router.post('/batch', [
+  body('productIds').isArray().withMessage('Product IDs must be an array'),
+  body('productIds.*').isUUID().withMessage('Each product ID must be a valid UUID'),
+], ProductController.getBatchProducts);
+
+/**
+ * @swagger
  * /api/products:
  *   post:
  *     summary: Create a new product (Admin only)

@@ -1,4 +1,4 @@
-import { prisma } from '../config/database'
+import { prisma } from '../lib/database'
 
 export interface SalesMetrics {
   totalRevenue: number
@@ -301,7 +301,7 @@ export class AnalyticsService {
     const pendingServices = await prisma.serviceRequest.count({
       where: {
         createdAt: { gte: startDate, lte: endDate },
-        status: { in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'] }
+        status: { in: ['PENDING', 'SCHEDULED', 'IN_PROGRESS'] }
       }
     })
 

@@ -19,17 +19,16 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
-      const result = await authService.login(formData);
+      const result = await authService.login(formData.email, formData.password);
       
-      if (result.success) {
-        const user = await authService.getProfile();
-        if (user && (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN')) {
+      if (result) {
+        if (result.role === 'SUPER_ADMIN' || result.role === 'ADMIN') {
           router.push('/admin');
         } else {
           setError('Accès non autorisé. Seuls les administrateurs peuvent accéder à cette section.');
         }
       } else {
-        setError(result.message || 'Erreur de connexion');
+        setError('Erreur de connexion');
       }
     } catch (err) {
       setError('Erreur de connexion');

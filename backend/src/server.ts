@@ -1,9 +1,6 @@
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
@@ -14,8 +11,10 @@ import { config } from '@/config/environment';
 import { logger } from '@/utils/logger';
 import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFoundHandler';
-import { redisClient } from '@/config/redis';
-import { prisma } from '@/config/database';
+import { applySecurity, authRateLimit, apiRateLimit, strictRateLimit, adminRateLimit, progressiveDelay } from '@/middleware/security';
+import { sanitizeRequestBody } from '@/middleware/validation';
+import { connectRedis, redisClient } from '@/config/redis';
+import { prisma } from '@/lib/database';
 
 // Import routes
 import authRoutes from '@/routes/auth';
@@ -25,6 +24,8 @@ import orderRoutes from '@/routes/orders';
 import serviceRoutes from '@/routes/services';
 import analyticsRoutes from '@/routes/analytics';
 import adminRoutes from '@/routes/admin';
+import realtimeRoutes from '@/routes/realtime';
+import cartRoutes from '@/routes/cart';
 
 const app = express();
 const server = createServer(app);
@@ -43,47 +44,29 @@ const io = new SocketServer(server, {
   },
 });
 
+// Apply comprehensive security middleware
+app.use(applySecurity);
+
 // Core Middleware
-app.use(cors({ 
-  origin: allowedOrigins, 
-  credentials: true 
-}));
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", ...allowedOrigins],
-      frameSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
-    },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true,
-  },
-  frameguard: { action: 'deny' },
-  xssFilter: true,
-  noSniff: true,
-  ieNoOpen: true,
-}));
 app.use(compression());
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Rate Limiting
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again after 15 minutes',
-});
-app.use('/api', apiLimiter);
+// Input sanitization
+app.use(sanitizeRequestBody);
+
+// Enhanced Rate Limiting with progressive delays
+app.use('/api', progressiveDelay);
+app.use('/api', apiRateLimit);
+
+// Specific rate limits for different endpoint types
+app.use('/api/auth/login', authRateLimit);
+app.use('/api/auth/register', authRateLimit);
+app.use('/api/auth/reset-password', authRateLimit);
+app.use('/api/auth/change-password', strictRateLimit);
+app.use('/api/admin', adminRateLimit);
 
 // Session configuration (without Redis store)
 app.use(session({
@@ -105,29 +88,16 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/realtime', realtimeRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Error Handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Socket.io setup
-io.on('connection', (socket) => {
-  logger.info(`New client connected: ${socket.id}`);
-
-  socket.on('disconnect', () => {
-    logger.info(`Client disconnected: ${socket.id}`);
-  });
-
-  // Order status updates
-  socket.on('join_order', (orderId) => {
-    socket.join(`order_${orderId}`);
-  });
-
-  // Admin dashboard updates
-  socket.on('join_admin', () => {
-    socket.join('admin_dashboard');
-  });
-});
+// Initialize realtime service
+import { RealtimeService } from '@/services/realtimeService';
+RealtimeService.initialize(io);
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
@@ -145,7 +115,7 @@ const startServer = async () => {
     await prisma.$connect();
     logger.info('Database connected successfully.');
     
-    await redisClient.connect();
+    await connectRedis();
     logger.info('Redis connected successfully.');
 
     const port = config.api.port || 3001;

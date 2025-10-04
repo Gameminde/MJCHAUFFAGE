@@ -116,7 +116,15 @@
     "editProfile": "تعديل الملف الشخصي",
     "changePassword": "تغيير كلمة المرور",
     "manageAddresses": "إدارة العناوين",
-    "viewFavorites": "عرض المفضلة"
+    "viewFavorites": "عرض المفضلة",
+    "logout": "تسجيل الخروج",
+    "dashboardSubtitle": "إدارة حسابك وطلباتك",
+    "orderDate": "تاريخ الطلب",
+    "delivered": "تم التسليم",
+    "viewAllOrders": "عرض جميع الطلبات",
+    "maintenanceService": "خدمة الصيانة",
+    "scheduled": "مجدول",
+    "viewAllServices": "عرض جميع الخدمات"
   },
   "services": {
     "title": "الخدمات",

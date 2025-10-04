@@ -1,4 +1,6 @@
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
+import { RealtimeService } from './realtimeService';
+import { CacheService } from './cacheService';
 import { Prisma, Product } from '@prisma/client';
 
 export interface ProductFilters {
@@ -217,20 +219,35 @@ export class ProductService {
    * Create a new product
    */
   static async createProduct(data: ProductCreateData) {
-    return prisma.product.create({
+    const product = await prisma.product.create({
       data: {
         ...data,
-        features: data.features ? data.features.join(',') : null,
-        price: new Prisma.Decimal(data.price),
-        costPrice: data.costPrice ? new Prisma.Decimal(data.costPrice) : null,
-        salePrice: data.salePrice ? new Prisma.Decimal(data.salePrice) : null,
-        weight: data.weight ? new Prisma.Decimal(data.weight) : null,
+        features: data.features || [],
+        price: data.price,
+        costPrice: data.costPrice || null,
+        salePrice: data.salePrice || null,
+        weight: data.weight || null,
       },
       include: {
         category: true,
         manufacturer: true,
       },
     });
+
+    // Invalidate cache
+    await CacheService.invalidateProductCache();
+
+    // Emit realtime event
+    RealtimeService.notifyProductUpdate({
+      type: 'product_created',
+      data: {
+        productId: product.id,
+        product,
+      },
+      timestamp: new Date(),
+    });
+
+    return product;
   }
 
   /**
@@ -239,15 +256,15 @@ export class ProductService {
   static async updateProduct(id: string, data: Partial<ProductCreateData>) {
     const updateData: any = { ...data };
     
-    if (data.price) updateData.price = new Prisma.Decimal(data.price);
-    if (data.costPrice) updateData.costPrice = new Prisma.Decimal(data.costPrice);
-    if (data.salePrice) updateData.salePrice = new Prisma.Decimal(data.salePrice);
-    if (data.weight) updateData.weight = new Prisma.Decimal(data.weight);
+    if (data.price) updateData.price = data.price;
+    if (data.costPrice) updateData.costPrice = data.costPrice;
+    if (data.salePrice) updateData.salePrice = data.salePrice;
+    if (data.weight) updateData.weight = data.weight;
     if (data.features && Array.isArray(data.features)) {
-      updateData.features = data.features.join(',');
+      updateData.features = data.features;
     }
 
-    return prisma.product.update({
+    const product = await prisma.product.update({
       where: { id },
       data: updateData,
       include: {
@@ -255,6 +272,22 @@ export class ProductService {
         manufacturer: true,
       },
     });
+
+    // Invalidate cache
+    await CacheService.invalidateProductCache(id);
+
+    // Emit realtime event
+    RealtimeService.notifyProductUpdate({
+      type: 'product_updated',
+      data: {
+        productId: id,
+        product,
+        changes: updateData,
+      },
+      timestamp: new Date(),
+    });
+
+    return product;
   }
 
   /**
@@ -262,10 +295,28 @@ export class ProductService {
    */
   static async deleteProduct(id: string) {
     try {
-      await prisma.product.update({
+      const product = await prisma.product.update({
         where: { id },
         data: { isActive: false },
+        include: {
+          category: true,
+          manufacturer: true,
+        },
       });
+
+      // Invalidate cache
+      await CacheService.invalidateProductCache(id);
+
+      // Emit realtime event
+      RealtimeService.notifyProductUpdate({
+        type: 'product_deleted',
+        data: {
+          productId: id,
+          product,
+        },
+        timestamp: new Date(),
+      });
+
       return true;
     } catch (error) {
       return false;
@@ -349,7 +400,7 @@ export class ProductService {
       await tx.inventoryLog.create({
         data: {
           productId,
-          type,
+          type: type as any,
           quantity: type === 'ADJUSTMENT' ? quantity - oldQuantity : quantity,
           reason: reason ?? null,
           oldQuantity,
@@ -357,12 +408,29 @@ export class ProductService {
         },
       });
 
-      return {
+      const result = {
         product: updatedProduct,
         oldQuantity,
         newQuantity,
         change: newQuantity - oldQuantity,
       };
+
+      // Invalidate cache (after transaction)
+      await CacheService.invalidateProductCache(productId);
+
+      // Emit realtime event
+      RealtimeService.notifyProductUpdate({
+        type: 'inventory_updated',
+        data: {
+          productId,
+          product: updatedProduct,
+          oldQuantity,
+          newQuantity,
+        },
+        timestamp: new Date(),
+      });
+
+      return result;
     });
   }
 
@@ -507,6 +575,30 @@ export class ProductService {
         },
       },
       take: limit,
+    });
+  }
+
+  /**
+   * Get multiple products by IDs
+   */
+  static async getBatchProducts(productIds: string[]) {
+    return prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        isActive: true,
+      },
+      include: {
+        category: {
+          select: { id: true, name: true, slug: true }
+        },
+        manufacturer: {
+          select: { id: true, name: true, slug: true }
+        },
+        images: {
+          orderBy: { sortOrder: 'asc' },
+          take: 1
+        },
+      },
     });
   }
 }

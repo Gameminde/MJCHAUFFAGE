@@ -1,15 +1,24 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { config } from '@/config/environment';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 import { redisClient } from '@/config/redis';
-import { User } from '@prisma/client';
+// Define User type locally to avoid Prisma import issues
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+}
 import { Response } from 'express';
 
 interface TokenPayload {
   userId: string;
   email: string;
   role: string;
+  iat?: number;
+  exp?: number;
 }
 
 interface AuthTokens {
@@ -19,9 +28,17 @@ interface AuthTokens {
 
 export class AuthService {
   /**
-   * Generate JWT tokens for a user
+   * Generate JWT tokens for a user with enhanced security
    */
   static generateTokens(user: User): AuthTokens {
+    if (!config.jwt.secret || config.jwt.secret.length < 64) {
+      throw new Error('JWT secret must be at least 256 bits (64 hex characters)');
+    }
+
+    if (!config.jwt.refreshSecret || config.jwt.refreshSecret.length < 64) {
+      throw new Error('JWT refresh secret must be at least 256 bits (64 hex characters)');
+    }
+
     const payload: TokenPayload = {
       userId: user.id,
       email: user.email,
@@ -30,66 +47,134 @@ export class AuthService {
 
     const accessToken = jwt.sign(payload, config.jwt.secret, {
       expiresIn: config.jwt.expiresIn,
+      issuer: 'mj-chauffage',
+      audience: 'mj-chauffage-app',
+      algorithm: 'HS256',
     } as jwt.SignOptions);
 
-    const refreshToken = jwt.sign(payload, config.jwt.refreshSecret, {
+    // Refresh token with minimal payload for security
+    const refreshPayload = {
+      userId: user.id,
+      type: 'refresh',
+    };
+
+    const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshSecret, {
       expiresIn: config.jwt.refreshExpiresIn,
+      issuer: 'mj-chauffage',
+      audience: 'mj-chauffage-app',
+      algorithm: 'HS256',
     } as jwt.SignOptions);
 
     return { accessToken, refreshToken };
   }
 
   static setAuthCookies(res: Response, tokens: AuthTokens): void {
+    const isProduction = config.env === 'production';
+    
     res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true, // Accessible by client-side scripts
-      secure: config.env === 'production',
-      sameSite: 'strict',
+      httpOnly: true, // Not accessible by client-side scripts for security
+      secure: isProduction, // HTTPS only in production
+      sameSite: 'strict', // CSRF protection
       maxAge: 15 * 60 * 1000, // 15 minutes
       path: '/',
+      domain: isProduction ? '.mjchauffage.com' : undefined, // Set domain in production
     });
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true, // Not accessible by client-side scripts
-      secure: config.env === 'production',
-      sameSite: 'strict',
+      secure: isProduction, // HTTPS only in production
+      sameSite: 'strict', // CSRF protection
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/api/auth/refresh',
+      path: '/api/auth/refresh', // Restrict to refresh endpoint only
+      domain: isProduction ? '.mjchauffage.com' : undefined, // Set domain in production
     });
   }
 
   static clearAuthCookies(res: Response): void {
-    res.clearCookie('accessToken', { path: '/' });
-    res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+    const isProduction = config.env === 'production';
+    
+    res.clearCookie('accessToken', { 
+      path: '/',
+      domain: isProduction ? '.mjchauffage.com' : undefined,
+      secure: isProduction,
+      sameSite: 'strict'
+    });
+    
+    res.clearCookie('refreshToken', { 
+      path: '/api/auth/refresh',
+      domain: isProduction ? '.mjchauffage.com' : undefined,
+      secure: isProduction,
+      sameSite: 'strict'
+    });
   }
 
   /**
-   * Verify and decode JWT token
+   * Verify and decode JWT token with enhanced security
    */
   static verifyToken(token: string, isRefreshToken = false): TokenPayload {
     const secret = isRefreshToken ? config.jwt.refreshSecret : config.jwt.secret;
     
+    if (!secret || secret.length < 64) {
+      throw new Error('JWT secret is not properly configured');
+    }
+    
     try {
-      return jwt.verify(token, secret, {
+      const decoded = jwt.verify(token, secret, {
         issuer: 'mj-chauffage',
         audience: 'mj-chauffage-app',
+        algorithms: ['HS256'], // Explicitly specify algorithm
+        clockTolerance: 30, // Allow 30 seconds clock skew
       }) as TokenPayload;
+
+      // Additional validation
+      if (!decoded.userId || !decoded.email || !decoded.role) {
+        throw new Error('Invalid token payload');
+      }
+
+      return decoded;
     } catch (error) {
-      throw new Error('Invalid or expired token');
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new Error('Invalid token signature');
+      } else if (error instanceof jwt.TokenExpiredError) {
+        throw new Error('Token has expired');
+      } else if (error instanceof jwt.NotBeforeError) {
+        throw new Error('Token not active yet');
+      } else {
+        throw new Error('Token verification failed');
+      }
     }
   }
 
   /**
-   * Hash password
+   * Hash password with secure bcrypt
    */
   static async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, config.security.bcryptRounds);
+    if (!password || password.length < 6) {
+      throw new Error('Password must be at least 6 characters long');
+    }
+
+    const saltRounds = config.security.bcryptRounds;
+    if (saltRounds < 10) {
+      throw new Error('Bcrypt rounds must be at least 10 for security');
+    }
+
+    return bcrypt.hash(password, saltRounds);
   }
 
   /**
-   * Compare password with hash
+   * Compare password with hash securely
    */
   static async comparePassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
+    if (!password || !hash) {
+      return false;
+    }
+
+    try {
+      return await bcrypt.compare(password, hash);
+    } catch (error) {
+      console.error('Password comparison error:', error);
+      return false;
+    }
   }
 
   /**
@@ -128,6 +213,68 @@ export class AuthService {
       await redisClient.del(key);
     } catch (error) {
       console.error('Error revoking refresh token:', error);
+    }
+  }
+
+  /**
+   * Blacklist a token (for logout/security)
+   */
+  static async blacklistToken(token: string, expiresIn: number): Promise<void> {
+    try {
+      const key = `blacklisted_token:${token}`;
+      await redisClient.setEx(key, expiresIn, 'true');
+    } catch (error) {
+      console.error('Error blacklisting token:', error);
+    }
+  }
+
+  /**
+   * Check if token is blacklisted
+   */
+  static async isTokenBlacklisted(token: string): Promise<boolean> {
+    try {
+      const key = `blacklisted_token:${token}`;
+      const result = await redisClient.get(key);
+      return result === 'true';
+    } catch (error) {
+      console.error('Error checking token blacklist:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Revoke all tokens for a user (security breach response)
+   */
+  static async revokeAllUserTokens(userId: string): Promise<void> {
+    try {
+      // Remove refresh tokens
+      await this.revokeRefreshToken(userId);
+      
+      // Add user to token revocation list with timestamp
+      const key = `user_token_revoked:${userId}`;
+      const timestamp = Date.now().toString();
+      await redisClient.setEx(key, 7 * 24 * 60 * 60, timestamp); // 7 days
+    } catch (error) {
+      console.error('Error revoking all user tokens:', error);
+    }
+  }
+
+  /**
+   * Check if user tokens were revoked after token issue time
+   */
+  static async areUserTokensRevoked(userId: string, tokenIssuedAt: number): Promise<boolean> {
+    try {
+      const key = `user_token_revoked:${userId}`;
+      const revokedTimestamp = await redisClient.get(key);
+      
+      if (!revokedTimestamp) {
+        return false;
+      }
+      
+      return parseInt(revokedTimestamp) > tokenIssuedAt * 1000; // Convert to milliseconds
+    } catch (error) {
+      console.error('Error checking user token revocation:', error);
+      return false;
     }
   }
 

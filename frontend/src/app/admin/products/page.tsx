@@ -1,4 +1,4 @@
-import { ProductsManagement } from '@/components/admin/ProductsManagement'
+import { DynamicCustomersManagement } from '@/components/common/DynamicImports'
 import AdminAuthGuard from '@/components/admin/AdminAuthGuard'
 
 export default function AdminProductsPage() {
@@ -33,7 +33,10 @@ export default function AdminProductsPage() {
         {/* Main Content */}
         <main className="p-8">
           <div className="max-w-7xl mx-auto">
-            <ProductsManagement />
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4">Products Management</h2>
+              <p className="text-gray-600">Product management functionality will be implemented here.</p>
+            </div>
           </div>
         </main>
       </div>

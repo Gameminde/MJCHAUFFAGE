@@ -1,5 +1,6 @@
 import { DashboardOverview } from '@/components/admin/DashboardOverview'
 import AdminAuthGuard from '@/components/admin/AdminAuthGuard'
+import { RealtimeStatus } from '@/components/admin/RealtimeStatus'
 
 export default function AdminPage() {
   return (
@@ -13,6 +14,7 @@ export default function AdminPage() {
                 <h1 className="text-2xl font-bold text-gray-900">MJ Admin Dashboard</h1>
               </div>
               <div className="flex items-center space-x-4">
+                <RealtimeStatus />
                 <a 
                   href="/"
                   className="text-gray-500 hover:text-gray-700 transition-colors"

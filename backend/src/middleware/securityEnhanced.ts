@@ -9,7 +9,7 @@ import bcrypt from 'bcryptjs'; // Utiliser bcryptjs qui est déjà installé
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { z } from 'zod';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 
 // ==============================================================================
 // 1. MIDDLEWARE DE SÉCURITÉ RENFORCÉ
@@ -93,7 +93,7 @@ export class SecureTokenManager {
       userId: user.id,
       email: user.email,
       role: user.role as 'SUPER_ADMIN' | 'ADMIN' | 'USER'
-    
+    };
 
     const accessToken = jwt.sign(payload, this.JWT_SECRET, {
       expiresIn: this.ACCESS_TOKEN_EXPIRY,
@@ -361,15 +361,17 @@ export class SecurePasswordManager {
 // ==============================================================================
 
 export class SecurityLogger {
-  static logAuthAttempt(ip: string, email: string, success: boolean): void {
+  static logAuthAttempt(_ip: string, _email: string, _success: boolean): void {
     // En production, utiliser un vrai système de logging
     // comme Winston avec rotation des logs
   }
 
-  static logSuspiciousActivity(ip: string, action: string, details: any): void {
+  static logSuspiciousActivity(_ip: string, _action: string, _details: any): void {
+    // En production, utiliser un vrai système de logging
   }
 
-  static logAdminAction(userId: string, action: string, target: string): void {
+  static logAdminAction(_userId: string, _action: string, _target: string): void {
+    // En production, utiliser un vrai système de logging
   }
 }
 
@@ -388,7 +390,6 @@ export const installSecurityDependencies = async (): Promise<void> => {
     'jsonwebtoken',
     '@types/jsonwebtoken'
   ];
-  };
 
   console.log('Dépendances requises:', dependencies.join(', '));
   console.log('Exécutez: npm install ' + dependencies.join(' '));

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthService } from '@/services/authService';
 // import { // EmailService } from '@/services/emailService';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 
 // UserRole is stored as string in database
 // Valid values: 'ADMIN', 'CUSTOMER', 'TECHNICIAN'
@@ -27,6 +27,30 @@ export class AuthController {
 
       const { email, password, firstName, lastName, companyName, customerType = 'B2C' } = req.body;
 
+      // Validate password strength
+      if (password.length < 8) {
+        res.status(400).json({
+          success: false,
+          message: 'Password must be at least 8 characters long',
+          code: 'WEAK_PASSWORD'
+        });
+        return;
+      }
+
+      // Check password complexity
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumbers = /\d/.test(password);
+
+      if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+        res.status(400).json({
+          success: false,
+          message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+          code: 'WEAK_PASSWORD'
+        });
+        return;
+      }
+
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
         where: { email: email.toLowerCase() },
@@ -35,16 +59,17 @@ export class AuthController {
       if (existingUser) {
         res.status(409).json({
           success: false,
-          message: 'User with this email already exists',
+          message: 'An account with this email address already exists',
+          code: 'EMAIL_EXISTS'
         });
         return;
       }
 
-      // Hash password
+      // Hash password securely
       const hashedPassword = await AuthService.hashPassword(password);
 
       // Create user and customer in a transaction
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx: any) => {
         const user = await tx.user.create({
           data: {
             email: email.toLowerCase(),
@@ -115,7 +140,7 @@ export class AuthController {
 
       const { email, password } = req.body;
 
-      // Find user
+      // Find user with rate limiting check
       const user = await prisma.user.findUnique({
         where: { email: email.toLowerCase() },
         include: {
@@ -124,20 +149,43 @@ export class AuthController {
         },
       });
 
-      if (!user || !user.isActive) {
+      // Always use constant-time comparison to prevent timing attacks
+      const userExists = user && user.isActive;
+      const hasPassword = user?.password;
+      
+      // Verify password (always run to prevent timing attacks)
+      const isValidPassword = hasPassword ? 
+        await AuthService.comparePassword(password, user.password!) : 
+        await AuthService.comparePassword(password, '$2b$12$dummy.hash.to.prevent.timing.attacks');
+
+      if (!userExists || !isValidPassword) {
+        // Increment failed login attempts for rate limiting
+        if (req.rateLimitKey) {
+          try {
+            const { redisClient } = await import('@/config/redis');
+            await redisClient.setEx(req.rateLimitKey, 15 * 60, ((req.currentAttempts || 0) + 1).toString());
+          } catch (error) {
+            console.error('Error updating rate limit:', error);
+          }
+        }
+
+        // Log failed attempt for security monitoring
+        console.warn(`Failed login attempt for email: ${email} from IP: ${req.ip}`);
+        
         res.status(401).json({
           success: false,
-          message: 'Invalid credentials',
+          message: 'Invalid email or password',
+          code: 'INVALID_CREDENTIALS'
         });
         return;
       }
 
-      // Verify password
-      const isValidPassword = user.password ? await AuthService.comparePassword(password, user.password) : false;
-      if (!isValidPassword) {
+      // Additional security checks
+      if (!user.isVerified) {
         res.status(401).json({
           success: false,
-          message: 'Invalid credentials',
+          message: 'Please verify your email address before logging in',
+          code: 'EMAIL_NOT_VERIFIED'
         });
         return;
       }
@@ -146,15 +194,28 @@ export class AuthController {
       const { accessToken, refreshToken } = AuthService.generateTokens(user);
       await AuthService.storeRefreshToken(user.id, refreshToken);
 
-      // Create session
+      // Create session with enhanced tracking
       const sessionToken = await AuthService.createSession(
         user.id,
         req.ip,
         req.get('User-Agent')
       );
 
-      // Update last login
+      // Update last login and login count
       await AuthService.updateLastLogin(user.id);
+
+      // Clear rate limiting on successful login
+      if (req.rateLimitKey) {
+        try {
+          const { redisClient } = await import('@/config/redis');
+          await redisClient.del(req.rateLimitKey);
+        } catch (error) {
+          console.error('Error clearing rate limit:', error);
+        }
+      }
+
+      // Log successful login for security monitoring
+      console.info(`Successful login for user: ${user.id} from IP: ${req.ip}`);
 
       AuthService.setAuthCookies(res, { accessToken, refreshToken });
 
@@ -184,7 +245,7 @@ export class AuthController {
   }
 
   /**
-   * Refresh access token
+   * Refresh access token with enhanced security
    */
   static async refreshToken(req: Request, res: Response): Promise<void> {
     try {
@@ -194,6 +255,7 @@ export class AuthController {
         res.status(401).json({
           success: false,
           message: 'Refresh token required',
+          code: 'MISSING_REFRESH_TOKEN'
         });
         return;
       }
@@ -201,28 +263,63 @@ export class AuthController {
       // Verify refresh token
       const decoded = AuthService.verifyToken(refreshToken, true);
       
+      // Check if user tokens were revoked
+      const areTokensRevoked = await AuthService.areUserTokensRevoked(decoded.userId, decoded.iat || 0);
+      if (areTokensRevoked) {
+        res.status(401).json({
+          success: false,
+          message: 'Refresh token has been revoked for security reasons',
+          code: 'TOKEN_REVOKED'
+        });
+        return;
+      }
+      
       // Validate token in Redis
       const isValidToken = await AuthService.validateRefreshToken(decoded.userId, refreshToken);
       if (!isValidToken) {
         res.status(401).json({
           success: false,
           message: 'Invalid refresh token',
+          code: 'INVALID_REFRESH_TOKEN'
         });
         return;
       }
 
-      // Get user
+      // Get user with full validation
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
+          isVerified: true,
+          lastLoginAt: true,
+        },
       });
 
       if (!user || !user.isActive) {
         res.status(401).json({
           success: false,
           message: 'User not found or inactive',
+          code: 'USER_INACTIVE'
         });
         return;
       }
+
+      if (!user.isVerified) {
+        res.status(401).json({
+          success: false,
+          message: 'Email verification required',
+          code: 'EMAIL_NOT_VERIFIED'
+        });
+        return;
+      }
+
+      // Revoke old refresh token first
+      await AuthService.revokeRefreshToken(user.id);
 
       // Generate new tokens
       const { accessToken, refreshToken: newRefreshToken } = AuthService.generateTokens(user);
@@ -233,27 +330,67 @@ export class AuthController {
       res.json({
         success: true,
         message: 'Token refreshed successfully',
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+          }
+        }
       });
     } catch (error) {
       console.error('Token refresh error:', error);
+      
+      let message = 'Invalid or expired refresh token';
+      let code = 'REFRESH_TOKEN_INVALID';
+
+      if (error instanceof Error) {
+        if (error.message.includes('expired')) {
+          message = 'Refresh token has expired';
+          code = 'REFRESH_TOKEN_EXPIRED';
+        } else if (error.message.includes('signature')) {
+          message = 'Invalid refresh token signature';
+          code = 'REFRESH_TOKEN_SIGNATURE_INVALID';
+        }
+      }
+
       res.status(401).json({
         success: false,
-        message: 'Invalid or expired refresh token',
+        message,
+        code
       });
     }
   }
 
   /**
-   * Logout user
+   * Logout user with secure token revocation
    */
   static async logout(req: Request, res: Response): Promise<void> {
     try {
-      const { refreshToken } = req.cookies;
+      const { refreshToken, accessToken } = req.cookies;
       const userId = req.user?.id;
 
-      if (userId && refreshToken) {
+      if (userId) {
         // Revoke refresh token
-        await AuthService.revokeRefreshToken(userId);
+        if (refreshToken) {
+          await AuthService.revokeRefreshToken(userId);
+        }
+
+        // Blacklist current access token
+        if (accessToken) {
+          try {
+            const decoded = AuthService.verifyToken(accessToken);
+            const expiresIn = (decoded.exp || 0) - Math.floor(Date.now() / 1000);
+            if (expiresIn > 0) {
+              await AuthService.blacklistToken(accessToken, expiresIn);
+            }
+          } catch (error) {
+            // Token might be invalid, but continue with logout
+            console.warn('Could not blacklist token during logout:', error);
+          }
+        }
       }
 
       AuthService.clearAuthCookies(res);
@@ -443,6 +580,28 @@ export class AuthController {
         res.status(400).json({
           success: false,
           message: 'Current password is incorrect',
+          code: 'INVALID_CURRENT_PASSWORD'
+        });
+        return;
+      }
+
+      // Validate new password strength
+      if (newPassword.length < 8) {
+        res.status(400).json({
+          success: false,
+          message: 'New password must be at least 8 characters long',
+          code: 'WEAK_PASSWORD'
+        });
+        return;
+      }
+
+      // Check if new password is different from current
+      const isSamePassword = await AuthService.comparePassword(newPassword, user.password!);
+      if (isSamePassword) {
+        res.status(400).json({
+          success: false,
+          message: 'New password must be different from current password',
+          code: 'SAME_PASSWORD'
         });
         return;
       }
@@ -450,14 +609,22 @@ export class AuthController {
       // Hash new password
       const hashedNewPassword = await AuthService.hashPassword(newPassword);
 
-      // Update password
-      await prisma.user.update({
-        where: { id: userId! },
-        data: { password: hashedNewPassword },
+      // Update password in transaction
+      await prisma.$transaction(async (tx: any) => {
+        await tx.user.update({
+          where: { id: userId! },
+          data: { 
+            password: hashedNewPassword,
+            updatedAt: new Date()
+          },
+        });
       });
 
-      // Revoke all refresh tokens to force re-login
-      await AuthService.revokeRefreshToken(userId);
+      // Revoke all tokens for security (force re-login on all devices)
+      await AuthService.revokeAllUserTokens(userId);
+
+      // Log password change for security monitoring
+      console.info(`Password changed for user: ${userId} from IP: ${req.ip}`);
 
       res.json({
         success: true,

@@ -1,0 +1,28 @@
+{
+  "enabled": true,
+  "name": "GitHub Push Hook",
+  "description": "Automatically pushes code changes to the GitHub repository https://github.com/hmarwkhoh/mjchauffage when any source files are modified",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "frontend/src/**/*",
+      "backend/src/**/*",
+      "*.md",
+      "*.json",
+      "*.js",
+      "*.ts",
+      "*.tsx",
+      "*.yml",
+      "*.yaml",
+      "docker-compose.yml",
+      "Dockerfile*",
+      "package.json",
+      "tsconfig.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Push the latest code changes to the GitHub repository https://github.com/hmarwkhoh/mjchauffage. Add all modified files, commit with a descriptive message about the changes, and push to the main branch. Make sure to handle any merge conflicts if they arise."
+  }
+}

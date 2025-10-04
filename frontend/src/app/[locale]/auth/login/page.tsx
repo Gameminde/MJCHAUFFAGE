@@ -1,5 +1,6 @@
 import { AuthForm } from '@/components/auth/AuthForm'
 import { Metadata } from 'next'
+import { setRequestLocale } from 'next-intl/server';
 
 interface Props {
   params: { locale: string }
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 }
 
 export default function LoginPage({ params: { locale } }: Props) {
+  setRequestLocale(locale);
   return (
     <AuthForm mode="login" locale={locale} />
   )

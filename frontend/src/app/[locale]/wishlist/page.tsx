@@ -60,6 +60,7 @@ export default function WishlistPage({ params: { locale } }: WishlistPageProps) 
           </div>
         </div>
       </div>
+    )
   }
 
   return (

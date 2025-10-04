@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Star, ShoppingCart, Search, Grid3X3, List, SlidersHorizontal, ArrowRight, Flame, Zap, Award, TrendingUp } from 'lucide-react';
 import ProductService, { Product, Category } from '@/services/productService';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 type Props = {
   locale: string;
@@ -62,7 +63,9 @@ export default function ClientProductsPage({ locale }: Props) {
     originalPrice: product.salePrice ? product.price : null,
     rating: 4.5, // Mock rating since not in API yet
     reviews: 15, // Mock reviews since not in API yet
-    image: product.images && product.images.length > 0 ? product.images[0] : '/images/default-product.jpg',
+    image: product.images && product.images.length > 0 
+      ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url)
+      : '/images/default-product.jpg',
     stockQuantity: product.stockQuantity,
     inStock: product.stockQuantity > 0,
     badge: product.isFeatured ? (isArabic ? 'مميز' : 'Premium') : null,
@@ -198,7 +201,10 @@ export default function ClientProductsPage({ locale }: Props) {
                           onError={(e) => {
                             // Fallback to emoji if image fails to load
                             e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'flex';
+                            }
                           }}
                         />
                       ) : null}
@@ -269,17 +275,19 @@ export default function ClientProductsPage({ locale }: Props) {
 
                     {/* Actions */}
                     <div className="flex gap-3">
-                      <button 
-                        disabled={!product.inStock}
-                        className={`flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-semibold transition-all ${
-                          product.inStock
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-[1.02]'
-                            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        }`}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        {isArabic ? 'أضف للسلة' : 'Ajouter'}
-                      </button>
+                      <AddToCartButton
+                        product={{
+                          id: product.id,
+                          name: product.name,
+                          price: product.salePrice || product.price,
+                          sku: product.id, // Use ID as SKU if not available
+                          stockQuantity: product.stockQuantity,
+                          images: product.image ? [{ url: product.image }] : []
+                        }}
+                        variant="primary"
+                        size="md"
+                        className="flex-1"
+                      />
                       <Link
                         href={`/${locale}/products/details/${product.id}`}
                         className="px-4 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"

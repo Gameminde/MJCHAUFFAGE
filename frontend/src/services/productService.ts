@@ -1,3 +1,5 @@
+import { productCache } from './cacheService'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export interface Product {
@@ -73,25 +75,29 @@ class ProductService {
       sku: apiProduct.sku || `SKU-${apiProduct.id}`,
       description: apiProduct.description,
       shortDescription: apiProduct.shortDescription || null,
-      price: apiProduct.price,
-      salePrice: apiProduct.originalPrice || null, // Use originalPrice as salePrice if exists
-      stockQuantity: apiProduct.stockQuantity,
-      weight: apiProduct.weight || null,
+      price: parseFloat(apiProduct.price) || 0,
+      salePrice: apiProduct.salePrice ? parseFloat(apiProduct.salePrice) : null,
+      stockQuantity: parseInt(apiProduct.stockQuantity) || 0,
+      weight: apiProduct.weight ? parseFloat(apiProduct.weight) : null,
       dimensions: apiProduct.dimensions || null,
       specifications: apiProduct.specifications || {},
-      features: apiProduct.features || [],
-      images: apiProduct.images || [],
+      features: Array.isArray(apiProduct.features) ? apiProduct.features : [],
+      images: Array.isArray(apiProduct.images) ? apiProduct.images.map((img: any) => ({
+        id: img.id || Math.random().toString(),
+        url: typeof img === 'string' ? img : img.url,
+        altText: typeof img === 'object' ? img.altText : null
+      })) : [],
       category: {
-        id: apiProduct.category || 'unknown',
-        name: apiProduct.category || 'Unknown Category',
-        slug: (apiProduct.category || 'unknown').toLowerCase().replace(/\s+/g, '-')
+        id: apiProduct.category?.id || apiProduct.categoryId || 'unknown',
+        name: apiProduct.category?.name || 'Unknown Category',
+        slug: apiProduct.category?.slug || 'unknown'
       },
-      manufacturer: apiProduct.brand ? {
-        id: apiProduct.brand,
-        name: apiProduct.brand,
-        slug: apiProduct.brand.toLowerCase().replace(/\s+/g, '-')
+      manufacturer: apiProduct.manufacturer ? {
+        id: apiProduct.manufacturer.id,
+        name: apiProduct.manufacturer.name,
+        slug: apiProduct.manufacturer.slug
       } : null,
-      isFeatured: apiProduct.isFeatured || false,
+      isFeatured: Boolean(apiProduct.isFeatured),
       isActive: apiProduct.isActive !== false, // Default to true if not specified
       createdAt: apiProduct.createdAt || new Date().toISOString(),
       updatedAt: apiProduct.updatedAt || new Date().toISOString()

@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import ServicesPageClient from './ServicesPageClient';
 
 type Props = {
@@ -18,23 +18,40 @@ interface Service {
 
 // This function fetches data from your backend API
 async function getServices(): Promise<Service[]> {
-  const url = `${process.env.BACKEND_API_URL}/services`;
+  // Try to fetch from backend API
+  const backendUrl = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  
   try {
-    const res = await fetch(url, { next: { revalidate: 3600 } }); // Revalidate every hour
+    const url = `${backendUrl}/api/services`;
+    const res = await fetch(url, { 
+      next: { revalidate: 3600 }, // Revalidate every hour
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch services: ${res.statusText}`);
+      throw new Error(`Failed to fetch services: ${res.status} ${res.statusText}`);
     }
     
     const data = await res.json();
-    return data.data || []; // The services data is nested in 'data'
+    
+    if (data.success && Array.isArray(data.data)) {
+      return data.data;
+    } else {
+      throw new Error('Invalid response format from services API');
+    }
   } catch (error) {
     console.error('Error fetching services:', error);
-    return []; // Return an empty array on error
+    
+    // Return empty array instead of mock data
+    // The UI should handle empty state gracefully
+    return [];
   }
 }
 
 export default async function ServicesPage({ params: { locale } }: Props) {
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'ServicesPage' });
   const services = await getServices();
   

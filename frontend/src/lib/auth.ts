@@ -73,3 +73,21 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+// Export types and utilities needed by other components
+export interface SessionData {
+  isLoggedIn?: boolean;
+  token?: string;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+    role: string;
+  };
+}
+
+export function requireAuth() {
+  // This is a placeholder function for authentication requirement
+  // In a real implementation, this would check session and redirect if needed
+  return true;
+}

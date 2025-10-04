@@ -113,7 +113,7 @@ export function ServiceBooking({ locale }: ServiceBookingProps) {
       setBookingForm(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof BookingForm],
+          ...(prev[parent as keyof BookingForm] as object || {}),
           [child]: value
         }
       }))

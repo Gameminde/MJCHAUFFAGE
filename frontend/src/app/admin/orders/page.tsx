@@ -1,4 +1,4 @@
-import { OrdersManagement } from '@/components/admin/OrdersManagement'
+import { DynamicOrdersManagement } from '@/components/common/DynamicImports'
 
 export default function AdminOrdersPage() {
   return (
@@ -31,7 +31,7 @@ export default function AdminOrdersPage() {
       {/* Main Content */}
       <main className="p-8">
         <div className="max-w-7xl mx-auto">
-          <OrdersManagement />
+          <DynamicOrdersManagement />
         </div>
       </main>
     </div>

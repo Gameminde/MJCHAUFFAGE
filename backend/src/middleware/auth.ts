@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '@/services/authService';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 // UserRole is stored as string in database
 // Valid values: 'ADMIN', 'CUSTOMER', 'TECHNICIAN'
 const UserRole = {
@@ -12,7 +12,7 @@ const UserRole = {
 
 type UserRoleType = typeof UserRole[keyof typeof UserRole];
 
-// Extend Express Request type to include user
+// Extend Express Request type to include user and rate limiting
 declare global {
   namespace Express {
     interface Request {
@@ -23,12 +23,14 @@ declare global {
         firstName: string;
         lastName: string;
       };
+      rateLimitKey?: string;
+      currentAttempts?: number;
     }
   }
 }
 
 /**
- * Middleware to authenticate JWT tokens
+ * Middleware to authenticate JWT tokens with enhanced security
  */
 export const authenticateToken = async (
   req: Request,
@@ -36,17 +38,48 @@ export const authenticateToken = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = req.cookies.accessToken;
+    // Try to get token from cookie first, then Authorization header
+    let token = req.cookies.accessToken;
+    
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
     if (!token) {
       res.status(401).json({
         success: false,
         message: 'Access token required',
+        code: 'MISSING_TOKEN'
+      });
+      return;
+    }
+
+    // Check if token is blacklisted
+    const isBlacklisted = await AuthService.isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      res.status(401).json({
+        success: false,
+        message: 'Token has been revoked',
+        code: 'TOKEN_REVOKED'
       });
       return;
     }
 
     const decoded = AuthService.verifyToken(token);
+    
+    // Check if all user tokens were revoked after this token was issued
+    const areTokensRevoked = await AuthService.areUserTokensRevoked(decoded.userId, decoded.iat || 0);
+    if (areTokensRevoked) {
+      res.status(401).json({
+        success: false,
+        message: 'Token has been revoked for security reasons',
+        code: 'TOKEN_REVOKED'
+      });
+      return;
+    }
     
     // Fetch user from database to ensure they still exist and are active
     const user = await prisma.user.findUnique({
@@ -59,6 +92,7 @@ export const authenticateToken = async (
         role: true,
         isActive: true,
         isVerified: true,
+        lastLoginAt: true,
       },
     });
 
@@ -66,6 +100,7 @@ export const authenticateToken = async (
       res.status(401).json({
         success: false,
         message: 'User not found or inactive',
+        code: 'USER_INACTIVE'
       });
       return;
     }
@@ -74,6 +109,17 @@ export const authenticateToken = async (
       res.status(401).json({
         success: false,
         message: 'Email verification required',
+        code: 'EMAIL_NOT_VERIFIED'
+      });
+      return;
+    }
+
+    // Verify token payload matches database user
+    if (user.email !== decoded.email || user.role !== decoded.role) {
+      res.status(401).json({
+        success: false,
+        message: 'Token payload mismatch',
+        code: 'TOKEN_MISMATCH'
       });
       return;
     }
@@ -81,9 +127,23 @@ export const authenticateToken = async (
     req.user = user as any;
     next();
   } catch (error) {
+    let message = 'Invalid or expired token';
+    let code = 'TOKEN_INVALID';
+
+    if (error instanceof Error) {
+      if (error.message.includes('expired')) {
+        message = 'Token has expired';
+        code = 'TOKEN_EXPIRED';
+      } else if (error.message.includes('signature')) {
+        message = 'Invalid token signature';
+        code = 'TOKEN_SIGNATURE_INVALID';
+      }
+    }
+
     res.status(403).json({
       success: false,
-      message: 'Invalid or expired token',
+      message,
+      code
     });
   }
 };
@@ -206,6 +266,45 @@ export const requireOwnershipOrAdmin = (
 };
 
 /**
+ * Rate limiting middleware for authentication attempts
+ */
+export const rateLimitAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const identifier = req.ip;
+    const key = `rate_limit:auth:${identifier}`;
+    
+    // Check current attempts
+    const { redisClient } = await import('@/config/redis');
+    const attempts = await redisClient.get(key);
+    const currentAttempts = attempts ? parseInt(attempts) : 0;
+    
+    if (currentAttempts >= 5) {
+      res.status(429).json({
+        success: false,
+        message: 'Too many login attempts. Please try again in 15 minutes.',
+        code: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: 15 * 60 // seconds
+      });
+      return;
+    }
+
+    // Store attempt count for failed attempts (will be cleared on success)
+    req.rateLimitKey = key;
+    req.currentAttempts = currentAttempts;
+
+    next();
+  } catch (error) {
+    // If Redis is down, allow the request but log the error
+    console.error('Rate limiting error:', error);
+    next();
+  }
+};
+
+/**
  * Rate limiting middleware for sensitive operations
  */
 export const rateLimitSensitive = async (
@@ -218,23 +317,22 @@ export const rateLimitSensitive = async (
     const key = `rate_limit:sensitive:${identifier}`;
     
     // Check current attempts
-    const attempts = await import('@/config/redis').then(({ redisClient }) => 
-      redisClient.get(key)
-    );
-    
+    const { redisClient } = await import('@/config/redis');
+    const attempts = await redisClient.get(key);
     const currentAttempts = attempts ? parseInt(attempts) : 0;
     
-    if (currentAttempts >= 5) {
+    if (currentAttempts >= 3) {
       res.status(429).json({
         success: false,
-        message: 'Too many attempts. Please try again in 15 minutes.',
+        message: 'Too many sensitive operations. Please try again in 30 minutes.',
+        code: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: 30 * 60 // seconds
       });
       return;
     }
 
     // Increment attempts
-    const { redisClient } = await import('@/config/redis');
-    await redisClient.setEx(key, 15 * 60, (currentAttempts + 1).toString()); // 15 minutes
+    await redisClient.setEx(key, 30 * 60, (currentAttempts + 1).toString()); // 30 minutes
 
     next();
   } catch (error) {

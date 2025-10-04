@@ -104,7 +104,7 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
             <div className={`${isRTL ? 'mr-4' : 'ml-4'}`}>
               <p className="text-sm text-gray-600">{t('totalSpent')}</p>
               <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(stats.totalSpent, locale)}
+                {formatCurrency(stats.totalSpent, locale as 'fr' | 'ar')}
               </p>
             </div>
           </div>
@@ -138,7 +138,7 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
               </div>
               <div className="text-right">
                 <p className="font-semibold text-gray-900">
-                  {formatCurrency(45000, locale)}
+                  {formatCurrency(45000, locale as 'fr' | 'ar')}
                 </p>
                 <span className="inline-flex px-2 py-1 text-xs font-medium bg-success-100 text-success-800 rounded-full">
                   {t('delivered')}

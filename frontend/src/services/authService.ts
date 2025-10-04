@@ -12,7 +12,9 @@ interface RegisterData {
 interface User {
   id: string;
   email: string;
-  name: string; // Assurez-vous que cette propriété existe si vous l'utilisez
+  firstName: string;
+  lastName: string;
+  name?: string; // Computed field
   role: string;
 }
 
@@ -27,9 +29,18 @@ interface AuthResponse {
 class AuthService {
   async login(email: string, password: string): Promise<User | null> {
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/login', { email, password });
+      const response = await apiClient.post<any>('/auth/login', { email, password });
       if (response.data.success && response.data.data?.user) {
-        return response.data.data.user;
+        const user = response.data.data.user;
+        // Store token if provided
+        if (response.data.data.token) {
+          localStorage.setItem('authToken', response.data.data.token);
+        }
+        // Add computed name field
+        return {
+          ...user,
+          name: `${user.firstName} ${user.lastName}`
+        };
       }
       return null;
     } catch (error: any) {
@@ -57,8 +68,15 @@ class AuthService {
 
   async getProfile(): Promise<User | null> {
     try {
-      const response = await apiClient.get<AuthResponse>('/auth/profile');
-      return response.data.data?.user || null;
+      const response = await apiClient.get<any>('/auth/profile');
+      if (response.data.success && response.data.data?.user) {
+        const user = response.data.data.user;
+        return {
+          ...user,
+          name: `${user.firstName} ${user.lastName}`
+        };
+      }
+      return null;
     } catch (error) {
       return null;
     }

@@ -1,4 +1,4 @@
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 import { Prisma } from '@prisma/client';
 
 // Define string constants for enum-like values
@@ -9,14 +9,14 @@ const OrderStatus = {
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',
   CANCELLED: 'CANCELLED',
-  RETURNED: 'RETURNED'
+  REFUNDED: 'REFUNDED'
 } as const;
 
 type OrderStatusType = typeof OrderStatus[keyof typeof OrderStatus];
 
 const ServiceRequestStatus = {
   PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
+  SCHEDULED: 'SCHEDULED',
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED'
@@ -265,7 +265,7 @@ export class AdminService {
       recentActivity: recentOrders.map(order => ({
         type: 'order',
         id: order.id,
-        description: `New order ${order.orderNumber} from ${order.customer.user.firstName} ${order.customer.user.lastName}`,
+        description: `New order ${order.orderNumber} from ${order.customer.user?.firstName || 'Guest'} ${order.customer.user?.lastName || 'Customer'}`,
         amount: Number(order.totalAmount),
         timestamp: order.orderDate
       })),
@@ -311,7 +311,7 @@ export class AdminService {
         type: 'order',
         id: order.id,
         title: `New Order ${order.orderNumber}`,
-        description: `${order.customer.user.firstName} ${order.customer.user.lastName} placed an order worth €${Number(order.totalAmount).toFixed(2)}`,
+        description: `${order.customer.user?.firstName || 'Guest'} ${order.customer.user?.lastName || 'Customer'} placed an order worth €${Number(order.totalAmount).toFixed(2)}`,
         timestamp: order.orderDate,
         status: order.status
       })),
@@ -319,7 +319,7 @@ export class AdminService {
         type: 'customer',
         id: customer.id,
         title: 'New Customer Registration',
-        description: `${customer.user.firstName} ${customer.user.lastName} (${customer.user.email}) joined as ${customer.customerType} customer`,
+        description: `${customer.user?.firstName || 'Guest'} ${customer.user?.lastName || 'Customer'} (${customer.user?.email || customer.email || 'No email'}) joined as ${customer.customerType} customer`,
         timestamp: customer.createdAt,
         status: 'active'
       })),
@@ -327,7 +327,7 @@ export class AdminService {
         type: 'service',
         id: service.id,
         title: `Service Request: ${service.serviceType.name}`,
-        description: `${service.customer.user.firstName} ${service.customer.user.lastName} requested ${service.serviceType.name}`,
+        description: `${service.customer.user?.firstName || 'Guest'} ${service.customer.user?.lastName || 'Customer'} requested ${service.serviceType.name}`,
         timestamp: service.createdAt,
         status: service.status
       }))
@@ -623,7 +623,7 @@ export class AdminService {
       data: {
         technicianId,
         scheduledDate,
-        status: 'CONFIRMED'
+        status: 'SCHEDULED'
       },
       include: {
         customer: {
@@ -712,7 +712,7 @@ export class AdminService {
         data: {
           userId: user.id,
           employeeId: data.employeeId,
-          specialties: data.specialties ? data.specialties.join(', ') : ''
+          specialties: data.specialties || []
         },
         include: {
           user: {

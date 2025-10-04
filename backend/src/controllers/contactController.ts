@@ -11,7 +11,10 @@ export class ContactController {
 
     const { firstName, lastName, email, phone, serviceType, message, wilaya } = req.body;
 
-
+    // Log the contact form submission (in production, save to database or send email)
+    console.log('Contact form submission:', {
+      firstName, lastName, email, phone, serviceType, message, wilaya
+    });
     
     // In a real implementation, we would send an email here
     // For now, we'll just return a success response

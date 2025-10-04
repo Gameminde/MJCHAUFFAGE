@@ -34,12 +34,9 @@ export function AuthForm({ mode, locale }: AuthFormProps) {
 
     try {
       if (mode === 'login') {
-        const response = await authService.login({
-          email: formData.email,
-          password: formData.password,
-        })
+        const response = await authService.login(formData.email, formData.password)
         
-        if (response.success) {
+        if (response) {
           router.push(`/${locale}/dashboard`)
         } else {
           setErrors({ general: t('loginError') })

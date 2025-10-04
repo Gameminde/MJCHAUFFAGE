@@ -56,10 +56,35 @@ export function CheckoutForm() {
     const requiredFields: (keyof ShippingAddress)[] = ['firstName', 'lastName', 'email', 'phone', 'street', 'city', 'region', 'postalCode']
     for (const field of requiredFields) {
       if (!shippingAddress[field].trim()) {
-        setError(locale === 'ar' ? `حقل "${field}" مطلوب.` : `Le champ "${field}" est requis.`);
+        const fieldNames = {
+          firstName: locale === 'ar' ? 'الاسم الأول' : 'Prénom',
+          lastName: locale === 'ar' ? 'الاسم الأخير' : 'Nom',
+          email: locale === 'ar' ? 'البريد الإلكتروني' : 'Email',
+          phone: locale === 'ar' ? 'رقم الهاتف' : 'Téléphone',
+          street: locale === 'ar' ? 'عنوان الشارع' : 'Adresse',
+          city: locale === 'ar' ? 'المدينة' : 'Ville',
+          region: locale === 'ar' ? 'الولاية' : 'Wilaya',
+          postalCode: locale === 'ar' ? 'الرمز البريدي' : 'Code postal'
+        }
+        setError(locale === 'ar' ? `حقل "${fieldNames[field]}" مطلوب.` : `Le champ "${fieldNames[field]}" est requis.`);
         return false
       }
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(shippingAddress.email)) {
+      setError(locale === 'ar' ? 'يرجى إدخال بريد إلكتروني صحيح.' : 'Veuillez entrer une adresse email valide.');
+      return false
+    }
+
+    // Validate phone format (Algerian numbers)
+    const phoneRegex = /^(\+213|0)[567]\d{8}$/
+    if (!phoneRegex.test(shippingAddress.phone.replace(/\s/g, ''))) {
+      setError(locale === 'ar' ? 'يرجى إدخال رقم هاتف جزائري صحيح.' : 'Veuillez entrer un numéro de téléphone algérien valide.');
+      return false
+    }
+
     if (!agreeToTerms) {
       setError(locale === 'ar' ? 'يجب الموافقة على الشروط والأحكام.' : 'Vous devez accepter les termes et conditions.');
       return false
@@ -83,13 +108,25 @@ export function CheckoutForm() {
           items: items.map(item => ({
             productId: item.productId,
             quantity: item.quantity,
-            price: item.price,
+            unitPrice: item.price,
           })),
-          shippingAddress,
-          paymentMethod: 'cash_on_delivery',
+          shippingAddress: {
+            street: shippingAddress.street,
+            city: shippingAddress.city,
+            postalCode: shippingAddress.postalCode,
+            region: shippingAddress.region,
+            country: 'Algeria'
+          },
+          customerInfo: {
+            firstName: shippingAddress.firstName,
+            lastName: shippingAddress.lastName,
+            email: shippingAddress.email,
+            phone: shippingAddress.phone
+          },
+          paymentMethod: 'CASH_ON_DELIVERY',
           subtotal: total,
-          shippingCost,
-          total: finalTotal,
+          shippingAmount: shippingCost,
+          totalAmount: finalTotal,
           currency: 'DZD'
         })
       })
@@ -101,7 +138,7 @@ export function CheckoutForm() {
 
       const result = await response.json()
       clearCart()
-      router.push(`/${locale}/checkout/success?orderId=${result.orderId}`)
+      router.push(`/${locale}/checkout/success?orderId=${result.data.order.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Échec de la commande. Veuillez réessayer.')
     } finally {

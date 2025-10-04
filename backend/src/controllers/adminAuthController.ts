@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from '@/services/authService';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 // UserRole is stored as string in database
 // Valid values: 'ADMIN', 'CUSTOMER', 'TECHNICIAN'
 const UserRole = {

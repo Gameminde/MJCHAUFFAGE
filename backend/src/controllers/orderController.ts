@@ -1,416 +1,350 @@
-import { Request, Response } from 'express'
-import { prisma } from '../config/database'
-import { authenticateToken as authenticateToken } from '../middleware/auth'
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import { OrderService, OrderCreateData } from '@/services/orderService';
 
-interface OrderItem {
-  productId: string
-  quantity: number
-  price: number
-}
 
-interface OrderData {
-  items: OrderItem[]
-  shippingAddress: {
-    firstName: string
-    lastName: string
-    company?: string
-    street: string
-    city: string
-    postalCode: string
-    region: string
-    phone: string
-  }
-  orderNotes?: string
-  subtotal: number
-  shippingCost: number
-  total: number
-  currency: string
-}
 
 export class OrderController {
-  // Create a new order
-  static async createOrder(req: Request, res: Response): Promise<void> {
+  /**
+   * Create a guest order (no authentication required)
+   */
+  static async createGuestOrder(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.id
-      if (!userId) {
-        res.status(401).json({ message: 'Authentication required' });
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
         return;
       }
 
-      const orderData: OrderData = req.body
+      const guestOrderData = {
+        items: req.body.items,
+        shippingAddress: req.body.shippingAddress,
+        customerInfo: req.body.customerInfo,
+        paymentMethod: req.body.paymentMethod || 'CASH_ON_DELIVERY',
+        subtotal: req.body.subtotal,
+        shippingAmount: req.body.shippingAmount || 0,
+        totalAmount: req.body.totalAmount,
+        currency: req.body.currency || 'DZD'
+      };
 
-      // Validate required fields
-      if (!orderData.items || orderData.items.length === 0) {
-        res.status(400).json({ message: 'Order must contain at least one item' });
-        return;
-      }
-
-      if (!orderData.shippingAddress) {
-        res.status(400).json({ message: 'Shipping address is required' });
-        return;
-      }
-
-      // For cash on delivery orders
-      // const paymentMethod = 'cash_on_delivery';
-
-      // Validate stock availability
-      for (const item of orderData.items) {
-        const product = await prisma.product.findUnique({
-          where: { id: item.productId }
-        })
-
-        if (!product) {
-          res.status(400).json({ 
-            message: `Product ${item.productId} not found` 
-          });
-          return;
-        }
-
-        if (product.stockQuantity < item.quantity) {
-          res.status(400).json({ 
-            message: `Insufficient stock for product ${product.name}. Available: ${product.stockQuantity}, Requested: ${item.quantity}` 
-          });
-          return;
-        }
-      }
-
-      // Generate order number
-      const orderNumber = `MJ${Date.now().toString().slice(-8)}`
-
-      // Create order with transaction
-      const order = await prisma.$transaction(async (tx: any) => {
-        // Create the order
-        const newOrder = await tx.order.create({
-          data: {
-            orderNumber,
-            customerId: userId,
-            status: 'PENDING',
-            paymentStatus: 'PENDING',
-            
-            // Totals
-            subtotal: orderData.subtotal,
-            shippingCost: orderData.shippingCost,
-            tax: 0, // No tax for Algeria initially
-            discount: 0,
-            total: orderData.total,
-            currency: orderData.currency,
-            
-            // Notes
-            notes: orderData.orderNotes,
-            
-            // Shipping address
-            shippingAddress: {
-              create: {
-                customerId: userId,
-                type: 'SHIPPING',
-                street: orderData.shippingAddress.street,
-                city: orderData.shippingAddress.city,
-                postalCode: orderData.shippingAddress.postalCode,
-                region: orderData.shippingAddress.region,
-                country: 'Algeria'
-              }
-            }
-          }
-        })
-
-        // Create order items and update stock
-        for (const item of orderData.items) {
-          // Create order item
-          await tx.orderItem.create({
-            data: {
-              orderId: newOrder.id,
-              productId: item.productId,
-              quantity: item.quantity,
-              unitPrice: item.price,
-              totalPrice: item.price * item.quantity
-            }
-          })
-
-          // Update product stock
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              stockQuantity: {
-                decrement: item.quantity
-              }
-            }
-          })
-
-          // Create inventory log
-          await tx.inventoryLog.create({
-            data: {
-              productId: item.productId,
-              type: 'STOCK_OUT',
-              quantity: -item.quantity,
-              reason: `Order ${orderNumber}`,
-              performedBy: userId
-            }
-          })
-        }
-
-        return newOrder
-      })
-
-      // Send order confirmation email (in production)
-      // await sendOrderConfirmationEmail(order.id)
-
-      // For cash on delivery, no payment info needed
-      const paymentInfo = null
+      const order = await OrderService.createGuestOrder(guestOrderData);
 
       res.status(201).json({
         success: true,
         message: 'Order created successfully',
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        paymentInfo,
-        estimatedDelivery: OrderController.calculateDeliveryDate(orderData.shippingAddress.region)
-      })
-
+        data: {
+          order: {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            status: order.status,
+            totalAmount: order.totalAmount,
+            estimatedDelivery: OrderService.calculateEstimatedDelivery(
+              req.body.shippingAddress?.region
+            ),
+          },
+        },
+      });
     } catch (error) {
-      console.error('Error creating order:', error)
+      console.error('Create guest order error:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('not found') || error.message.includes('Insufficient stock')) {
+          res.status(400).json({
+            success: false,
+            message: error.message,
+          });
+          return;
+        }
+      }
       res.status(500).json({
         success: false,
-        message: 'Failed to create order'
-      })
+        message: 'Internal server error',
+      });
     }
   }
 
-  // Get orders for current user
+  /**
+   * Create a new order
+   */
+  static async createOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required',
+        });
+        return;
+      }
+
+      // Get customer ID from user ID
+      const customer = await OrderService.getCustomerByUserId(userId);
+      if (!customer) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer profile not found',
+        });
+        return;
+      }
+
+      const orderData: OrderCreateData = {
+        customerId: customer.id,
+        items: req.body.items,
+        shippingAddress: req.body.shippingAddress,
+        subtotal: req.body.subtotal,
+        taxAmount: req.body.taxAmount,
+        shippingAmount: req.body.shippingAmount,
+        discountAmount: req.body.discountAmount,
+        totalAmount: req.body.totalAmount,
+        notes: req.body.notes,
+        paymentMethod: req.body.paymentMethod,
+      };
+
+      const order = await OrderService.createOrder(orderData);
+
+      res.status(201).json({
+        success: true,
+        message: 'Order created successfully',
+        data: {
+          order: {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            status: order.status,
+            totalAmount: order.totalAmount,
+            estimatedDelivery: OrderService.calculateEstimatedDelivery(
+              req.body.shippingAddress?.region
+            ),
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Create order error:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('not found') || error.message.includes('Insufficient stock')) {
+          res.status(400).json({
+            success: false,
+            message: error.message,
+          });
+          return;
+        }
+      }
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Get orders for current user
+   */
   static async getUserOrders(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.id
+      const userId = (req as any).user?.id;
       if (!userId) {
-        res.status(401).json({ message: 'Authentication required' })
-        return
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required',
+        });
+        return;
       }
 
-      const { page = 1, limit = 10, status } = req.query
-
-      const where: any = { customerId: userId }
-      if (status) {
-        where.status = status
+      // Get customer ID from user ID
+      const customer = await OrderService.getCustomerByUserId(userId);
+      if (!customer) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer profile not found',
+        });
+        return;
       }
 
-      const orders = await prisma.order.findMany({
-        where,
-        include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  sku: true,
-                  images: {
-                    take: 1,
-                    select: { url: true }
-                  }
-                }
-              }
-            }
-          },
-          shippingAddress: true
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit)
-      })
+      const {
+        page = 1,
+        limit = 10,
+        status,
+        sortBy = 'orderDate',
+        sortOrder = 'desc',
+      } = req.query;
 
-      const totalOrders = await prisma.order.count({ where })
+      const filters = {
+        customerId: customer.id,
+        status: status as any,
+      };
+
+      const pagination = {
+        page: parseInt(page as string),
+        limit: Math.min(parseInt(limit as string), 50),
+      };
+
+      const sort = {
+        field: sortBy as string,
+        order: sortOrder as 'asc' | 'desc',
+      };
+
+      const result = await OrderService.getOrders(filters, pagination, sort);
 
       res.json({
         success: true,
-        orders,
-        pagination: {
-          page: Number(page),
-          limit: Number(limit),
-          total: totalOrders,
-          pages: Math.ceil(totalOrders / Number(limit))
-        }
-      })
-
+        data: result,
+      });
     } catch (error) {
-      console.error('Error fetching orders:', error)
+      console.error('Get user orders error:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch orders'
-      })
+        message: 'Internal server error',
+      });
     }
   }
 
-  // Get specific order details
+  /**
+   * Get specific order details
+   */
   static async getOrder(req: Request, res: Response): Promise<void> {
     try {
-      const { orderId } = req.params
-      const userId = req.user?.id
-      
+      const { id } = req.params;
+      const userId = (req as any).user?.id;
+
       if (!userId) {
         res.status(401).json({
           success: false,
-          message: 'Authentication required'
-        })
-        return
+          message: 'Authentication required',
+        });
+        return;
       }
 
-      const order = await prisma.order.findFirst({
-        where: {
-          id: orderId,
-          customerId: userId // Ensure user can only access their own orders
-        },
-        include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  sku: true,
-                  images: {
-                    take: 1,
-                    select: { url: true }
-                  }
-                }
-              }
-            }
-          },
-          shippingAddress: true,
-          customer: {
-            select: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  phone: true
-                }
-              }
-            }
-          }
-        }
-      })
+      // Get customer ID from user ID
+      const customer = await OrderService.getCustomerByUserId(userId);
+      if (!customer) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer profile not found',
+        });
+        return;
+      }
+
+      const order = await OrderService.getOrderById(id, customer.id);
 
       if (!order) {
         res.status(404).json({
           success: false,
-          message: 'Order not found'
-        })
-        return
+          message: 'Order not found',
+        });
+        return;
       }
 
       res.json({
         success: true,
-        order
-      })
-
+        data: { order },
+      });
     } catch (error) {
-      console.error('Error fetching order:', error)
+      console.error('Get order error:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch order'
-      })
+        message: 'Internal server error',
+      });
     }
   }
 
-  // Cancel order (only if pending)
+  /**
+   * Cancel order (only if pending or confirmed)
+   */
   static async cancelOrder(req: Request, res: Response): Promise<void> {
     try {
-      const { orderId } = req.params
-      const userId = req.user?.id
-      const { reason } = req.body
-      
+      const { id } = req.params;
+      const userId = (req as any).user?.id;
+      const { reason } = req.body;
+
       if (!userId) {
         res.status(401).json({
           success: false,
-          message: 'Authentication required'
-        })
-        return
+          message: 'Authentication required',
+        });
+        return;
       }
 
-      const order = await prisma.order.findFirst({
-        where: {
-          id: orderId,
-          customerId: userId,
-          status: 'PENDING' // Only allow cancellation of pending orders
-        },
-        include: {
-          items: true
-        }
-      })
-
-      if (!order) {
+      // Get customer ID from user ID
+      const customer = await OrderService.getCustomerByUserId(userId);
+      if (!customer) {
         res.status(404).json({
           success: false,
-          message: 'Order not found or cannot be cancelled'
-        })
-        return
+          message: 'Customer profile not found',
+        });
+        return;
       }
 
-      // Cancel order and restore stock
-      await prisma.$transaction(async (tx: any) => {
-        // Update order status
-        await tx.order.update({
-          where: { id: orderId },
-          data: {
-            status: 'CANCELLED',
-            cancelledAt: new Date(),
-            notes: reason ? `Cancelled: ${reason}` : 'Cancelled by customer'
-          }
-        })
-
-        // Restore product stock
-        for (const item of order.items) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              stockQuantity: {
-                increment: item.quantity
-              }
-            }
-          })
-
-          // Create inventory log
-          await tx.inventoryLog.create({
-            data: {
-              productId: item.productId,
-              type: 'STOCK_IN',
-              quantity: item.quantity,
-              reason: `Order ${order.orderNumber} cancelled`,
-              performedBy: userId
-            }
-          })
-        }
-      })
+      await OrderService.cancelOrder(id, reason, customer.id);
 
       res.json({
         success: true,
-        message: 'Order cancelled successfully'
-      })
-
+        message: 'Order cancelled successfully',
+      });
     } catch (error) {
-      console.error('Error cancelling order:', error)
+      console.error('Cancel order error:', error);
+      if (error instanceof Error && error.message.includes('not found')) {
+        res.status(404).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
       res.status(500).json({
         success: false,
-        message: 'Failed to cancel order'
-      })
+        message: 'Internal server error',
+      });
     }
   }
 
-  // Calculate estimated delivery date based on region
-  private static calculateDeliveryDate(region: string): string {
-    const majorCities = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Blida']
-    const businessDays = majorCities.includes(region) ? 2 : 5
+  /**
+   * Get order statistics for current user
+   */
+  static async getUserOrderStatistics(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required',
+        });
+        return;
+      }
 
-    const deliveryDate = new Date()
-    deliveryDate.setDate(deliveryDate.getDate() + businessDays)
+      // Get customer ID from user ID
+      const customer = await OrderService.getCustomerByUserId(userId);
+      if (!customer) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer profile not found',
+        });
+        return;
+      }
 
-    return deliveryDate.toISOString().split('T')[0] // Return YYYY-MM-DD format
+      const statistics = await OrderService.getOrderStatistics(customer.id);
+
+      res.json({
+        success: true,
+        data: { statistics },
+      });
+    } catch (error) {
+      console.error('Get user order statistics error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
   }
 }
 
-// Apply auth middleware to all routes
-export const orderRoutes = [
-  { method: 'post', path: '/orders', handler: [authenticateToken, OrderController.createOrder] },
-  { method: 'get', path: '/orders', handler: [authenticateToken, OrderController.getUserOrders] },
-  { method: 'get', path: '/orders/:orderId', handler: [authenticateToken, OrderController.getOrder] },
-  { method: 'patch', path: '/orders/:orderId/cancel', handler: [authenticateToken, OrderController.cancelOrder] }
-]

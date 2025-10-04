@@ -24,28 +24,37 @@ function SuccessContent() {
       <div className="max-w-2xl w-full bg-white p-8 rounded-lg shadow-lg text-center">
         <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-6" />
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Merci pour votre commande !
+          شكراً لطلبكم! / Merci pour votre commande !
         </h1>
         <p className="text-gray-600 mb-6">
-          Votre commande a été passée avec succès. Vous recevrez bientôt un email de confirmation.
+          تم استلام طلبكم بنجاح. سيتم التواصل معكم قريباً لتأكيد التوصيل.
+          <br />
+          Votre commande a été reçue avec succès. Nous vous contacterons bientôt pour confirmer la livraison.
         </p>
         <div className="bg-gray-100 rounded-md p-4 mb-8">
           <p className="text-lg font-medium text-gray-800">
-            Numéro de commande : <span className="text-primary-600">{orderId}</span>
+            رقم الطلب / Numéro de commande : <span className="text-primary-600">{orderId}</span>
           </p>
         </div>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+          <h3 className="font-semibold text-blue-900 mb-2">
+            الخطوات التالية / Prochaines étapes
+          </h3>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• سيتصل بكم فريق التوصيل خلال 24 ساعة</li>
+            <li>• Notre équipe vous contactera dans les 24 heures</li>
+            <li>• الدفع نقداً عند الاستلام</li>
+            <li>• Paiement en espèces à la livraison</li>
+          </ul>
+        </div>
+
         <div className="space-x-4">
           <Link
             href="/products"
             className="inline-block bg-primary-600 text-white px-6 py-3 rounded-md hover:bg-primary-700 transition-colors"
           >
-            Continuer les achats
-          </Link>
-          <Link
-            href="/dashboard/orders"
-            className="inline-block bg-gray-200 text-gray-800 px-6 py-3 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            Voir mes commandes
+            متابعة التسوق / Continuer les achats
           </Link>
         </div>
       </div>

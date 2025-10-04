@@ -1,4 +1,4 @@
-import { useTranslations } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
 import { Users, Target, Award, Clock, MapPin, Phone, Mail } from 'lucide-react';
 
 type Props = {
@@ -7,6 +7,7 @@ type Props = {
 
 export default function AboutPage({ params }: Props) {
   const { locale } = params;
+  setRequestLocale(locale);
   const isArabic = locale === 'ar';
 
   const stats = [

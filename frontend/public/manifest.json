@@ -1,10 +1,93 @@
 {
-  "name": "MJ CHAUFFAGE",
+  "name": "MJ CHAUFFAGE - Professional Heating Solutions",
   "short_name": "MJ CHAUFFAGE",
-  "description": "Professional heating solutions for Algeria",
-  "start_url": "/",
+  "description": "Professional heating equipment, installation and maintenance services for Algeria",
+  "start_url": "/fr",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
-  "theme_color": "#1f2937",
-  "icons": []
+  "theme_color": "#0ea5e9",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["business", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop view of MJ CHAUFFAGE"
+    },
+    {
+      "src": "/screenshots/mobile.png", 
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of MJ CHAUFFAGE"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Products",
+      "short_name": "Products",
+      "description": "Browse heating products",
+      "url": "/fr/products",
+      "icons": [
+        {
+          "src": "/shortcut-products.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "short_name": "Services", 
+      "description": "View our services",
+      "url": "/fr/services",
+      "icons": [
+        {
+          "src": "/shortcut-services.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "description": "Contact us",
+      "url": "/fr/contact",
+      "icons": [
+        {
+          "src": "/shortcut-contact.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
 }

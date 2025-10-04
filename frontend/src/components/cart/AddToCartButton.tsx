@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCart, CartItem } from '@/contexts/CartContext'
 import { useLanguage } from '@/hooks/useLanguage'
+import { useAnalyticsContext } from '../analytics/AnalyticsProvider'
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react'
 
 interface AddToCartButtonProps {
@@ -14,6 +15,7 @@ interface AddToCartButtonProps {
     price: number
     sku: string
     stockQuantity: number
+    categoryId?: string
     images?: { url: string }[]
   }
   variant?: 'primary' | 'secondary' | 'icon'
@@ -35,6 +37,7 @@ export function AddToCartButton({
   const [error, setError] = useState('')
   const { addItem, items, formatPrice, validateStock } = useCart()
   const { t, locale } = useLanguage()
+  const { trackAddToCart } = useAnalyticsContext()
 
   // Check if item is already in cart
   const cartItem = items.find(item => item.productId === product.id)
@@ -44,31 +47,52 @@ export function AddToCartButton({
   const handleAddToCart = async () => {
     if (maxQuantity <= 0) return
 
-    // Validate stock before adding
-    const isStockValid = await validateStock(product.id, quantity)
-    if (!isStockValid) {
-      setError(t('product.stockError'))
-      setTimeout(() => setError(''), 3000)
-      return
-    }
-
     setIsAdding(true)
     setError('')
 
     try {
-      const cartItem: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number } = {
+      // Validate stock before adding by fetching latest product data
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${product.id}`)
+      let currentStock = product.stockQuantity
+      
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data.product) {
+          currentStock = result.data.product.stockQuantity
+        }
+      }
+
+      // Check if we have enough stock
+      const currentCartQuantity = cartItem?.quantity || 0
+      const totalRequestedQuantity = currentCartQuantity + quantity
+      
+      if (totalRequestedQuantity > currentStock) {
+        setError(`Stock insuffisant. Disponible: ${currentStock - currentCartQuantity}`)
+        setTimeout(() => setError(''), 3000)
+        return
+      }
+
+      const cartItemData: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number } = {
         productId: product.id,
         name: product.name,
         nameAr: product.nameAr,
         nameFr: product.nameFr,
         price: product.price,
         sku: product.sku,
-        maxStock: product.stockQuantity,
+        maxStock: currentStock,
         image: product.images?.[0]?.url,
         quantity: quantity
       }
 
-      addItem(cartItem)
+      addItem(cartItemData)
+
+      // Track analytics event
+      trackAddToCart(
+        product.id,
+        quantity,
+        product.price * quantity,
+        product.categoryId
+      )
 
       // Show success state
       setJustAdded(true)
@@ -77,7 +101,7 @@ export function AddToCartButton({
       // Reset quantity selector
       setQuantity(1)
     } catch (error) {
-      setError(t('cart.error'))
+      setError('Erreur lors de l\'ajout au panier')
       console.error('Error adding to cart:', error)
     } finally {
       setIsAdding(false)
