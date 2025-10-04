@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { usePerformance } from '@/hooks/usePerformance';
 import { performanceService } from '@/services/performanceService';
 import cacheService from '@/services/cacheService';
@@ -20,22 +20,28 @@ export function PerformanceOptimizer({
 }: PerformanceOptimizerProps) {
   const [isOptimized, setIsOptimized] = useState(false);
   const { measureWebVitals } = usePerformance();
+  
+  // Store cleanup functions in refs to avoid memory leaks
+  const cleanupFunctionsRef = useRef<(() => void)[]>([]);
 
   useEffect(() => {
     const optimizePerformance = async () => {
       // 1. Preload critical resources
       if (enablePreloading) {
-        preloadCriticalResources();
+        const cleanup = preloadCriticalResources();
+        if (cleanup) cleanupFunctionsRef.current.push(cleanup);
       }
 
       // 2. Initialize caching strategies
       if (enableCaching) {
-        initializeCaching();
+        const cleanup = initializeCaching();
+        if (cleanup) cleanupFunctionsRef.current.push(cleanup);
       }
 
       // 3. Set up lazy loading observers
       if (enableLazyLoading) {
-        setupLazyLoading();
+        const cleanup = setupLazyLoading();
+        if (cleanup) cleanupFunctionsRef.current.push(cleanup);
       }
 
       // 4. Optimize images
@@ -44,13 +50,26 @@ export function PerformanceOptimizer({
       // 5. Set up performance monitoring
       measureWebVitals();
 
-      // 6. Clean up unused resources
-      cleanupResources();
+      // 6. Check resource compression in development
+      if (process.env.NODE_ENV === 'development') {
+        checkCompression();
+      }
+
+      // 7. Register service worker for production
+      if (process.env.NODE_ENV === 'production') {
+        registerServiceWorker();
+      }
 
       setIsOptimized(true);
     };
 
     optimizePerformance();
+
+    // Cleanup on unmount
+    return () => {
+      cleanupFunctionsRef.current.forEach(cleanup => cleanup());
+      cleanupFunctionsRef.current = [];
+    };
   }, [enablePreloading, enableCaching, enableLazyLoading, measureWebVitals]);
 
   return (
@@ -62,8 +81,10 @@ export function PerformanceOptimizer({
   );
 }
 
-// Preload critical resources with error handling
-function preloadCriticalResources() {
+// Preload critical resources with enhanced security and cleanup
+function preloadCriticalResources(): () => void {
+  const preloadLinks: HTMLLinkElement[] = [];
+  
   // Preload critical fonts with security validation
   const criticalFonts = [
     '/fonts/inter-var.woff2',
@@ -84,6 +105,7 @@ function preloadCriticalResources() {
       link.as = 'font';
       link.type = 'font/woff2';
       link.crossOrigin = 'anonymous';
+      link.setAttribute('fetchpriority', 'high'); // Priority hint for critical fonts
       
       // Add error handling for font loading
       link.addEventListener('error', () => {
@@ -92,6 +114,7 @@ function preloadCriticalResources() {
       });
       
       document.head.appendChild(link);
+      preloadLinks.push(link);
     } catch (error) {
       console.error(`Error preloading font ${font}:`, error);
     }
@@ -115,6 +138,7 @@ function preloadCriticalResources() {
       link.rel = 'preload';
       link.href = image;
       link.as = 'image';
+      link.setAttribute('fetchpriority', 'high'); // Priority hint for critical images
       
       // Add error handling for image loading
       link.addEventListener('error', () => {
@@ -123,39 +147,71 @@ function preloadCriticalResources() {
       });
       
       document.head.appendChild(link);
+      preloadLinks.push(link);
     } catch (error) {
       console.error(`Error preloading image ${image}:`, error);
     }
   });
 
-  // DNS prefetch for external domains with security validation
+  // Enhanced DNS prefetch with protocol validation and preconnect
   const externalDomains = [
     'https://fonts.googleapis.com',
     'https://www.google-analytics.com',
     'https://js.stripe.com',
   ];
 
+  const ALLOWED_DOMAINS = new Set([
+    'fonts.googleapis.com',
+    'www.google-analytics.com',
+    'js.stripe.com',
+  ]);
+
   externalDomains.forEach(domain => {
     try {
-      // Validate domain to prevent DNS prefetch attacks
       const url = new URL(domain);
-      if (!['fonts.googleapis.com', 'www.google-analytics.com', 'js.stripe.com'].includes(url.hostname)) {
+      
+      // Validate protocol
+      if (url.protocol !== 'https:') {
+        console.warn(`Insecure protocol for DNS prefetch: ${domain}`);
+        return;
+      }
+      
+      // Validate hostname
+      if (!ALLOWED_DOMAINS.has(url.hostname)) {
         console.warn(`Untrusted domain for DNS prefetch: ${domain}`);
         return;
       }
 
-      const link = document.createElement('link');
-      link.rel = 'dns-prefetch';
-      link.href = domain;
-      document.head.appendChild(link);
+      // DNS prefetch
+      const dnsLink = document.createElement('link');
+      dnsLink.rel = 'dns-prefetch';
+      dnsLink.href = domain;
+      document.head.appendChild(dnsLink);
+      preloadLinks.push(dnsLink);
+
+      // Preconnect for faster connection establishment
+      const preconnectLink = document.createElement('link');
+      preconnectLink.rel = 'preconnect';
+      preconnectLink.href = domain;
+      preconnectLink.crossOrigin = 'anonymous';
+      document.head.appendChild(preconnectLink);
+      preloadLinks.push(preconnectLink);
     } catch (error) {
       console.error(`Invalid domain for DNS prefetch: ${domain}`, error);
     }
   });
+
+  // Return cleanup function
+  return () => {
+    preloadLinks.forEach(link => link.remove());
+  };
 }
 
-// Initialize caching strategies with better error handling
-function initializeCaching() {
+// Initialize caching strategies with request deduplication and proper cleanup
+function initializeCaching(): () => void {
+  // Request deduplication map to prevent duplicate simultaneous requests
+  const pendingRequests = new Map<string, Promise<any>>();
+
   // Warm up cache with critical data - improved type safety
   const criticalDataLoaders: Record<string, () => Promise<any>> = {
     'products:featured': () => fetch('/api/products?featured=true').then(r => r.json()),
@@ -163,13 +219,27 @@ function initializeCaching() {
     'settings:site': () => fetch('/api/settings').then(r => r.json()),
   };
 
+  // Deduplicated fetch function
+  function deduplicatedFetch(key: string, fetcher: () => Promise<any>) {
+    if (pendingRequests.has(key)) {
+      return pendingRequests.get(key)!;
+    }
+    
+    const promise = fetcher()
+      .finally(() => pendingRequests.delete(key));
+    
+    pendingRequests.set(key, promise);
+    return promise;
+  }
+
   // Warm up cache with critical data and error handling
   Object.entries(criticalDataLoaders).forEach(([key, loader]) => {
     try {
-      cacheService.cachedFetch(key, loader, 10 * 60 * 1000) // 10 minutes TTL
-        .catch(error => {
-          console.warn(`Failed to cache ${key}:`, error);
-        });
+      deduplicatedFetch(key, () => 
+        cacheService.cachedFetch(key, loader, 10 * 60 * 1000) // 10 minutes TTL
+      ).catch(error => {
+        console.warn(`Failed to cache ${key}:`, error);
+      });
     } catch (error) {
       console.error(`Error initializing cache for ${key}:`, error);
     }
@@ -184,12 +254,20 @@ function initializeCaching() {
     }
   }, 5 * 60 * 1000); // Every 5 minutes
 
-  // Store interval ID for cleanup
-  (window as any).cacheCleanupInterval = cleanupInterval;
+  // Return cleanup function instead of storing on window
+  return () => {
+    clearInterval(cleanupInterval);
+    pendingRequests.clear();
+    try {
+      cacheService.clear();
+    } catch (error) {
+      console.error('Error during final cache cleanup:', error);
+    }
+  };
 }
 
-// Set up lazy loading for images and components
-function setupLazyLoading() {
+// Set up lazy loading for images and components with proper cleanup
+function setupLazyLoading(): () => void {
   // Native lazy loading for images
   const images = document.querySelectorAll('img[data-src]');
   
@@ -206,6 +284,9 @@ function setupLazyLoading() {
     });
 
     images.forEach(img => imageObserver.observe(img));
+    
+    // Return cleanup function
+    return () => imageObserver.disconnect();
   } else {
     // Fallback for browsers without IntersectionObserver
     images.forEach(img => {
@@ -213,15 +294,28 @@ function setupLazyLoading() {
       image.src = image.dataset.src!;
       image.removeAttribute('data-src');
     });
+    
+    return () => {}; // No-op cleanup for fallback
   }
 }
 
-// Optimize images
+// Optimize images with native loading attributes
 function optimizeImages() {
+  // Add native loading and decoding attributes
+  const images = document.querySelectorAll('img');
+  images.forEach(img => {
+    if (!img.hasAttribute('loading')) {
+      img.setAttribute('loading', 'lazy');
+    }
+    if (!img.hasAttribute('decoding')) {
+      img.setAttribute('decoding', 'async');
+    }
+  });
+
   // Convert images to WebP format when supported
   if (supportsWebP()) {
-    const images = document.querySelectorAll('img[src$=".jpg"], img[src$=".png"]');
-    images.forEach(img => {
+    const jpgPngImages = document.querySelectorAll('img[src$=".jpg"], img[src$=".png"]');
+    jpgPngImages.forEach(img => {
       const image = img as HTMLImageElement;
       const webpSrc = image.src.replace(/\.(jpg|png)$/, '.webp');
       
@@ -230,7 +324,26 @@ function optimizeImages() {
       testImg.onload = () => {
         image.src = webpSrc;
       };
+      testImg.onerror = () => {
+        // Keep original format if WebP not available
+        console.debug(`WebP version not available for: ${image.src}`);
+      };
       testImg.src = webpSrc;
+    });
+  }
+}
+
+// Register service worker for advanced caching
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('Service Worker registered:', registration);
+        })
+        .catch(error => {
+          console.log('Service Worker registration failed:', error);
+        });
     });
   }
 }
@@ -243,45 +356,16 @@ function supportsWebP(): boolean {
   return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
 }
 
-// Clean up unused resources with proper memory management
-function cleanupResources() {
-  // Remove unused stylesheets
-  const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
-  stylesheets.forEach(stylesheet => {
-    try {
-      const link = stylesheet as HTMLLinkElement;
-      if (link.sheet && link.sheet.cssRules.length === 0) {
-        link.remove();
+// Resource compression check for development
+function checkCompression() {
+  if (process.env.NODE_ENV === 'development') {
+    performance.getEntriesByType('resource').forEach((entry: any) => {
+      const compressionRatio = entry.encodedBodySize / entry.decodedBodySize;
+      if (compressionRatio > 0.9 && entry.decodedBodySize > 10000) {
+        console.warn(`Resource not compressed: ${entry.name}`);
       }
-    } catch (error) {
-      console.warn('Error removing stylesheet:', error);
-    }
-  });
-
-  // Clean up cache cleanup interval
-  const cleanupInterval = (window as any).cacheCleanupInterval;
-  if (cleanupInterval) {
-    clearInterval(cleanupInterval);
-    delete (window as any).cacheCleanupInterval;
+    });
   }
-
-  // Clean up event listeners on page unload
-  const cleanupHandler = () => {
-    try {
-      // Disconnect performance observers
-      performanceService.disconnect();
-      
-      // Clear cache if needed
-      const cacheStats = cacheService.getStats();
-      if (cacheStats.size > 100) {
-        cacheService.clear();
-      }
-    } catch (error) {
-      console.error('Error during cleanup:', error);
-    }
-  };
-
-  window.addEventListener('beforeunload', cleanupHandler, { once: true });
 }
 
 // Performance monitoring component for development
