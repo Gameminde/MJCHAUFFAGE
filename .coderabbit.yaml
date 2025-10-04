@@ -88,3 +88,4 @@ security:
     - "csrf"
     - "authentication_bypass"
     - "insecure_dependencies"
+
