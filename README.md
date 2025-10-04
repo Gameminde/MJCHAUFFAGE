@@ -309,13 +309,31 @@ npm run test -- --testPathPattern=products
 - Google Analytics 4
 - Performance monitoring
 
+## 🤖 CodeRabbit AI Code Review
+
+Ce projet utilise **CodeRabbit** pour des revues de code automatiques alimentées par l'IA :
+
+- ✅ **Revues automatiques** sur chaque Pull Request
+- ✅ **Suggestions d'amélioration** en temps réel
+- ✅ **Détection de bugs** et problèmes de sécurité
+- ✅ **Optimisations de performance** suggérées
+- ✅ **Conformité aux bonnes pratiques** TypeScript/React
+
+### Configuration CodeRabbit
+Le fichier `.coderabbit.yaml` configure les paramètres de revue pour :
+- Sécurité des API et validation
+- Optimisation des requêtes base de données
+- Performance frontend
+- Support multilingue (FR/AR)
+- Fonctionnalités e-commerce
+
 ## 🤝 Contribution
 
 1. **Fork** le repository
 2. **Créer** une branche feature (`git checkout -b feature/amazing-feature`)
 3. **Commit** les changements (`git commit -m 'Add amazing feature'`)
 4. **Push** vers la branche (`git push origin feature/amazing-feature`)
-5. **Ouvrir** une Pull Request
+5. **Ouvrir** une Pull Request (CodeRabbit analysera automatiquement)
 
 ### Standards de Code
 - **ESLint** + **Prettier** configurés
