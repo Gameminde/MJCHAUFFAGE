@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { OrderService, OrderCreateData } from '@/services/orderService';
+import {
+  transformOrderList,
+  transformOrderToDTO,
+} from '@/utils/dtoTransformers';
 
 
 
@@ -32,19 +36,20 @@ export class OrderController {
       };
 
       const order = await OrderService.createGuestOrder(guestOrderData);
+      const orderDto = transformOrderToDTO(order);
+      const estimatedDelivery =
+        orderDto.estimatedDelivery ??
+        OrderService.calculateEstimatedDelivery(
+          req.body.shippingAddress?.region
+        ).toISOString();
 
       res.status(201).json({
         success: true,
         message: 'Order created successfully',
         data: {
           order: {
-            id: order.id,
-            orderNumber: order.orderNumber,
-            status: order.status,
-            totalAmount: order.totalAmount,
-            estimatedDelivery: OrderService.calculateEstimatedDelivery(
-              req.body.shippingAddress?.region
-            ),
+            ...orderDto,
+            estimatedDelivery,
           },
         },
       });
@@ -114,19 +119,20 @@ export class OrderController {
       };
 
       const order = await OrderService.createOrder(orderData);
+      const orderDto = transformOrderToDTO(order);
+      const estimatedDelivery =
+        orderDto.estimatedDelivery ??
+        OrderService.calculateEstimatedDelivery(
+          req.body.shippingAddress?.region
+        ).toISOString();
 
       res.status(201).json({
         success: true,
         message: 'Order created successfully',
         data: {
           order: {
-            id: order.id,
-            orderNumber: order.orderNumber,
-            status: order.status,
-            totalAmount: order.totalAmount,
-            estimatedDelivery: OrderService.calculateEstimatedDelivery(
-              req.body.shippingAddress?.region
-            ),
+            ...orderDto,
+            estimatedDelivery,
           },
         },
       });
@@ -196,10 +202,14 @@ export class OrderController {
       };
 
       const result = await OrderService.getOrders(filters, pagination, sort);
+      const orders = transformOrderList(result.orders);
 
       res.json({
         success: true,
-        data: result,
+        data: {
+          orders,
+          pagination: result.pagination,
+        },
       });
     } catch (error) {
       console.error('Get user orders error:', error);
@@ -246,9 +256,11 @@ export class OrderController {
         return;
       }
 
+      const orderDto = transformOrderToDTO(order);
+
       res.json({
         success: true,
-        data: { order },
+        data: { order: orderDto },
       });
     } catch (error) {
       console.error('Get order error:', error);

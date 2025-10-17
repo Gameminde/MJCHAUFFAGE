@@ -88,14 +88,8 @@ export class AnalyticsTrackingService {
         }
       });
 
-      // Update session page views count
-      await prisma.analyticsSession.update({
-        where: { sessionId: data.sessionId },
-        data: {
-          pageViews: { increment: 1 },
-          lastActivity: new Date()
-        }
-      });
+      // Note: SQLite schema doesn't have per-session pageViews/lastActivity fields.
+      // Page view totals are derived from PageAnalytics records.
 
       return pageAnalytics;
 
@@ -143,7 +137,7 @@ export class AnalyticsTrackingService {
       });
 
       // Update session activity
-      await this.updateSessionActivity(data.sessionId);
+      await this.updateSessionActivity();
 
       return ecommerceEvent;
 
@@ -182,8 +176,14 @@ export class AnalyticsTrackingService {
       const session = await prisma.analyticsSession.upsert({
         where: { sessionId: data.sessionId },
         update: {
-          lastActivity: new Date(),
-          userId: data.userId || null
+          userId: data.userId || null,
+          ipAddress: data.ipAddress || metadata.clientIP || null,
+          userAgent: data.userAgent || metadata.userAgent || null,
+          deviceType: data.deviceType || null,
+          browser: data.browser || null,
+          os: data.os || null,
+          country: data.country || null,
+          city: data.city || null
         },
         create: {
           sessionId: data.sessionId,
@@ -196,9 +196,7 @@ export class AnalyticsTrackingService {
           country: data.country || null,
           city: data.city || null,
           startedAt: data.startedAt || new Date(),
-          lastActivity: new Date(),
-          pageViews: 0,
-          isBot: this.detectBot(metadata.userAgent || '')
+          endedAt: null
         }
       });
 
@@ -232,7 +230,7 @@ export class AnalyticsTrackingService {
       }
 
       // Update session activity
-      await this.updateSessionActivity(data.sessionId);
+      await this.updateSessionActivity();
 
       return { success: true };
 
@@ -278,7 +276,16 @@ export class AnalyticsTrackingService {
         summary: {
           totalPageViews: pageViews.length,
           totalEvents: ecommerceEvents.length,
-          sessionDuration: session?.duration || 0,
+          sessionDuration:
+            session && session.startedAt
+              ? Math.max(
+                  0,
+                  Math.floor(
+                    (((session.endedAt || new Date()) as Date).getTime() -
+                      (session.startedAt as Date).getTime()) / 1000
+                  )
+                )
+              : 0,
           bounceRate: this.calculateBounceRate(pageViews)
         }
       };
@@ -305,9 +312,10 @@ export class AnalyticsTrackingService {
         // Active sessions (last 30 minutes)
         prisma.analyticsSession.count({
           where: {
-            lastActivity: {
-              gte: new Date(now.getTime() - 30 * 60 * 1000)
-            }
+            OR: [
+              { endedAt: null },
+              { endedAt: { gte: new Date(now.getTime() - 30 * 60 * 1000) } }
+            ]
           }
         }),
 
@@ -371,8 +379,9 @@ export class AnalyticsTrackingService {
     await prisma.analyticsSession.upsert({
       where: { sessionId },
       update: {
-        lastActivity: new Date(),
-        ...(userId && { userId })
+        ...(userId && { userId }),
+        ipAddress: metadata?.clientIP || null,
+        userAgent: metadata?.userAgent || null
       },
       create: {
         sessionId,
@@ -380,35 +389,17 @@ export class AnalyticsTrackingService {
         ipAddress: metadata?.clientIP || null,
         userAgent: metadata?.userAgent || null,
         startedAt: new Date(),
-        lastActivity: new Date(),
-        pageViews: 0,
-        isBot: this.detectBot(metadata?.userAgent || '')
+        endedAt: null
       }
     });
   }
 
-  private static async updateSessionActivity(sessionId: string) {
-    try {
-      await prisma.analyticsSession.update({
-        where: { sessionId },
-        data: { lastActivity: new Date() }
-      });
-    } catch (error) {
-      // Session might not exist yet, ignore error
-      console.warn('Could not update session activity:', error instanceof Error ? error.message : 'Unknown error');
-    }
+  private static async updateSessionActivity() {
+    // No-op for SQLite schema (no lastActivity field). Page views/events track activity.
+    return;
   }
 
-  private static detectBot(userAgent: string): boolean {
-    const botPatterns = [
-      /bot/i, /crawler/i, /spider/i, /scraper/i,
-      /googlebot/i, /bingbot/i, /slurp/i, /duckduckbot/i,
-      /facebookexternalhit/i, /twitterbot/i, /linkedinbot/i,
-      /whatsapp/i, /telegram/i
-    ];
 
-    return botPatterns.some(pattern => pattern.test(userAgent));
-  }
 
   private static calculateBounceRate(pageViews: Array<{ bounce: boolean }>): number {
     if (pageViews.length === 0) return 0;

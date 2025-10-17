@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  // Redirect to default locale
-  redirect('/fr')
+  // Rediriger vers la locale par défaut
+  redirect("/fr");
 }

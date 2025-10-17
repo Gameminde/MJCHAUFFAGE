@@ -17,45 +17,47 @@ export const metadata: Metadata = {
   description: 'Professional heating solutions for Algeria. Modern, efficient, and reliable heating systems for residential and commercial properties.',
   keywords: 'heating, chauffage, Algeria, professional, residential, commercial',
   authors: [{ name: 'MJ CHAUFFAGE' }],
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#0ea5e9',
-  colorScheme: 'light dark',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'MJ CHAUFFAGE',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+  },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+// Export viewport separately as required by Next.js 14+
+export { viewport } from './viewport'
+
+// Type pour les paramètres
+type Props = {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: Props) {
   return (
-    <html lang="en" className={`h-full ${inter.variable}`}>
-      <head>
-        {/* Preload critical fonts */}
-        <link
-          rel="preload"
-          href="https://rsms.me/inter/font-files/InterVariable.woff2?v=4.0"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        {/* Modern viewport meta */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        {/* Theme color for mobile browsers */}
-        <meta name="theme-color" content="#0ea5e9" />
-        <meta name="msapplication-TileColor" content="#0ea5e9" />
-        {/* Apple touch icon */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      </head>
+    <html lang="fr" suppressHydrationWarning className={`h-full ${inter.variable}`}>
       <body className={`${inter.className} h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900`}>
         <AnalyticsProvider>
           {children}
         </AnalyticsProvider>
-        {/* Service Worker Registration */}
+        {/* Service Worker Registration - Client-side only */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+              if (
+                typeof window !== 'undefined' &&
+                window.location.hostname !== 'localhost' &&
+                'serviceWorker' in navigator
+              ) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js');
                 });

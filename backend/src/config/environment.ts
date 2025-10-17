@@ -64,15 +64,24 @@ interface Config {
   };
 }
 
-const requiredEnvVars = [
-  'DATABASE_URL',
-  'JWT_SECRET',
-  'JWT_REFRESH_SECRET',
-  'SESSION_SECRET',
-  'EMAIL_HOST',
-  'EMAIL_USER',
-  'EMAIL_PASSWORD',
-];
+const requiredEnvVars = 
+  process.env.NODE_ENV === 'production'
+    ? [
+        'DATABASE_URL',
+        'JWT_SECRET',
+        'JWT_REFRESH_SECRET',
+        'SESSION_SECRET',
+        'EMAIL_HOST',
+        'EMAIL_USER',
+        'EMAIL_PASSWORD',
+      ]
+    : [
+        // En développement, ne valider que l'essentiel
+        'DATABASE_URL',
+        'JWT_SECRET',
+        'JWT_REFRESH_SECRET',
+        'SESSION_SECRET',
+      ];
 
 // Validate required environment variables
 const missingEnvVars = requiredEnvVars.filter(

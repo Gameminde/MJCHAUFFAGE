@@ -24,6 +24,7 @@ const productValidation = [
     .withMessage('SKU must be between 2 and 50 characters'),
   
   body('categoryId')
+    .optional()
     .isUUID()
     .withMessage('Category ID must be a valid UUID'),
   

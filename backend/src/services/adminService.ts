@@ -1,6 +1,20 @@
 import { prisma } from '@/lib/database';
 import { Prisma } from '@prisma/client';
 
+const DEFAULT_LOW_STOCK_THRESHOLD = 10;
+
+const decimalToNumber = (value: Prisma.Decimal | number | null | undefined): number => {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  return Number(value);
+};
+
 // Define string constants for enum-like values
 const OrderStatus = {
   PENDING: 'PENDING',
@@ -142,7 +156,7 @@ export class AdminService {
       prisma.product.count({
         where: {
           isActive: true,
-          stockQuantity: { lte: prisma.product.fields.minStock }
+          stockQuantity: { lte: DEFAULT_LOW_STOCK_THRESHOLD }
         }
       }),
 
@@ -193,13 +207,21 @@ export class AdminService {
           select: { id: true, name: true, price: true }
         });
         
-        return items.map(item => ({
-          ...products.find(p => p.id === item.productId),
-          totalSold: item._sum.quantity,
-          orderCount: item._count.productId
-        }));
+        return items.map(item => {
+          const product = products.find(p => p.id === item.productId);
+
+          return {
+            id: item.productId,
+            name: product?.name ?? 'Unknown Product',
+            price: decimalToNumber((product as { price?: Prisma.Decimal | number })?.price),
+            totalSold: item._sum.quantity ?? 0,
+            orderCount: item._count.productId ?? 0
+          };
+        });
       }),
     ]);
+
+    const totalRevenueValue = decimalToNumber(totalRevenue._sum.totalAmount);
 
     // Calculate growth rates (compare with previous period)
     const previousStartDate = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
@@ -224,16 +246,18 @@ export class AdminService {
       }),
     ]);
 
+    const previousRevenueValue = decimalToNumber(previousRevenue._sum.totalAmount);
+
     const orderGrowth = previousOrders > 0 ? ((totalOrders - previousOrders) / previousOrders) * 100 : 0;
-    const revenueGrowth = previousRevenue._sum.totalAmount ? 
-      ((Number(totalRevenue._sum.totalAmount || 0) - Number(previousRevenue._sum.totalAmount)) / 
-       Number(previousRevenue._sum.totalAmount)) * 100 : 0;
+    const revenueGrowth = previousRevenueValue > 0
+      ? ((totalRevenueValue - previousRevenueValue) / previousRevenueValue) * 100
+      : 0;
     const customerGrowth = previousCustomers > 0 ? ((newCustomers - previousCustomers) / previousCustomers) * 100 : 0;
 
     return {
       overview: {
         totalOrders,
-        totalRevenue: Number(totalRevenue._sum.totalAmount || 0),
+        totalRevenue: totalRevenueValue,
         newCustomers,
         pendingOrders,
         orderGrowth: Math.round(orderGrowth * 100) / 100,
@@ -262,13 +286,18 @@ export class AdminService {
         activeCustomers,
         customerRetentionRate: totalCustomers > 0 ? (activeCustomers / totalCustomers) * 100 : 0
       },
-      recentActivity: recentOrders.map(order => ({
-        type: 'order',
-        id: order.id,
-        description: `New order ${order.orderNumber} from ${order.customer.user?.firstName || 'Guest'} ${order.customer.user?.lastName || 'Customer'}`,
-        amount: Number(order.totalAmount),
-        timestamp: order.orderDate
-      })),
+      recentActivity: recentOrders.map(order => {
+        const firstName = order.customer?.user?.firstName ?? 'Guest';
+        const lastName = order.customer?.user?.lastName ?? 'Customer';
+
+        return {
+          type: 'order',
+          id: order.id,
+          description: `New order ${order.orderNumber} from ${firstName} ${lastName}`,
+          amount: decimalToNumber(order.totalAmount),
+          timestamp: order.orderDate
+        };
+      }),
       topProducts
     };
   }
@@ -307,16 +336,19 @@ export class AdminService {
     ]);
 
     const activities = [
-      ...recentOrders.map(order => ({
-        type: 'order',
-        id: order.id,
-        title: `New Order ${order.orderNumber}`,
-        description: `${order.customer.user?.firstName || 'Guest'} ${order.customer.user?.lastName || 'Customer'} placed an order worth €${Number(order.totalAmount).toFixed(2)}`,
-        timestamp: order.orderDate,
-        status: order.status
-      })),
+      ...recentOrders.map(order => {
+        const amount = decimalToNumber(order.totalAmount).toFixed(2);
+        return {
+          type: 'order' as const,
+          id: order.id,
+          title: `New Order ${order.orderNumber}`,
+          description: `${order.customer.user?.firstName || 'Guest'} ${order.customer.user?.lastName || 'Customer'} placed an order worth DZD ${amount}`,
+          timestamp: order.orderDate,
+          status: order.status
+        };
+      }),
       ...recentCustomers.map(customer => ({
-        type: 'customer',
+        type: 'customer' as const,
         id: customer.id,
         title: 'New Customer Registration',
         description: `${customer.user?.firstName || 'Guest'} ${customer.user?.lastName || 'Customer'} (${customer.user?.email || customer.email || 'No email'}) joined as ${customer.customerType} customer`,
@@ -324,7 +356,7 @@ export class AdminService {
         status: 'active'
       })),
       ...recentServices.map(service => ({
-        type: 'service',
+        type: 'service' as const,
         id: service.id,
         title: `Service Request: ${service.serviceType.name}`,
         description: `${service.customer.user?.firstName || 'Guest'} ${service.customer.user?.lastName || 'Customer'} requested ${service.serviceType.name}`,
@@ -491,7 +523,7 @@ export class AdminService {
     return {
       customers: customers.map(customer => ({
         ...customer,
-        totalSpent: customer.orders.reduce((sum, order) => sum + Number(order.totalAmount), 0),
+        totalSpent: customer.orders.reduce((sum, order) => sum + decimalToNumber(order.totalAmount), 0),
         lastOrderDate: customer.orders.length > 0 ? customer.orders[0].orderDate : null
       })),
       pagination: {
@@ -712,7 +744,7 @@ export class AdminService {
         data: {
           userId: user.id,
           employeeId: data.employeeId,
-          specialties: data.specialties || []
+          specialties: JSON.stringify(data.specialties || [])
         },
         include: {
           user: {
@@ -834,7 +866,7 @@ export class AdminService {
     // Transform the data with null safety
     const transformedSalesData = salesData.map(item => ({
       date: item.orderDate,
-      revenue: Number(item._sum?.totalAmount || 0),  // Added optional chaining
+      revenue: decimalToNumber(item._sum?.totalAmount),  // Added optional chaining
       orders: (item._count as { id: number })?.id || 0,  // Fixed typing issue
     }));
 
@@ -844,7 +876,7 @@ export class AdminService {
     ));
 
     const totalRevenue = salesData.reduce((sum, item) => 
-      sum + Number(item._sum?.totalAmount || 0), 0
+      sum + decimalToNumber(item._sum?.totalAmount), 0
     );
 
     const averageOrderValue = totalRevenue / totalOrders;

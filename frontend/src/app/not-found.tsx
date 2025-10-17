@@ -1,12 +1,13 @@
-'use client'
-
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Home, ArrowLeft, Search } from 'lucide-react'
+import { Metadata } from 'next'
+import { Home, ArrowLeft } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: '404 - Page Not Found | MJ CHAUFFAGE',
+  description: 'The page you are looking for could not be found.',
+}
 
 export default function NotFound() {
-  const router = useRouter()
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-4">
       <div className="max-w-md w-full text-center">
@@ -27,20 +28,12 @@ export default function NotFound() {
         {/* Action Buttons */}
         <div className="space-y-4">
           <Link
-            href="/en"
+            href="/"
             className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Home className="h-5 w-5 mr-2" />
             Go Home
           </Link>
-          
-          <button
-            onClick={() => router.back()}
-            className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Go Back
-          </button>
         </div>
 
         {/* Help Text */}

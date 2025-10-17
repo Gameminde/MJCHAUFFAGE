@@ -32,8 +32,7 @@ async function main() {
   });
 
   console.log('✅ Admin user created successfully!');
-  console.log('');
-  console.log('📧 Email: admin@mjchauffage.com');
+  console.log('📧 Email:', adminUser.email);
   console.log('🔑 Password: Admin@123');
   console.log('');
   console.log('⚠️  IMPORTANT: Please change this password after first login!');

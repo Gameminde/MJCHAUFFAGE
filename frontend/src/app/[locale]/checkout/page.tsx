@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckoutForm } from '@/components/checkout/CheckoutForm'
-import { useCart } from '@/contexts/CartContext'
+import { useCart } from '@/hooks/useCart'
 import { Metadata } from 'next'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'

@@ -9,6 +9,29 @@ export class TestHelpers {
   constructor(private page: Page) {}
 
   /**
+   * Navigate to a URL and wait for a stable ready state.
+   * Avoids flaky networkidle by waiting for DOMContentLoaded and key selectors.
+   */
+  static async gotoAndReady(page: Page, url: string, options?: { readySelectors?: string[]; waitUntil?: 'domcontentloaded' | 'load'; timeout?: number }) {
+    const waitUntil = options?.waitUntil ?? 'domcontentloaded';
+    const timeout = options?.timeout ?? 10000;
+    const readySelectors = options?.readySelectors ?? ['main', 'header', 'body'];
+
+    await page.goto(url, { waitUntil });
+    // Wait for at least one of the ready selectors to appear
+    for (const selector of readySelectors) {
+      try {
+        await page.waitForSelector(selector, { timeout });
+        break;
+      } catch {
+        // try next selector
+      }
+    }
+    // Give the page a brief settle time to avoid layout shift issues
+    await page.waitForTimeout(150);
+  }
+
+  /**
    * Login as a regular user
    */
   async loginAsUser(email: string = testUser.email, password: string = testUser.password) {
@@ -25,14 +48,18 @@ export class TestHelpers {
    * Login as admin user
    */
   async loginAsAdmin(email: string = testAdmin.email, password: string = testAdmin.password) {
-    await this.page.goto('/admin/login');
-    await this.page.fill('[data-testid="admin-email"]', email);
-    await this.page.fill('[data-testid="admin-password"]', password);
-    await this.page.click('[data-testid="admin-login-submit"]');
-    
-    // Verify admin dashboard access
+    await TestHelpers.gotoAndReady(this.page, '/admin/login');
+
+    // Fill using accessible labels from the admin login page
+    await this.page.getByLabel('Email').fill(email);
+    await this.page.getByLabel('Mot de passe').fill(password);
+
+    // Click the submit button by its accessible name
+    await this.page.getByRole('button', { name: /Se connecter|Connexion\.+/ }).click();
+
+    // Verify admin dashboard access via URL and heading
     await expect(this.page).toHaveURL(/.*\/admin/);
-    await expect(this.page.locator('[data-testid="admin-dashboard"]')).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: 'MJ Admin Dashboard' })).toBeVisible();
   }
 
   /**
@@ -60,8 +87,8 @@ export class TestHelpers {
    * Complete checkout process
    */
   async completeCheckout(paymentMethod: 'stripe' | 'cod' | 'bank-transfer' = 'cod') {
-    await this.page.click('[data-testid="cart-button"]');
-    await this.page.click('[data-testid="checkout-button"]');
+    await this.page.getByRole('button', { name: 'Ouvrir le panier' }).click();
+    await this.page.getByRole('link', { name: 'Commander' }).click();
     
     // Fill customer information
     await this.page.fill('[data-testid="email-input"]', testUser.email);

@@ -112,7 +112,7 @@ async function main() {
           fuel: 'Natural Gas',
           warranty: '5 years'
         }),
-        features: ['Haute efficacité', 'Compact', 'Silencieux', 'Écologique'],
+        features: JSON.stringify(['Haute efficacité', 'Compact', 'Silencieux', 'Écologique']),
         dimensions: JSON.stringify({
           width: 440,
           height: 720,
@@ -140,7 +140,7 @@ async function main() {
           sections: '8',
           output: '1200W'
         }),
-        features: ['Design moderne', 'Chauffage rapide', 'Durable', 'Facile à installer'],
+        features: JSON.stringify(['Design moderne', 'Chauffage rapide', 'Durable', 'Facile à installer']),
         dimensions: JSON.stringify({
           width: 640,
           height: 600,

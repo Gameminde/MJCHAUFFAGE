@@ -2,26 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Search, Download, Eye, Edit, Trash2, User, Mail, Phone, MapPin, Calendar, ShoppingBag } from 'lucide-react'
-
-interface Customer {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string
-  address?: {
-    street: string
-    city: string
-    postalCode: string
-    country: string
-  }
-  customerType: 'B2B' | 'B2C'
-  totalOrders: number
-  totalSpent: number
-  lastOrderDate?: string
-  createdAt: string
-  isActive: boolean
-}
+import { customersService, type Customer, type CustomerFilters } from '@/services/customersService'
+import { ApiError } from '@/lib/api'
 
 export function CustomersManagement() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -40,39 +22,23 @@ export function CustomersManagement() {
     setLoading(true)
     setError(null)
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/customers`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch customers')
-      }
-      
-      const data = await response.json()
-      setCustomers(data.data || [])
+      const filters: CustomerFilters = {}
+      if (searchQuery.trim()) filters.search = searchQuery.trim()
+      if (selectedType) filters.customerType = selectedType as 'B2B' | 'B2C'
+      const result = await customersService.getCustomers(filters)
+      setCustomers(result.customers || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch customers')
+      const message = err instanceof ApiError ? err.message : 'Failed to fetch customers'
+      setError(message)
       console.error('Error fetching customers:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  const toggleCustomerStatus = async (customerId: string, isActive: boolean) => {
+  const toggleCustomerStatus = async (customerId: string, status: 'active' | 'inactive') => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/customers/${customerId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isActive }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update customer status')
-      }
-
-      // Refresh customers list
+      await customersService.toggleCustomerStatus(customerId, status)
       await fetchCustomers()
       alert('Customer status updated successfully!')
     } catch (err) {
@@ -87,16 +53,7 @@ export function CustomersManagement() {
     }
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/customers/${customerId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete customer')
-      }
-
-      // Refresh customers list
+      await customersService.deleteCustomer(customerId)
       await fetchCustomers()
       alert('Customer deleted successfully!')
     } catch (err) {
@@ -105,27 +62,22 @@ export function CustomersManagement() {
     }
   }
 
-  const exportCustomers = () => {
-    const csvContent = [
-      ['Name', 'Email', 'Phone', 'Type', 'Total Orders', 'Total Spent', 'Registration Date'].join(','),
-      ...filteredCustomers.map(customer => [
-        `${customer.firstName} ${customer.lastName}`,
-        customer.email,
-        customer.phone || '',
-        customer.customerType,
-        customer.totalOrders,
-        customer.totalSpent,
-        new Date(customer.createdAt).toLocaleDateString()
-      ].join(','))
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'customers.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
+  const exportCustomers = async () => {
+    try {
+      const filters: CustomerFilters = {}
+      if (searchQuery.trim()) filters.search = searchQuery.trim()
+      if (selectedType) filters.customerType = selectedType as 'B2B' | 'B2C'
+      const blob = await customersService.exportCustomers(filters)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'customers.csv'
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Error exporting customers:', err)
+      alert('Failed to export customers')
+    }
   }
 
   const filteredCustomers = customers.filter(customer => {
@@ -197,7 +149,7 @@ export function CustomersManagement() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-neutral-600">Active Customers</p>
-              <p className="text-2xl font-bold text-neutral-900">{customers.filter(c => c.isActive).length}</p>
+              <p className="text-2xl font-bold text-neutral-900">{customers.filter(c => c.status === 'active').length}</p>
             </div>
           </div>
         </div>
@@ -328,9 +280,9 @@ export function CustomersManagement() {
                           <ShoppingBag className="h-4 w-4 mr-1 text-gray-400" />
                           {customer.totalOrders}
                         </div>
-                        {customer.lastOrderDate && (
+                        {customer.lastOrderAt && (
                           <div className="text-sm text-gray-500">
-                            Last: {new Date(customer.lastOrderDate).toLocaleDateString()}
+                            Last: {new Date(customer.lastOrderAt).toLocaleDateString()}
                           </div>
                         )}
                       </td>
@@ -339,11 +291,11 @@ export function CustomersManagement() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          customer.isActive 
-                            ? 'bg-green-100 text-green-800' 
+                          customer.status === 'active'
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {customer.isActive ? 'Active' : 'Inactive'}
+                          {customer.status === 'active' ? 'Active' : customer.status === 'inactive' ? 'Inactive' : 'Blocked'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -356,9 +308,9 @@ export function CustomersManagement() {
                             <Eye className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => toggleCustomerStatus(customer.id, !customer.isActive)}
-                            className={`${customer.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
-                            title={customer.isActive ? 'Deactivate' : 'Activate'}
+                            onClick={() => toggleCustomerStatus(customer.id, customer.status === 'active' ? 'inactive' : 'active')}
+                            className={`${customer.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                            title={customer.status === 'active' ? 'Deactivate' : 'Activate'}
                           >
                             <Edit className="h-4 w-4" />
                           </button>
@@ -455,8 +407,8 @@ export function CustomersManagement() {
                       <div>
                         <p className="text-sm text-gray-500">Last Order</p>
                         <p className="font-medium">
-                          {selectedCustomer.lastOrderDate 
-                            ? new Date(selectedCustomer.lastOrderDate).toLocaleDateString()
+                          {selectedCustomer.lastOrderAt 
+                            ? new Date(selectedCustomer.lastOrderAt).toLocaleDateString()
                             : 'No orders yet'
                           }
                         </p>
@@ -470,11 +422,11 @@ export function CustomersManagement() {
                   <h4 className="font-medium text-gray-900 mb-2">Account Status</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                      selectedCustomer.isActive 
-                        ? 'bg-green-100 text-green-800' 
+                      selectedCustomer.status === 'active'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {selectedCustomer.isActive ? 'Active Account' : 'Inactive Account'}
+                      {selectedCustomer.status === 'active' ? 'Active Account' : selectedCustomer.status === 'inactive' ? 'Inactive Account' : 'Blocked Account'}
                     </span>
                   </div>
                 </div>

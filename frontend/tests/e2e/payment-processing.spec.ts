@@ -1,21 +1,22 @@
 import { test, expect } from '@playwright/test';
 import { testUser, testOrder } from './fixtures/test-data';
+import { TestHelpers } from './helpers/test-helpers';
 
 test.describe('Payment Processing and Order Management E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Start from homepage and add items to cart
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    
-    // Navigate to products and add to cart
-    await page.click('[data-testid="products-link"]');
-    await page.waitForSelector('[data-testid="product-card"]');
+    // Navigate to homepage and prepare cart via accessible actions
+    await TestHelpers.gotoAndReady(page, '/');
+
+    await page.getByRole('link', { name: 'Produits' }).click();
+    await page.waitForLoadState('domcontentloaded');
+
     await page.click('[data-testid="product-card"]:first-child');
+    await page.waitForLoadState('domcontentloaded');
+
     await page.click('[data-testid="add-to-cart-button"]');
-    
-    // Go to checkout
-    await page.click('[data-testid="cart-button"]');
-    await page.click('[data-testid="checkout-button"]');
+
+    await page.getByRole('button', { name: 'Ouvrir le panier' }).click();
+    await page.getByRole('link', { name: 'Commander' }).click();
   });
 
   test('Stripe payment processing - successful payment', async ({ page }) => {
@@ -197,10 +198,8 @@ test.describe('Payment Processing and Order Management E2E Tests', () => {
     
     // Login to admin to manage the order
     const adminPage = await context.newPage();
-    await adminPage.goto('/admin/login');
-    await adminPage.fill('[data-testid="admin-email"]', 'admin@mjchauffage.com');
-    await adminPage.fill('[data-testid="admin-password"]', 'AdminPassword123!');
-    await adminPage.click('[data-testid="admin-login-submit"]');
+    const adminHelpers = new TestHelpers(adminPage);
+    await adminHelpers.loginAsAdmin();
     
     // Navigate to orders
     await adminPage.click('[data-testid="orders-menu"]');
@@ -234,8 +233,9 @@ test.describe('Payment Processing and Order Management E2E Tests', () => {
 
   test('Inventory management during checkout', async ({ page }) => {
     // Go to a specific product with limited stock
-    await page.goto('/products');
+    await TestHelpers.gotoAndReady(page, '/products', { readySelectors: ['[data-testid="product-card"]', 'main'] });
     await page.click('[data-testid="product-card"]:first-child');
+    await page.waitForLoadState('domcontentloaded');
     
     // Check current stock level
     const stockText = await page.locator('[data-testid="stock-quantity"]').textContent();

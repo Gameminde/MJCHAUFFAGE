@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/database';
 import { RealtimeService } from './realtimeService';
 import { CacheService } from './cacheService';
+import { transformProductList, transformProductToDTO } from '@/utils/dtoTransformers';
 import { Prisma, Product } from '@prisma/client';
 
 export interface ProductFilters {
@@ -127,12 +128,13 @@ export class ProductService {
       const averageRating = ratings.length > 0 
         ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
         : 0;
-      
+
+      const productDto = transformProductToDTO(product);
+
       return {
-        ...product,
+        ...productDto,
         averageRating: Math.round(averageRating * 10) / 10,
-        reviewCount: ratings.length,
-        reviews: undefined // Remove reviews from response
+        reviewCount: ratings.length
       };
     });
 
@@ -207,11 +209,15 @@ export class ProductService {
       });
     }
 
+    const productDto = transformProductToDTO(product);
+    const relatedDtos = transformProductList(relatedProducts);
+
     return {
-      ...product,
+      ...productDto,
       averageRating: Math.round(averageRating * 10) / 10,
       reviewCount: ratings.length,
-      relatedProducts,
+      reviews: product.reviews,
+      relatedProducts: relatedDtos,
     };
   }
 
@@ -222,7 +228,7 @@ export class ProductService {
     const product = await prisma.product.create({
       data: {
         ...data,
-        features: data.features || [],
+        features: JSON.stringify(data.features || []),
         price: data.price,
         costPrice: data.costPrice || null,
         salePrice: data.salePrice || null,
@@ -247,7 +253,7 @@ export class ProductService {
       timestamp: new Date(),
     });
 
-    return product;
+    return transformProductToDTO(product);
   }
 
   /**
@@ -287,7 +293,7 @@ export class ProductService {
       timestamp: new Date(),
     });
 
-    return product;
+    return transformProductToDTO(product);
   }
 
   /**

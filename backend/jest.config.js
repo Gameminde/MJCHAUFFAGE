@@ -1,14 +1,16 @@
 // jest.config.js - Minimal working configuration
 module.exports = {
   preset: 'ts-jest',
+
   testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: [
     '**/__tests__/**/*.ts',
     '**/?(*.)+(spec|test).ts'
   ],
   transform: {
-    '^.+\.ts$': 'ts-jest'
+    '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.spec.json' }]
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {

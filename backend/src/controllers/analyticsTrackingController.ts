@@ -102,31 +102,7 @@ export class AnalyticsTrackingController {
 
   static async getRealTimeMetrics(_req: Request, res: Response): Promise<void> {
     try {
-      // For development, return mock data if database is not available
-      let metrics;
-      try {
-        metrics = await AnalyticsTrackingService.getRealTimeMetrics();
-      } catch (dbError) {
-        console.warn('Database not available, using mock data:', dbError);
-        metrics = {
-          activeSessions: 12,
-          pageViews: {
-            lastHour: 45,
-            last24Hours: 320
-          },
-          recentEvents: [
-            { id: '1', eventType: 'page_view', createdAt: new Date().toISOString() },
-            { id: '2', eventType: 'add_to_cart', createdAt: new Date(Date.now() - 60000).toISOString() },
-            { id: '3', eventType: 'purchase', createdAt: new Date(Date.now() - 120000).toISOString() }
-          ],
-          topPages: [
-            { path: '/', views: 25 },
-            { path: '/products', views: 18 },
-            { path: '/services', views: 12 }
-          ]
-        };
-      }
-
+      const metrics = await AnalyticsTrackingService.getRealTimeMetrics();
       res.json({
         success: true,
         data: metrics
@@ -134,9 +110,9 @@ export class AnalyticsTrackingController {
 
     } catch (error) {
       console.error('Real-time metrics error:', error);
-      res.status(500).json({
+      res.status(503).json({
         success: false,
-        error: 'Failed to retrieve real-time metrics'
+        error: 'Real-time analytics temporarily unavailable. Please verify database connectivity and retry.'
       });
     }
   }

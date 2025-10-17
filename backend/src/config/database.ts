@@ -12,7 +12,19 @@ export interface DatabaseConfig {
 export const getDatabaseConfig = (): DatabaseConfig => {
   const baseUrl = process.env.DATABASE_URL || '';
   
-  // Parse existing URL and add connection pool parameters
+  // For SQLite, don't modify the URL - use it as is
+  if (baseUrl.startsWith('file:')) {
+    return {
+      url: baseUrl,
+      maxConnections: 1, // SQLite only supports 1 connection
+      connectionTimeout: parseInt(process.env.DB_CONNECTION_TIMEOUT || '60000'),
+      queryTimeout: parseInt(process.env.DB_QUERY_TIMEOUT || '30000'),
+      retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '3'),
+      retryDelay: parseInt(process.env.DB_RETRY_DELAY || '1000'),
+    };
+  }
+  
+  // Parse existing URL and add connection pool parameters for PostgreSQL
   const url = new URL(baseUrl);
   
   // Add PostgreSQL connection pool parameters

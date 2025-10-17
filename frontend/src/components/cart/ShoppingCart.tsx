@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart } from '@/contexts/CartContext'
+import { useCart } from '@/hooks/useCart'
 import { useLanguage } from '@/hooks/useLanguage'
 import Link from 'next/link'
 import Image from 'next/image'

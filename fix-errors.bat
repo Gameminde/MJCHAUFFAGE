@@ -51,6 +51,6 @@ echo To start the servers:
 echo   1. Backend:  cd backend  && npm run dev
 echo   2. Frontend: cd frontend && npm run dev
 echo.
-echo Then open: http://localhost:3000/admin/login
+echo Then open: http://localhost:3005/login
 echo.
 pause

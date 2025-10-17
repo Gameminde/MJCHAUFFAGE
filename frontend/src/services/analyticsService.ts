@@ -415,12 +415,20 @@ class AnalyticsService {
 
   private async getLocationData(): Promise<{ country?: string; city?: string }> {
     try {
-      // Use a free IP geolocation service
-      const response = await fetch('https://ipapi.co/json/');
+      // Resolve via backend proxy to avoid browser CORS issues
+      const response = await fetch('/api/geolocation', {
+        headers: {
+          'Accept': 'application/json'
+        },
+        cache: 'no-store'
+      });
+      if (!response.ok) {
+        return {};
+      }
       const data = await response.json();
       
       return {
-        country: data.country_name,
+        country: data.country || data.country_name,
         city: data.city
       };
     } catch {

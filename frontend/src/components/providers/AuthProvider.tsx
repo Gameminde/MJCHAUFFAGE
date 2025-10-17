@@ -1,7 +1,5 @@
 'use client'
 
-import { SessionProvider } from 'next-auth/react'
-
 export function AuthProvider({ 
   children,
   session
@@ -9,9 +7,11 @@ export function AuthProvider({
   children: React.ReactNode
   session?: any
 }) {
+  // AuthProvider simplifié - NextAuth désactivé
+  // Utilisation de l'API maison uniquement
   return (
-    <SessionProvider session={session}>
+    <>
       {children}
-    </SessionProvider>
+    </>
   )
 }

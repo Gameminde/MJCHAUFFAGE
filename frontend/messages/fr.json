@@ -27,228 +27,128 @@
     "cart": "Panier",
     "account": "Mon compte"
   },
-  "auth": {
-    "signIn": "Se connecter",
-    "signUp": "S'inscrire",
-    "signOut": "Se déconnecter",
-    "createAccount": "Créer un compte",
-    "signInLink": "Connectez-vous ici",
-    "signUpLink": "Inscrivez-vous ici",
-    "email": "Email",
-    "password": "Mot de passe",
-    "confirmPassword": "Confirmer le mot de passe",
-    "firstName": "Prénom",
-    "lastName": "Nom de famille",
-    "phone": "Téléphone",
-    "rememberMe": "Se souvenir de moi",
-    "forgotPassword": "Mot de passe oublié ?",
-    "noAccount": "Pas de compte ?",
-    "haveAccount": "Vous avez déjà un compte ?",
-    "signInDescription": "Connectez-vous à votre compte",
-    "signUpDescription": "Créez un nouveau compte pour commencer",
-    "emailPlaceholder": "Entrez votre email",
-    "passwordPlaceholder": "Entrez votre mot de passe",
-    "phonePlaceholder": "Entrez votre numéro de téléphone",
-    "signingIn": "Connexion en cours...",
-    "signingUp": "Création du compte...",
-    "loginError": "Erreur lors de la connexion",
-    "registerError": "Erreur lors de la création du compte",
-    "networkError": "Erreur réseau, veuillez réessayer",
-    "passwordMismatch": "Les mots de passe ne correspondent pas",
-    "invalidCredentials": "Identifiants invalides",
-    "continueWithGoogle": "Continuer avec Google",
-    "signingInWithGoogle": "Connexion avec Google...",
-    "googleSignInError": "Échec de la connexion Google",
-    "orContinueWith": "Ou continuer avec"
+  "Admin": {
+    "Orders": "Commandes",
+    "Customers": "Clients",
+    "Services": "Services",
+    "Products": "Produits",
+    "Dashboard": "Tableau de bord",
+    "Categories": "Catégories",
+    "Settings": "Paramètres"
   },
-  "checkout": {
-    "title": "Commande",
-    "step1": "Informations de livraison",
-    "step2": "Mode de paiement",
-    "step3": "Confirmation",
-    "shippingAddress": "Adresse de livraison",
-    "paymentMethod": "Mode de paiement",
-    "orderSummary": "Résumé de la commande",
-    "firstName": "Prénom",
-    "lastName": "Nom de famille",
-    "phone": "Téléphone",
-    "email": "Email",
-    "address": "Adresse",
-    "city": "Ville",
-    "wilaya": "Wilaya",
-    "postalCode": "Code postal",
-    "cashOnDelivery": "Paiement à la livraison",
-    "dahabiaCard": "Carte Dahabia",
-    "cardNumber": "Numéro de carte",
-    "expiryDate": "Date d'expiration",
-    "cvv": "CVV",
-    "cardHolder": "Titulaire de la carte",
-    "total": "Total",
-    "subtotal": "Sous-total",
-    "shippingFee": "Frais de livraison",
-    "placeOrder": "Finaliser la commande",
-    "processing": "Traitement en cours...",
-    "orderPlaced": "Commande confirmée !",
-    "orderDetails": "Détails de la commande",
-    "continueToPayment": "Continuer vers le paiement",
-    "backToShipping": "Retour aux informations de livraison",
-    "selectWilaya": "Sélectionnez votre wilaya",
-    "required": "Requis",
-    "invalidEmail": "Email invalide",
-    "invalidPhone": "Numéro de téléphone invalide"
-  },
-  "dashboard": {
-    "welcome": "Bienvenue",
-    "overview": "Aperçu",
-    "orders": "Commandes",
-    "services": "Services",
-    "profile": "Profil",
-    "addresses": "Adresses",
-    "favorites": "Favoris",
-    "myOrders": "Mes commandes",
-    "orderHistory": "Historique des commandes",
-    "serviceRequests": "Demandes de service",
-    "accountSettings": "Paramètres du compte",
-    "totalOrders": "Total des commandes",
-    "totalSpent": "Total dépensé",
-    "recentOrders": "Commandes récentes",
-    "upcomingServices": "Services à venir",
-    "editProfile": "Modifier le profil",
-    "changePassword": "Changer le mot de passe",
-    "manageAddresses": "Gérer les adresses",
-    "viewFavorites": "Voir les favoris",
-    "logout": "Déconnexion",
-    "dashboardSubtitle": "Gérez votre compte et vos commandes",
-    "orderDate": "Date de commande",
-    "delivered": "Livré",
-    "viewAllOrders": "Voir toutes les commandes",
-    "maintenanceService": "Service de maintenance",
-    "scheduled": "Programmé",
-    "viewAllServices": "Voir tous les services"
-  },
-  "services": {
-    "title": "Services",
-    "bookService": "Réserver un service",
-    "installation": "Installation",
-    "maintenance": "Maintenance",
-    "repair": "Réparation",
-    "emergency": "Urgence",
-    "selectService": "Sélectionnez un service",
-    "serviceType": "Type de service",
-    "preferredDate": "Date préférée",
-    "preferredTime": "Heure préférée",
-    "urgency": "Urgence",
-    "normal": "Normal",
-    "urgent": "Urgent",
-    "customerInfo": "Informations client",
-    "firstName": "Prénom",
-    "lastName": "Nom de famille",
-    "phone": "Téléphone",
-    "email": "Email",
-    "address": "Adresse",
-    "street": "Rue",
-    "city": "Ville",
-    "wilaya": "Wilaya",
-    "postalCode": "Code postal",
-    "building": "Bâtiment",
-    "floor": "Étage",
-    "apartment": "Appartement",
-    "description": "Description du problème",
-    "submitRequest": "Envoyer la demande",
-    "requestSubmitted": "Demande envoyée !",
-    "estimatedDuration": "Durée estimée",
-    "estimatedPrice": "Prix estimé",
-    "selectWilaya": "Sélectionnez votre wilaya",
-    "required": "Requis",
-    "minutes": "minutes"
-  },
-  "ServicesPage": {
-    "metadata": {
-      "title": "Services - MJ CHAUFFAGE",
-      "description": "Découvrez nos services professionnels de chauffage, installation, maintenance et réparation en Algérie."
-    },
+  "home": {
     "hero": {
-      "title": "Services Professionnels de Chauffage",
-      "description": "Installation, maintenance et réparation d'équipements de chauffage par des experts qualifiés.",
-      "cta": "Contactez-nous"
+      "title": "Solutions de chauffage professionnelles",
+      "subtitle": "Chaudières de qualité, installation experte et maintenance fiable",
+      "cta": "Acheter maintenant",
+      "ctaSecondary": "En savoir plus",
+      "titleLine1": "Pièces détachées pour",
+      "titleLine2": "chaudières professionnelles",
+      "description": "Trouvez des pièces originales et de qualité pour tous vos besoins de chauffage professionnel.",
+      "catalogButton": "Voir le catalogue",
+      "contactButton": "Nous contacter"
     },
-    "services": {
-      "title": "Nos Services",
-      "hours": "heures"
-    },
-    "process": {
-      "title": "Notre Processus",
-      "step1": {
-        "title": "Consultation",
-        "description": "Évaluation gratuite de vos besoins en chauffage"
+    "features": {
+      "subtitle": "Pourquoi nous choisir",
+      "title": "Des solutions fiables pour votre chauffage",
+      "originalParts": {
+        "title": "Pièces d'origine",
+        "description": "Nous proposons uniquement des pièces certifiées par les fabricants."
       },
-      "step2": {
-        "title": "Devis",
-        "description": "Devis détaillé et personnalisé"
-      },
-      "step3": {
-        "title": "Intervention",
-        "description": "Service rapide et professionnel"
-      },
-      "step4": {
-        "title": "Suivi",
-        "description": "Support après-service et garantie"
-      }
-    },
-    "whyChoose": {
-      "title": "Pourquoi Nous Choisir",
-      "quality": {
-        "title": "Qualité Supérieure",
-        "description": "Équipements et matériaux de première qualité"
+      "fastDelivery": {
+        "title": "Livraison rapide",
+        "description": "Expédition sous 24 heures pour la plupart des commandes en Algérie."
       },
       "warranty": {
-        "title": "Garantie",
-        "description": "Garantie sur tous nos services"
-      },
-      "expertise": {
-        "title": "Expertise",
-        "description": "Techniciens certifiés et expérimentés"
+        "title": "Garantie 2 ans",
+        "description": "Toutes nos pièces sont garanties 24 mois pour votre tranquillité d'esprit."
       }
+    },
+    "categories": {
+      "title": "Nos principales catégories",
+      "description": "Trouvez la pièce dont vous avez besoin parmi nos nombreuses références",
+      "burners": {
+        "title": "Brûleurs et accessoires",
+        "description": "Tous types de brûleurs pour chaudières fioul, gaz et multi-combustible."
+      },
+      "pumps": {
+        "title": "Pompes et circulateurs",
+        "description": "Pompes haute performance pour circuits de chauffage et production d'eau chaude."
+      },
+      "safety": {
+        "title": "Dispositifs de sécurité",
+        "description": "Vannes, pressostats, thermostats et autres éléments essentiels de sécurité."
+      },
+      "allCategoriesButton": "Voir toutes les catégories"
+    },
+    "testimonials": {
+      "subtitle": "Témoignages",
+      "title": "Ce que disent nos clients",
+      "jean": {
+        "name": "Jean Dupont",
+        "role": "Technicien chauffage professionnel",
+        "quote": "Depuis que je commande chez MJ CHAUFFAGE, je gagne un temps précieux. Les pièces sont toujours conformes et livrées rapidement."
+      },
+      "marie": {
+        "name": "Marie Martin",
+        "role": "Gestionnaire d'immeuble",
+        "quote": "Service client exceptionnel. Ils m'ont guidée pour trouver la pièce exacte dont j'avais besoin pour notre chaudière collective."
+      },
+      "thomas": {
+        "name": "Thomas Bernard",
+        "role": "Responsable maintenance",
+        "quote": "Leur catalogue est très complet et leurs prix compétitifs. Je recommande sans hésiter."
+      }
+    },
+    "cta": {
+      "titleLine1": "Prêt à commander vos pièces ?",
+      "titleLine2": "Nos experts sont à votre disposition.",
+      "description": "Contactez-nous pour toute demande spécifique ou conseil technique."
     }
   },
   "products": {
-    "title": "Produits",
+    "title": "Nos produits",
     "categories": "Catégories",
-    "boilers": "Chaudières",
-    "heatPumps": "Pompes à chaleur",
-    "radiators": "Radiateurs",
-    "spareParts": "Pièces détachées",
-    "thermostats": "Thermostats",
-    "accessories": "Accessoires",
     "price": "Prix",
-    "inStock": "En stock",
-    "outOfStock": "Rupture de stock",
-    "lowStock": "Stock faible",
-    "quantity": "Quantité",
     "addToCart": "Ajouter au panier",
     "viewDetails": "Voir les détails",
-    "specifications": "Spécifications",
-    "features": "Caractéristiques",
-    "reviews": "Avis",
-    "relatedProducts": "Produits associés"
+    "outOfStock": "Rupture de stock",
+    "inStock": "En stock",
+    "noProducts": "Aucun produit trouvé",
+    "noProductsDescription": "Les produits créés dans l'admin apparaîtront ici",
+    "quantity": "Quantité",
+    "available": "Disponible",
+    "lowStock": "Stock limité",
+    "remaining": "restant",
+    "inCart": "Dans le panier",
+    "items": "articles",
+    "stockError": "Stock insuffisant",
+    "maxInCart": "Maximum dans le panier"
   },
   "cart": {
     "title": "Panier",
     "empty": "Votre panier est vide",
-    "total": "Total",
-    "subtotal": "Sous-total",
-    "checkout": "Commander",
-    "continueShopping": "Continuer mes achats",
-    "startShopping": "Commencer mes achats",
+    "startShopping": "Commencer vos achats",
     "addToCart": "Ajouter au panier",
-    "added": "Ajouté",
-    "adding": "Ajout en cours...",
-    "remove": "Supprimer",
-    "updateQuantity": "Mettre à jour la quantité",
-    "shippingNote": "Les frais de livraison seront calculés lors de la commande"
+    "adding": "Ajout...",
+    "added": "Ajouté !",
+    "error": "Erreur lors de l'ajout au panier",
+    "sku": "Référence",
+    "maxStock": "Stock maximum atteint",
+    "clearing": "Suppression...",
+    "clearAll": "Tout supprimer",
+    "subtotal": "Sous-total",
+    "shippingNote": "Frais de livraison calculés à l'étape de paiement",
+    "checkout": "Passer au paiement",
+    "continueShopping": "Continuer les achats",
+    "paymentMethods": "Méthodes de paiement"
+  },
+  "paymentMethods": {
+    "cashOnDelivery": "Paiement à la livraison",
+    "dahabiaCard": "Carte Dahabia"
   },
   "footer": {
-    "description": "Solutions professionnelles de chauffage et services d'installation et de maintenance pour les maisons et entreprises en Algérie.",
+    "description": "Solutions de chauffage professionnelles pour l'Algérie. Équipements de qualité, installation experte et maintenance fiable.",
     "products": "Produits",
     "boilers": "Chaudières",
     "radiators": "Radiateurs",
@@ -261,93 +161,6 @@
     "phone": "Téléphone",
     "email": "Email",
     "address": "Adresse",
-    "rights": "Tous droits réservés.",
-    "quickLinks": "Liens rapides",
-    "aboutUs": "À propos de nous",
-    "termsOfService": "Conditions d'utilisation",
-    "privacyPolicy": "Politique de confidentialité",
-    "customerSupport": "Support client",
-    "followUs": "Suivez-nous"
-  },
-  "paymentMethods": {
-    "cashOnDelivery": "Paiement à la livraison",
-    "dahabiaCard": "Carte Dahabia",
-    "creditCard": "Carte de crédit"
-  },
-  "currency": {
-    "symbol": "DA",
-    "code": "DZD",
-    "name": "Dinar algérien"
-  },
-  "company": {
-    "name": "MJ CHAUFFAGE",
-    "description": "Solutions de chauffage professionnelles et services",
-    "tagline": "Vos experts en chauffage et plomberie"
-  },
-  "home": {
-    "hero": {
-      "titleLine1": "Pièces détachées pour",
-      "titleLine2": "chaudières professionnelles",
-      "description": "Trouvez les pièces originales et de qualité pour tous vos besoins en chauffage professionnel.",
-      "catalogButton": "Voir le catalogue",
-      "contactButton": "Contactez-nous"
-    },
-    "features": {
-      "subtitle": "Pourquoi nous choisir",
-      "title": "Des solutions fiables pour votre chauffage",
-      "originalParts": {
-        "title": "Pièces Originales",
-        "description": "Nous proposons uniquement des pièces détachées certifiées par les fabricants."
-      },
-      "fastDelivery": {
-        "title": "Livraison Rapide",
-        "description": "Expédition sous 24h pour la plupart des commandes en France métropolitaine."
-      },
-      "warranty": {
-        "title": "Garantie 2 ans",
-        "description": "Toutes nos pièces sont garanties 24 mois pour votre tranquillité d'esprit."
-      }
-    },
-    "categories": {
-      "title": "Nos principales catégories",
-      "description": "Trouvez la pièce qu'il vous faut parmi nos nombreuses références",
-      "burners": {
-        "title": "Brûleurs et accessoires",
-        "description": "Tous types de brûleurs pour chaudières fioul, gaz et multi-combustibles."
-      },
-      "pumps": {
-        "title": "Pompes et circulateurs",
-        "description": "Pompes haute performance pour circuits de chauffage et production d'eau chaude."
-      },
-      "safety": {
-        "title": "Dispositifs de sécurité",
-        "description": "Soupapes, pressostats, thermostats et autres éléments de sécurité essentiels."
-      },
-      "allCategoriesButton": "Voir toutes les catégories"
-    },
-    "testimonials": {
-      "subtitle": "Témoignages",
-      "title": "Ce que disent nos clients",
-      "jean": {
-        "name": "Jean Dupont",
-        "role": "Chauffagiste professionnel",
-        "quote": "Depuis que je commande chez Pièces Chaudière Pro, je gagne un temps précieux. Les pièces sont toujours conformes et livrées rapidement."
-      },
-      "marie": {
-        "name": "Marie Lambert",
-        "role": "Gérante de résidence",
-        "quote": "Service client exceptionnel. Ils m'ont guidée pour trouver la pièce exacte dont j'avais besoin pour ma chaudière collective."
-      },
-      "thomas": {
-        "name": "Thomas Leroy",
-        "role": "Responsable maintenance",
-        "quote": "Leur catalogue est très complet et leurs prix compétitifs. Je recommande sans hésiter à mes collègues du métier."
-      }
-    },
-    "cta": {
-      "titleLine1": "Prêt à commander vos pièces ?",
-      "titleLine2": "Nos experts sont à votre disposition.",
-      "description": "Contactez-nous pour toute demande spécifique ou conseil technique."
-    }
+    "rights": "Tous droits réservés"
   }
 }

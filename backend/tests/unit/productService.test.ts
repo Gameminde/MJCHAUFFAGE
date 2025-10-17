@@ -1,3 +1,6 @@
+/// <reference types="jest" />
+/// <reference types="jest" />
+import { describe, it, expect, beforeAll, afterAll, afterEach } from '@jest/globals';
 import { PrismaClient } from '@prisma/client';
 import { ProductService } from '@/services/productService';
 

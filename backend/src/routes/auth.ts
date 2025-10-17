@@ -141,6 +141,22 @@ router.post('/logout', authenticateToken, AuthController.logout);
 
 /**
  * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user information
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *       401:
+ *         description: Authentication required
+ */
+router.get('/me', authenticateToken, AuthController.getProfile);
+
+/**
+ * @swagger
  * /api/auth/profile:
  *   get:
  *     summary: Get current user profile

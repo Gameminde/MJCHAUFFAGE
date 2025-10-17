@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/database';
 import { RealtimeService } from './realtimeService';
 import { CacheService } from './cacheService';
+import { decimalToNumber } from '@/utils/dtoTransformers';
 
 // Define enums locally since they might not be exported
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
@@ -611,7 +612,7 @@ export class OrderService {
       pendingOrders,
       completedOrders,
       cancelledOrders,
-      totalRevenue: totalRevenue._sum.totalAmount || 0,
+      totalRevenue: decimalToNumber(totalRevenue._sum.totalAmount),
     };
   }
 

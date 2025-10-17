@@ -1,0 +1,3589 @@
+{
+  "statistics": {
+    "detectionDate": "2025-10-17T14:34:01.125Z",
+    "formats": {
+      "typescript": {
+        "sources": {
+          "src/utils/validation.ts": {
+            "lines": 119,
+            "tokens": 951,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/queryOptimizer.ts": {
+            "lines": 374,
+            "tokens": 3051,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/logger.ts": {
+            "lines": 156,
+            "tokens": 1430,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/dtoTransformers.ts": {
+            "lines": 244,
+            "tokens": 2361,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/types/express.d.ts": {
+            "lines": 20,
+            "tokens": 155,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/types/aws-sdk-fix.d.ts": {
+            "lines": 26,
+            "tokens": 198,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/serviceService.ts": {
+            "lines": 384,
+            "tokens": 3209,
+            "sources": 1,
+            "clones": 3,
+            "duplicatedLines": 42,
+            "duplicatedTokens": 421,
+            "percentage": 10.94,
+            "percentageTokens": 13.12,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/realtimeService.ts": {
+            "lines": 342,
+            "tokens": 2609,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/productService.ts": {
+            "lines": 609,
+            "tokens": 5068,
+            "sources": 1,
+            "clones": 4,
+            "duplicatedLines": 54,
+            "duplicatedTokens": 520,
+            "percentage": 8.87,
+            "percentageTokens": 10.26,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/paymentService.ts": {
+            "lines": 335,
+            "tokens": 2717,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/orderService.ts": {
+            "lines": 696,
+            "tokens": 5904,
+            "sources": 1,
+            "clones": 7,
+            "duplicatedLines": 159,
+            "duplicatedTokens": 1492,
+            "percentage": 22.84,
+            "percentageTokens": 25.27,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/geminiService.ts": {
+            "lines": 78,
+            "tokens": 636,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/emailService.ts": {
+            "lines": 191,
+            "tokens": 940,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/dahabiaPaymentService.ts": {
+            "lines": 252,
+            "tokens": 1992,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/customerService.ts": {
+            "lines": 547,
+            "tokens": 4509,
+            "sources": 1,
+            "clones": 5,
+            "duplicatedLines": 73,
+            "duplicatedTokens": 622,
+            "percentage": 13.35,
+            "percentageTokens": 13.79,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/cartService.ts": {
+            "lines": 374,
+            "tokens": 3009,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 52,
+            "duplicatedTokens": 436,
+            "percentage": 13.9,
+            "percentageTokens": 14.49,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/cacheService.ts": {
+            "lines": 363,
+            "tokens": 3075,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/authService.ts": {
+            "lines": 412,
+            "tokens": 3572,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/analyticsTrackingService.ts": {
+            "lines": 409,
+            "tokens": 3795,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/analyticsService.ts": {
+            "lines": 462,
+            "tokens": 4335,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/adminService.ts": {
+            "lines": 993,
+            "tokens": 9252,
+            "sources": 1,
+            "clones": 3,
+            "duplicatedLines": 40,
+            "duplicatedTokens": 541,
+            "percentage": 4.03,
+            "percentageTokens": 5.85,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/uploads.ts": {
+            "lines": 69,
+            "tokens": 664,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/services.ts": {
+            "lines": 86,
+            "tokens": 759,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/realtime.ts": {
+            "lines": 68,
+            "tokens": 584,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/products.ts": {
+            "lines": 505,
+            "tokens": 923,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/payments.ts": {
+            "lines": 128,
+            "tokens": 1093,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/orders.ts": {
+            "lines": 121,
+            "tokens": 1056,
+            "sources": 1,
+            "clones": 4,
+            "duplicatedLines": 58,
+            "duplicatedTokens": 466,
+            "percentage": 47.93,
+            "percentageTokens": 44.13,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/health.ts": {
+            "lines": 282,
+            "tokens": 2545,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/customers.ts": {
+            "lines": 79,
+            "tokens": 778,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/contact.ts": {
+            "lines": 22,
+            "tokens": 249,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/cart.ts": {
+            "lines": 41,
+            "tokens": 437,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/auth.ts": {
+            "lines": 314,
+            "tokens": 457,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/analytics.ts": {
+            "lines": 197,
+            "tokens": 1997,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/routes/admin.ts": {
+            "lines": 583,
+            "tokens": 865,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/validation.ts": {
+            "lines": 449,
+            "tokens": 4511,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/securityEnhanced.ts": {
+            "lines": 395,
+            "tokens": 3287,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/security.ts": {
+            "lines": 574,
+            "tokens": 2397,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 25,
+            "duplicatedTokens": 138,
+            "percentage": 4.36,
+            "percentageTokens": 5.76,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/performance.ts": {
+            "lines": 250,
+            "tokens": 2518,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/notFoundHandler.ts": {
+            "lines": 11,
+            "tokens": 108,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/errorHandler.ts": {
+            "lines": 64,
+            "tokens": 599,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/auth.ts": {
+            "lines": 342,
+            "tokens": 2725,
+            "sources": 1,
+            "clones": 6,
+            "duplicatedLines": 91,
+            "duplicatedTokens": 762,
+            "percentage": 26.61,
+            "percentageTokens": 27.96,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/database.ts": {
+            "lines": 81,
+            "tokens": 637,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/database-test.ts": {
+            "lines": 141,
+            "tokens": 1099,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/serviceRequestController.ts": {
+            "lines": 428,
+            "tokens": 3714,
+            "sources": 1,
+            "clones": 43,
+            "duplicatedLines": 619,
+            "duplicatedTokens": 5716,
+            "percentage": 144.63,
+            "percentageTokens": 153.9,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/serviceController.ts": {
+            "lines": 51,
+            "tokens": 435,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/realtimeController.ts": {
+            "lines": 274,
+            "tokens": 2157,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/productController.ts": {
+            "lines": 438,
+            "tokens": 3897,
+            "sources": 1,
+            "clones": 4,
+            "duplicatedLines": 51,
+            "duplicatedTokens": 527,
+            "percentage": 11.64,
+            "percentageTokens": 13.52,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/orderController.ts": {
+            "lines": 360,
+            "tokens": 3038,
+            "sources": 1,
+            "clones": 20,
+            "duplicatedLines": 345,
+            "duplicatedTokens": 2847,
+            "percentage": 95.83,
+            "percentageTokens": 93.71,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/customerController.ts": {
+            "lines": 535,
+            "tokens": 4563,
+            "sources": 1,
+            "clones": 23,
+            "duplicatedLines": 390,
+            "duplicatedTokens": 3299,
+            "percentage": 72.9,
+            "percentageTokens": 72.3,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/contactController.ts": {
+            "lines": 25,
+            "tokens": 270,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/cartController.ts": {
+            "lines": 292,
+            "tokens": 2474,
+            "sources": 1,
+            "clones": 9,
+            "duplicatedLines": 125,
+            "duplicatedTokens": 1110,
+            "percentage": 42.81,
+            "percentageTokens": 44.87,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/authControllerSecure.ts": {
+            "lines": 428,
+            "tokens": 3490,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 26,
+            "duplicatedTokens": 212,
+            "percentage": 6.07,
+            "percentageTokens": 6.07,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/authController.ts": {
+            "lines": 778,
+            "tokens": 6599,
+            "sources": 1,
+            "clones": 8,
+            "duplicatedLines": 121,
+            "duplicatedTokens": 1151,
+            "percentage": 15.55,
+            "percentageTokens": 17.44,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/analyticsTrackingController.ts": {
+            "lines": 118,
+            "tokens": 1081,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/analyticsController.ts": {
+            "lines": 196,
+            "tokens": 1813,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/adminController.ts": {
+            "lines": 533,
+            "tokens": 4551,
+            "sources": 1,
+            "clones": 10,
+            "duplicatedLines": 131,
+            "duplicatedTokens": 1160,
+            "percentage": 24.58,
+            "percentageTokens": 25.49,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/controllers/adminAuthController.ts": {
+            "lines": 270,
+            "tokens": 2316,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 13,
+            "duplicatedTokens": 114,
+            "percentage": 4.81,
+            "percentageTokens": 4.92,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/config/security.ts": {
+            "lines": 315,
+            "tokens": 2171,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 25,
+            "duplicatedTokens": 138,
+            "percentage": 7.94,
+            "percentageTokens": 6.36,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/config/redis.ts": {
+            "lines": 178,
+            "tokens": 1800,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/config/environment.ts": {
+            "lines": 173,
+            "tokens": 1400,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/config/database.ts": {
+            "lines": 104,
+            "tokens": 996,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/server.ts": {
+            "lines": 174,
+            "tokens": 1631,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 17858,
+          "tokens": 141452,
+          "sources": 62,
+          "clones": 78,
+          "duplicatedLines": 1220,
+          "duplicatedTokens": 10836,
+          "percentage": 6.83,
+          "percentageTokens": 7.66,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 17858,
+      "tokens": 141452,
+      "sources": 62,
+      "clones": 78,
+      "duplicatedLines": 1220,
+      "duplicatedTokens": 10836,
+      "percentage": 6.83,
+      "percentageTokens": 7.66,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": [
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": "({\r\n      where,\r\n      include: {\r\n        customer: {\r\n          include: {\r\n            user: {\r\n              select: { firstName: true, lastName: true, email: true, phone: true }\r\n            }\r\n          }\r\n        },\r\n        serviceType: true,\r\n        technician: {\r\n          include: {\r\n            user: {\r\n              select: { firstName: true, lastName: true,",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\serviceService.ts",
+        "start": 182,
+        "end": 196,
+        "startLoc": {
+          "line": 182,
+          "column": 10,
+          "position": 1576
+        },
+        "endLoc": {
+          "line": 196,
+          "column": 2,
+          "position": 1703
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\serviceService.ts",
+        "start": 132,
+        "end": 146,
+        "startLoc": {
+          "line": 132,
+          "column": 9,
+          "position": 1194
+        },
+        "endLoc": {
+          "line": 146,
+          "column": 2,
+          "position": 1322
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": ",\r\n      include: {\r\n        category: {\r\n          select: { id: true, name: true, slug: true }\r\n        },\r\n        manufacturer: {\r\n          select: { id: true, name: true, slug: true }\r\n        },\r\n        images: {\r\n          orderBy: { sortOrder: 'asc' },\r\n          take: 1\r\n        },\r\n      }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\productService.ts",
+        "start": 543,
+        "end": 555,
+        "startLoc": {
+          "line": 543,
+          "column": 2,
+          "position": 4487
+        },
+        "endLoc": {
+          "line": 555,
+          "column": 2,
+          "position": 4608
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\productService.ts",
+        "start": 102,
+        "end": 114,
+        "startLoc": {
+          "line": 102,
+          "column": 6,
+          "position": 926
+        },
+        "endLoc": {
+          "line": 114,
+          "column": 8,
+          "position": 1047
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 16,
+      "fragment": ",\r\n        isActive: true,\r\n      },\r\n      include: {\r\n        category: {\r\n          select: { id: true, name: true, slug: true }\r\n        },\r\n        manufacturer: {\r\n          select: { id: true, name: true, slug: true }\r\n        },\r\n        images: {\r\n          orderBy: { sortOrder: 'asc' },\r\n          take: 1\r\n        },\r\n      },\r\n    }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\productService.ts",
+        "start": 593,
+        "end": 608,
+        "startLoc": {
+          "line": 593,
+          "column": 2,
+          "position": 4920
+        },
+        "endLoc": {
+          "line": 608,
+          "column": 2,
+          "position": 5059
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\productService.ts",
+        "start": 541,
+        "end": 556,
+        "startLoc": {
+          "line": 541,
+          "column": 5,
+          "position": 4474
+        },
+        "endLoc": {
+          "line": 556,
+          "column": 8,
+          "position": 4613
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 24,
+      "fragment": ") {\r\n    return prisma.$transaction(async (tx: any) => {\r\n      // Generate unique order number\r\n      const orderNumber = await this.generateOrderNumber();\r\n\r\n      // Validate stock availability\r\n      for (const item of data.items) {\r\n        const product = await tx.product.findUnique({\r\n          where: { id: item.productId },\r\n          select: { id: true, name: true, stockQuantity: true, isActive: true }\r\n        });\r\n\r\n        if (!product || !product.isActive) {\r\n          throw new Error(`Product ${item.productId} not found or inactive`);\r\n        }\r\n\r\n        if (product.stockQuantity < item.quantity) {\r\n          throw new Error(\r\n            `Insufficient stock for ${product.name}. Available: ${product.stockQuantity}, Requested: ${item.quantity}`\r\n          );\r\n        }\r\n      }\r\n\r\n      // Create or get shipping address",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 208,
+        "end": 231,
+        "startLoc": {
+          "line": 208,
+          "column": 16,
+          "position": 1748
+        },
+        "endLoc": {
+          "line": 231,
+          "column": 34,
+          "position": 2001
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 76,
+        "end": 99,
+        "startLoc": {
+          "line": 76,
+          "column": 15,
+          "position": 585
+        },
+        "endLoc": {
+          "line": 99,
+          "column": 32,
+          "position": 838
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": ",\r\n          type: 'SHIPPING',\r\n          street: data.shippingAddress.street,\r\n          city: data.shippingAddress.city,\r\n          postalCode: data.shippingAddress.postalCode,\r\n          region: data.shippingAddress.region,\r\n          country: data.shippingAddress.country,\r\n        },\r\n      });\r\n\r\n      // Create the order\r\n      const order = await tx.order.create({\r\n        data: {\r\n          orderNumber,\r\n          customerId: data",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 234,
+        "end": 248,
+        "startLoc": {
+          "line": 234,
+          "column": 11,
+          "position": 2036
+        },
+        "endLoc": {
+          "line": 248,
+          "column": 5,
+          "position": 2158
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 113,
+        "end": 127,
+        "startLoc": {
+          "line": 113,
+          "column": 3,
+          "position": 971
+        },
+        "endLoc": {
+          "line": 127,
+          "column": 14,
+          "position": 1093
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 36,
+      "fragment": ",\r\n          shippingAddress: true,\r\n        },\r\n      });\r\n\r\n      // Create order items and update inventory\r\n      for (const item of data.items) {\r\n        // Create order item\r\n        await tx.orderItem.create({\r\n          data: {\r\n            orderId: order.id,\r\n            productId: item.productId,\r\n            quantity: item.quantity,\r\n            unitPrice: item.unitPrice,\r\n            totalPrice: item.unitPrice * item.quantity,\r\n          },\r\n        });\r\n\r\n        // Update product stock\r\n        const product = await tx.product.findUnique({\r\n          where: { id: item.productId },\r\n          select: { stockQuantity: true }\r\n        });\r\n\r\n        await tx.product.update({\r\n          where: { id: item.productId },\r\n          data: { stockQuantity: { decrement: item.quantity } },\r\n        });\r\n\r\n        // Create inventory log\r\n        await tx.inventoryLog.create({\r\n          data: {\r\n            productId: item.productId,\r\n            type: 'SALE',\r\n            quantity: -item.quantity,\r\n            reason: `Order ",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 266,
+        "end": 301,
+        "startLoc": {
+          "line": 266,
+          "column": 2,
+          "position": 2331
+        },
+        "endLoc": {
+          "line": 301,
+          "column": 8,
+          "position": 2647
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 139,
+        "end": 174,
+        "startLoc": {
+          "line": 139,
+          "column": 5,
+          "position": 1196
+        },
+        "endLoc": {
+          "line": 174,
+          "column": 14,
+          "position": 1512
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 17,
+      "fragment": ",\r\n      include: {\r\n        user: {\r\n          select: {\r\n            id: true,\r\n            email: true,\r\n            firstName: true,\r\n            lastName: true,\r\n            phone: true,\r\n            isActive: true,\r\n            isVerified: true,\r\n            createdAt: true,\r\n            lastLoginAt: true,\r\n          },\r\n        },\r\n        addresses: {\r\n          orderBy",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\customerService.ts",
+        "start": 210,
+        "end": 226,
+        "startLoc": {
+          "line": 210,
+          "column": 2,
+          "position": 1752
+        },
+        "endLoc": {
+          "line": 226,
+          "column": 8,
+          "position": 1866
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\customerService.ts",
+        "start": 159,
+        "end": 175,
+        "startLoc": {
+          "line": 159,
+          "column": 6,
+          "position": 1378
+        },
+        "endLoc": {
+          "line": 175,
+          "column": 6,
+          "position": 1492
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(id: string) {\r\n    const customer = await prisma.customer.findUnique({\r\n      where: { id },\r\n      select: { userId: true },\r\n    });\r\n\r\n    if (!customer) {\r\n      throw new Error('Customer not found');\r\n    }\r\n\r\n    if (customer.userId) {\r\n      await prisma.user.update({\r\n        where: { id: customer.userId },\r\n        data: { isActive: true",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\customerService.ts",
+        "start": 370,
+        "end": 383,
+        "startLoc": {
+          "line": 370,
+          "column": 17,
+          "position": 3065
+        },
+        "endLoc": {
+          "line": 383,
+          "column": 5,
+          "position": 3207
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\customerService.ts",
+        "start": 347,
+        "end": 360,
+        "startLoc": {
+          "line": 347,
+          "column": 19,
+          "position": 2882
+        },
+        "endLoc": {
+          "line": 360,
+          "column": 6,
+          "position": 3024
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 16,
+      "fragment": "}),\r\n    ]);\r\n\r\n    return {\r\n      orders,\r\n      pagination: {\r\n        page,\r\n        limit,\r\n        total,\r\n        totalPages: Math.ceil(total / limit),\r\n        hasNext: page < Math.ceil(total / limit),\r\n        hasPrev: page > 1,\r\n      },\r\n    };\r\n  }\r\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\customerService.ts",
+        "start": 533,
+        "end": 548,
+        "startLoc": {
+          "line": 533,
+          "column": 2,
+          "position": 4399
+        },
+        "endLoc": {
+          "line": 548,
+          "column": 2,
+          "position": 4509
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\orderService.ts",
+        "start": 394,
+        "end": 412,
+        "startLoc": {
+          "line": 394,
+          "column": 2,
+          "position": 3527
+        },
+        "endLoc": {
+          "line": 412,
+          "column": 6,
+          "position": 3640
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 27,
+      "fragment": ") {\r\n    return prisma.$transaction(async (tx) => {\r\n      // Get or create customer\r\n      let customer = await tx.customer.findUnique({\r\n        where: { userId }\r\n      });\r\n\r\n      if (!customer) {\r\n        const user = await tx.user.findUnique({\r\n          where: { id: userId }\r\n        });\r\n\r\n        if (!user) {\r\n          throw new Error('User not found');\r\n        }\r\n\r\n        customer = await tx.customer.create({\r\n          data: {\r\n            userId,\r\n            email: user.email,\r\n            firstName: user.firstName,\r\n            lastName: user.lastName\r\n          }\r\n        });\r\n      }\r\n\r\n      // Validate product and stock",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\cartService.ts",
+        "start": 196,
+        "end": 222,
+        "startLoc": {
+          "line": 196,
+          "column": 7,
+          "position": 1643
+        },
+        "endLoc": {
+          "line": 222,
+          "column": 30,
+          "position": 1861
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\cartService.ts",
+        "start": 123,
+        "end": 149,
+        "startLoc": {
+          "line": 123,
+          "column": 2,
+          "position": 1057
+        },
+        "endLoc": {
+          "line": 149,
+          "column": 29,
+          "position": 1275
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": "] = sort.order;\r\n\r\n    const [serviceRequests, total] = await Promise.all([\r\n      prisma.serviceRequest.findMany({\r\n        where,\r\n        include: {\r\n          customer: {\r\n            include: {\r\n              user: { select: { firstName: true, lastName: true, email: true, phone: true } }\r\n            }\r\n          },\r\n          serviceType: true,\r\n          technician: {\r\n            include: {\r\n              user: { select: { firstName: true, lastName: true, email: true }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\adminService.ts",
+        "start": 611,
+        "end": 625,
+        "startLoc": {
+          "line": 611,
+          "column": 39,
+          "position": 6002
+        },
+        "endLoc": {
+          "line": 625,
+          "column": 2,
+          "position": 6169
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\serviceService.ts",
+        "start": 129,
+        "end": 196,
+        "startLoc": {
+          "line": 129,
+          "column": 6,
+          "position": 1155
+        },
+        "endLoc": {
+          "line": 196,
+          "column": 2,
+          "position": 1709
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "const now = new Date();\r\n    let startDate: Date;\r\n\r\n    switch (timeframe) {\r\n      case '7d':\r\n        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);\r\n        break;\r\n      case '30d':\r\n        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);\r\n        break;\r\n      case '90d':\r\n        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);\r\n        break;\r\n      default",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\adminService.ts",
+        "start": 831,
+        "end": 844,
+        "startLoc": {
+          "line": 831,
+          "column": 5,
+          "position": 7777
+        },
+        "endLoc": {
+          "line": 844,
+          "column": 8,
+          "position": 7964
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\adminService.ts",
+        "start": 92,
+        "end": 105,
+        "startLoc": {
+          "line": 92,
+          "column": 5,
+          "position": 650
+        },
+        "endLoc": {
+          "line": 105,
+          "column": 5,
+          "position": 837
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": "= [\r\n  body('items')\r\n    .isArray({ min: 1 })\r\n    .withMessage('Order must contain at least one item'),\r\n  \r\n  body('items.*.productId')\r\n    .isUUID()\r\n    .withMessage('Valid product ID is required'),\r\n  \r\n  body('items.*.quantity')\r\n    .isInt({ min: 1 })\r\n    .withMessage('Quantity must be at least 1'),\r\n  \r\n  body('items.*.unitPrice')\r\n    .isFloat({ min: 0 })\r\n    .withMessage('Unit price must be a positive number'),\r\n  \r\n  body('customerInfo.firstName'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\routes\\orders.ts",
+        "start": 56,
+        "end": 73,
+        "startLoc": {
+          "line": 56,
+          "column": 2,
+          "position": 469
+        },
+        "endLoc": {
+          "line": 73,
+          "column": 25,
+          "position": 601
+        }
+      },
+      "secondFile": {
+        "name": "src\\routes\\orders.ts",
+        "start": 9,
+        "end": 26,
+        "startLoc": {
+          "line": 9,
+          "column": 2,
+          "position": 79
+        },
+        "endLoc": {
+          "line": 26,
+          "column": 25,
+          "position": 211
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "),\r\n  \r\n  body('shippingAddress.street')\r\n    .trim()\r\n    .isLength({ min: 5, max: 200 })\r\n    .withMessage('Street address is required'),\r\n  \r\n  body('shippingAddress.city')\r\n    .trim()\r\n    .isLength({ min: 2, max: 100 })\r\n    .withMessage('City is required'),\r\n  \r\n  body('shippingAddress.region'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\routes\\orders.ts",
+        "start": 90,
+        "end": 102,
+        "startLoc": {
+          "line": 90,
+          "column": 33,
+          "position": 755
+        },
+        "endLoc": {
+          "line": 102,
+          "column": 25,
+          "position": 856
+        }
+      },
+      "secondFile": {
+        "name": "src\\routes\\orders.ts",
+        "start": 24,
+        "end": 36,
+        "startLoc": {
+          "line": 24,
+          "column": 39,
+          "position": 202
+        },
+        "endLoc": {
+          "line": 36,
+          "column": 29,
+          "position": 303
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 11,
+      "fragment": "const user = await prisma.user.findUnique({\r\n        where: { id: decoded.userId },\r\n        select: {\r\n          id: true,\r\n          email: true,\r\n          firstName: true,\r\n          lastName: true,\r\n          role: true,\r\n          isActive: true,\r\n          isVerified: true,\r\n        }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\middleware\\auth.ts",
+        "start": 212,
+        "end": 222,
+        "startLoc": {
+          "line": 212,
+          "column": 7,
+          "position": 1630
+        },
+        "endLoc": {
+          "line": 222,
+          "column": 2,
+          "position": 1728
+        }
+      },
+      "secondFile": {
+        "name": "src\\middleware\\auth.ts",
+        "start": 85,
+        "end": 95,
+        "startLoc": {
+          "line": 85,
+          "column": 5,
+          "position": 651
+        },
+        "endLoc": {
+          "line": 95,
+          "column": 12,
+          "position": 749
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(\r\n  req: Request,\r\n  res: Response,\r\n  next: NextFunction\r\n): void => {\r\n  if (!req.user) {\r\n    res.status(401).json({\r\n      success: false,\r\n      message: 'Authentication required',\r\n    });\r\n    return;\r\n  }\r\n\r\n  const resourceUserId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\middleware\\auth.ts",
+        "start": 240,
+        "end": 253,
+        "startLoc": {
+          "line": 240,
+          "column": 2,
+          "position": 1838
+        },
+        "endLoc": {
+          "line": 253,
+          "column": 15,
+          "position": 1936
+        }
+      },
+      "secondFile": {
+        "name": "src\\middleware\\auth.ts",
+        "start": 155,
+        "end": 164,
+        "startLoc": {
+          "line": 155,
+          "column": 2,
+          "position": 1227
+        },
+        "endLoc": {
+          "line": 164,
+          "column": 13,
+          "position": 1316
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 12,
+      "fragment": "const userId = (req as any).user?.id;\r\n      const userRole = (req as any).user?.role;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      let",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 201,
+        "end": 212,
+        "startLoc": {
+          "line": 201,
+          "column": 7,
+          "position": 1778
+        },
+        "endLoc": {
+          "line": 212,
+          "column": 4,
+          "position": 1881
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 128,
+        "end": 139,
+        "startLoc": {
+          "line": 128,
+          "column": 7,
+          "position": 1098
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 6,
+          "position": 1201
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const {",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 253,
+        "end": 265,
+        "startLoc": {
+          "line": 253,
+          "column": 27,
+          "position": 2206
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 2,
+          "position": 2324
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 71,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 71,
+          "column": 7,
+          "position": 589
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { id } = req.params;\r\n      const userId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 294,
+        "end": 307,
+        "startLoc": {
+          "line": 294,
+          "column": 19,
+          "position": 2555
+        },
+        "endLoc": {
+          "line": 307,
+          "column": 7,
+          "position": 2690
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 266,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 266,
+          "column": 2,
+          "position": 2341
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 21,
+      "fragment": ";\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Get customer ID from user ID\r\n      const customer = await ServiceService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const serviceRequest",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 308,
+        "end": 328,
+        "startLoc": {
+          "line": 308,
+          "column": 5,
+          "position": 2726
+        },
+        "endLoc": {
+          "line": 328,
+          "column": 15,
+          "position": 2870
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 71,
+        "end": 90,
+        "startLoc": {
+          "line": 71,
+          "column": 3,
+          "position": 605
+        },
+        "endLoc": {
+          "line": 90,
+          "column": 12,
+          "position": 747
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const userId = (req as any).user?.id;\r\n      const userRole = (req as any).user?.role;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      let customerId: string | undefined;\r\n      let",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 383,
+        "end": 397,
+        "startLoc": {
+          "line": 383,
+          "column": 21,
+          "position": 3294
+        },
+        "endLoc": {
+          "line": 397,
+          "column": 4,
+          "position": 3440
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 126,
+        "end": 214,
+        "startLoc": {
+          "line": 126,
+          "column": 19,
+          "position": 1069
+        },
+        "endLoc": {
+          "line": 214,
+          "column": 68,
+          "position": 1897
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { id } = req.params;\r\n      const updateData",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\productController.ts",
+        "start": 152,
+        "end": 165,
+        "startLoc": {
+          "line": 152,
+          "column": 14,
+          "position": 1435
+        },
+        "endLoc": {
+          "line": 165,
+          "column": 11,
+          "position": 1570
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 266,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 266,
+          "column": 2,
+          "position": 2341
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { id } = req.params;\r\n      const { quantity",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\productController.ts",
+        "start": 265,
+        "end": 278,
+        "startLoc": {
+          "line": 265,
+          "column": 16,
+          "position": 2360
+        },
+        "endLoc": {
+          "line": 278,
+          "column": 9,
+          "position": 2497
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 266,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 266,
+          "column": 7,
+          "position": 2343
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { id } = req.params;\r\n      const customerId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\productController.ts",
+        "start": 335,
+        "end": 348,
+        "startLoc": {
+          "line": 335,
+          "column": 17,
+          "position": 2975
+        },
+        "endLoc": {
+          "line": 348,
+          "column": 11,
+          "position": 3110
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 266,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 266,
+          "column": 2,
+          "position": 2341
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { productIds",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\productController.ts",
+        "start": 412,
+        "end": 424,
+        "startLoc": {
+          "line": 412,
+          "column": 17,
+          "position": 3643
+        },
+        "endLoc": {
+          "line": 424,
+          "column": 11,
+          "position": 3763
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const guestOrderData",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 15,
+        "end": 27,
+        "startLoc": {
+          "line": 15,
+          "column": 17,
+          "position": 89
+        },
+        "endLoc": {
+          "line": 27,
+          "column": 15,
+          "position": 207
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 71,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 71,
+          "column": 7,
+          "position": 589
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 23,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Get customer ID from user ID\r\n      const customer = await OrderService",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 77,
+        "end": 99,
+        "startLoc": {
+          "line": 77,
+          "column": 12,
+          "position": 630
+        },
+        "endLoc": {
+          "line": 99,
+          "column": 13,
+          "position": 837
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 81,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 81,
+          "column": 15,
+          "position": 678
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 20,
+      "fragment": ");\n      const orderDto = transformOrderToDTO(order);\n      const estimatedDelivery =\n        orderDto.estimatedDelivery ??\n        OrderService.calculateEstimatedDelivery(\n          req.body.shippingAddress?.region\n        ).toISOString();\n\n      res.status(201).json({\n        success: true,\n        message: 'Order created successfully',\n        data: {\n          order: {\n            ...orderDto,\n            estimatedDelivery,\n          },\n        },\n      });\n    } catch (error) {\r\n      console.error('Create order error:'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 121,
+        "end": 140,
+        "startLoc": {
+          "line": 121,
+          "column": 10,
+          "position": 1055
+        },
+        "endLoc": {
+          "line": 140,
+          "column": 22,
+          "position": 1188
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 38,
+        "end": 57,
+        "startLoc": {
+          "line": 38,
+          "column": 15,
+          "position": 342
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 28,
+          "position": 475
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 20,
+      "fragment": ", error);\r\n      if (error instanceof Error) {\r\n        if (error.message.includes('not found') || error.message.includes('Insufficient stock')) {\r\n          res.status(400).json({\r\n            success: false,\r\n            message: error.message,\r\n          });\r\n          return;\r\n        }\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Get orders for current user\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 140,
+        "end": 159,
+        "startLoc": {
+          "line": 140,
+          "column": 22,
+          "position": 1189
+        },
+        "endLoc": {
+          "line": 159,
+          "column": 6,
+          "position": 1334
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 57,
+        "end": 76,
+        "startLoc": {
+          "line": 57,
+          "column": 28,
+          "position": 476
+        },
+        "endLoc": {
+          "line": 76,
+          "column": 6,
+          "position": 621
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 20,
+      "fragment": "const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Get customer ID from user ID\r\n      const customer = await OrderService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const {",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 162,
+        "end": 181,
+        "startLoc": {
+          "line": 162,
+          "column": 7,
+          "position": 1372
+        },
+        "endLoc": {
+          "line": 181,
+          "column": 2,
+          "position": 1532
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 89,
+        "end": 108,
+        "startLoc": {
+          "line": 89,
+          "column": 7,
+          "position": 746
+        },
+        "endLoc": {
+          "line": 108,
+          "column": 10,
+          "position": 906
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": ";\r\n\r\n      const pagination = {\r\n        page: parseInt(page as string),\r\n        limit: Math.min(parseInt(limit as string), 50),\r\n      };\r\n\r\n      const sort = {\r\n        field: sortBy as string,\r\n        order: sortOrder as 'asc' | 'desc',\r\n      };\r\n\r\n      const result = await OrderService",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 192,
+        "end": 204,
+        "startLoc": {
+          "line": 192,
+          "column": 2,
+          "position": 1623
+        },
+        "endLoc": {
+          "line": 204,
+          "column": 13,
+          "position": 1737
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 168,
+        "end": 180,
+        "startLoc": {
+          "line": 168,
+          "column": 7,
+          "position": 1491
+        },
+        "endLoc": {
+          "line": 180,
+          "column": 15,
+          "position": 1605
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 21,
+      "fragment": "const userId = (req as any).user?.id;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Get customer ID from user ID\r\n      const customer = await OrderService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const order",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 229,
+        "end": 249,
+        "startLoc": {
+          "line": 229,
+          "column": 7,
+          "position": 1935
+        },
+        "endLoc": {
+          "line": 249,
+          "column": 6,
+          "position": 2097
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 89,
+        "end": 108,
+        "startLoc": {
+          "line": 89,
+          "column": 7,
+          "position": 746
+        },
+        "endLoc": {
+          "line": 108,
+          "column": 10,
+          "position": 906
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 21,
+      "fragment": ";\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Get customer ID from user ID\r\n      const customer = await OrderService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      await",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 281,
+        "end": 301,
+        "startLoc": {
+          "line": 281,
+          "column": 5,
+          "position": 2384
+        },
+        "endLoc": {
+          "line": 301,
+          "column": 6,
+          "position": 2526
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 89,
+        "end": 108,
+        "startLoc": {
+          "line": 89,
+          "column": 3,
+          "position": 764
+        },
+        "endLoc": {
+          "line": 108,
+          "column": 6,
+          "position": 904
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", error);\r\n      if (error instanceof Error && error.message.includes('not found')) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Get order statistics for current user\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 308,
+        "end": 325,
+        "startLoc": {
+          "line": 308,
+          "column": 22,
+          "position": 2595
+        },
+        "endLoc": {
+          "line": 325,
+          "column": 6,
+          "position": 2719
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 341,
+        "end": 358,
+        "startLoc": {
+          "line": 341,
+          "column": 30,
+          "position": 2970
+        },
+        "endLoc": {
+          "line": 358,
+          "column": 6,
+          "position": 3094
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 22,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Get customer ID from user ID\r\n      const customer = await OrderService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const statistics",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 326,
+        "end": 347,
+        "startLoc": {
+          "line": 326,
+          "column": 23,
+          "position": 2728
+        },
+        "endLoc": {
+          "line": 347,
+          "column": 11,
+          "position": 2917
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 160,
+        "end": 108,
+        "startLoc": {
+          "line": 160,
+          "column": 14,
+          "position": 1343
+        },
+        "endLoc": {
+          "line": 108,
+          "column": 10,
+          "position": 906
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": ";\r\n\r\n      const pagination = {\r\n        page: parseInt(page as string),\r\n        limit: Math.min(parseInt(limit as string), 50),\r\n      };\r\n\r\n      const sort = {\r\n        field: sortBy as string,\r\n        order: sortOrder as 'asc' | 'desc',\r\n      };\r\n\r\n      const result = await CustomerService",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 25,
+        "end": 37,
+        "startLoc": {
+          "line": 25,
+          "column": 7,
+          "position": 248
+        },
+        "endLoc": {
+          "line": 37,
+          "column": 16,
+          "position": 362
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 168,
+        "end": 180,
+        "startLoc": {
+          "line": 168,
+          "column": 7,
+          "position": 1491
+        },
+        "endLoc": {
+          "line": 180,
+          "column": 15,
+          "position": 1605
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const customerData",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 85,
+        "end": 97,
+        "startLoc": {
+          "line": 85,
+          "column": 15,
+          "position": 727
+        },
+        "endLoc": {
+          "line": 97,
+          "column": 13,
+          "position": 845
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 71,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 71,
+          "column": 7,
+          "position": 589
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 16,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { id } = req.params;\r\n      const updateData = req.body;\r\n\r\n      const customer",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 124,
+        "end": 139,
+        "startLoc": {
+          "line": 124,
+          "column": 15,
+          "position": 1073
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 9,
+          "position": 1223
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 167,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 167,
+          "column": 8,
+          "position": 1585
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", error);\r\n      if (error instanceof Error && error.message.includes('not found')) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Activate customer (Admin only)\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 177,
+        "end": 194,
+        "startLoc": {
+          "line": 177,
+          "column": 29,
+          "position": 1531
+        },
+        "endLoc": {
+          "line": 194,
+          "column": 6,
+          "position": 1655
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 341,
+        "end": 358,
+        "startLoc": {
+          "line": 341,
+          "column": 30,
+          "position": 2970
+        },
+        "endLoc": {
+          "line": 358,
+          "column": 6,
+          "position": 3094
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", error);\r\n      if (error instanceof Error && error.message.includes('not found')) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Get current user's profile\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 206,
+        "end": 223,
+        "startLoc": {
+          "line": 206,
+          "column": 27,
+          "position": 1773
+        },
+        "endLoc": {
+          "line": 223,
+          "column": 6,
+          "position": 1897
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 341,
+        "end": 358,
+        "startLoc": {
+          "line": 341,
+          "column": 30,
+          "position": 2970
+        },
+        "endLoc": {
+          "line": 358,
+          "column": 6,
+          "position": 3094
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 12,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 224,
+        "end": 235,
+        "startLoc": {
+          "line": 224,
+          "column": 11,
+          "position": 1906
+        },
+        "endLoc": {
+          "line": 235,
+          "column": 6,
+          "position": 2014
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 160,
+        "end": 171,
+        "startLoc": {
+          "line": 160,
+          "column": 14,
+          "position": 1343
+        },
+        "endLoc": {
+          "line": 171,
+          "column": 32,
+          "position": 1451
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 22,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 261,
+        "end": 282,
+        "startLoc": {
+          "line": 261,
+          "column": 14,
+          "position": 2204
+        },
+        "endLoc": {
+          "line": 282,
+          "column": 6,
+          "position": 2399
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 80,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 80,
+          "column": 32,
+          "position": 666
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 19,
+      "fragment": "const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const customer = await CustomerService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 273,
+        "end": 291,
+        "startLoc": {
+          "line": 273,
+          "column": 7,
+          "position": 2320
+        },
+        "endLoc": {
+          "line": 291,
+          "column": 6,
+          "position": 2474
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 226,
+        "end": 245,
+        "startLoc": {
+          "line": 226,
+          "column": 7,
+          "position": 1935
+        },
+        "endLoc": {
+          "line": 245,
+          "column": 4,
+          "position": 2091
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 31,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = (req as any).user?.id;\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const customer = await CustomerService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const addressData",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 311,
+        "end": 341,
+        "startLoc": {
+          "line": 311,
+          "column": 11,
+          "position": 2636
+        },
+        "endLoc": {
+          "line": 341,
+          "column": 12,
+          "position": 2908
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 291,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 291,
+          "column": 11,
+          "position": 2476
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { addressId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 365,
+        "end": 377,
+        "startLoc": {
+          "line": 365,
+          "column": 14,
+          "position": 3087
+        },
+        "endLoc": {
+          "line": 377,
+          "column": 10,
+          "position": 3207
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 12,
+      "fragment": "} = req.params;\r\n      const userId = (req as any).user?.id;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 377,
+        "end": 388,
+        "startLoc": {
+          "line": 377,
+          "column": 2,
+          "position": 3209
+        },
+        "endLoc": {
+          "line": 388,
+          "column": 6,
+          "position": 3301
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 228,
+        "end": 239,
+        "startLoc": {
+          "line": 228,
+          "column": 2,
+          "position": 1924
+        },
+        "endLoc": {
+          "line": 239,
+          "column": 32,
+          "position": 2016
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 21,
+      "fragment": "const userId = (req as any).user?.id;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const customer = await CustomerService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const updateData = req.body;\r\n      const address",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 378,
+        "end": 398,
+        "startLoc": {
+          "line": 378,
+          "column": 7,
+          "position": 3220
+        },
+        "endLoc": {
+          "line": 398,
+          "column": 8,
+          "position": 3391
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 226,
+        "end": 292,
+        "startLoc": {
+          "line": 226,
+          "column": 7,
+          "position": 1935
+        },
+        "endLoc": {
+          "line": 292,
+          "column": 16,
+          "position": 2489
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", error);\r\n      if (error instanceof Error && error.message.includes('not found')) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Delete customer address\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 410,
+        "end": 427,
+        "startLoc": {
+          "line": 410,
+          "column": 24,
+          "position": 3486
+        },
+        "endLoc": {
+          "line": 427,
+          "column": 6,
+          "position": 3610
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 341,
+        "end": 358,
+        "startLoc": {
+          "line": 341,
+          "column": 30,
+          "position": 2970
+        },
+        "endLoc": {
+          "line": 358,
+          "column": 6,
+          "position": 3094
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 21,
+      "fragment": "const { addressId } = req.params;\r\n      const userId = (req as any).user?.id;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const customer = await CustomerService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      await",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 430,
+        "end": 450,
+        "startLoc": {
+          "line": 430,
+          "column": 7,
+          "position": 3648
+        },
+        "endLoc": {
+          "line": 450,
+          "column": 6,
+          "position": 3821
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 377,
+        "end": 245,
+        "startLoc": {
+          "line": 377,
+          "column": 7,
+          "position": 3203
+        },
+        "endLoc": {
+          "line": 245,
+          "column": 4,
+          "position": 2091
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", error);\r\n      if (error instanceof Error && error.message.includes('not found')) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Get customer order history\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 457,
+        "end": 474,
+        "startLoc": {
+          "line": 457,
+          "column": 24,
+          "position": 3887
+        },
+        "endLoc": {
+          "line": 474,
+          "column": 6,
+          "position": 4011
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 341,
+        "end": 358,
+        "startLoc": {
+          "line": 341,
+          "column": 30,
+          "position": 2970
+        },
+        "endLoc": {
+          "line": 358,
+          "column": 6,
+          "position": 3094
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 20,
+      "fragment": ";\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const customer = await CustomerService.getCustomerByUserId(userId);\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer profile not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const pagination",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 478,
+        "end": 497,
+        "startLoc": {
+          "line": 478,
+          "column": 6,
+          "position": 4095
+        },
+        "endLoc": {
+          "line": 497,
+          "column": 11,
+          "position": 4235
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 226,
+        "end": 291,
+        "startLoc": {
+          "line": 226,
+          "column": 3,
+          "position": 1953
+        },
+        "endLoc": {
+          "line": 291,
+          "column": 11,
+          "position": 2476
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { items",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 9,
+        "end": 21,
+        "startLoc": {
+          "line": 9,
+          "column": 13,
+          "position": 66
+        },
+        "endLoc": {
+          "line": 21,
+          "column": 6,
+          "position": 186
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const userId = (req as any).user?.id;\r\n      \r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      const cart",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 40,
+        "end": 52,
+        "startLoc": {
+          "line": 40,
+          "column": 8,
+          "position": 328
+        },
+        "endLoc": {
+          "line": 52,
+          "column": 5,
+          "position": 440
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 160,
+        "end": 235,
+        "startLoc": {
+          "line": 160,
+          "column": 14,
+          "position": 1343
+        },
+        "endLoc": {
+          "line": 235,
+          "column": 9,
+          "position": 2016
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = (req as any).user?.id;\r\n      const",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 70,
+        "end": 83,
+        "startLoc": {
+          "line": 70,
+          "column": 9,
+          "position": 567
+        },
+        "endLoc": {
+          "line": 83,
+          "column": 6,
+          "position": 705
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 72,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 72,
+          "column": 3,
+          "position": 609
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const userId = (req as any).user?.id;\r\n\r\n      if (!userId) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Authentication required',\r\n        });\r\n        return;\r\n      }\r\n\r\n      await",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 112,
+        "end": 124,
+        "startLoc": {
+          "line": 112,
+          "column": 10,
+          "position": 921
+        },
+        "endLoc": {
+          "line": 124,
+          "column": 6,
+          "position": 1031
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\orderController.ts",
+        "start": 160,
+        "end": 171,
+        "startLoc": {
+          "line": 160,
+          "column": 14,
+          "position": 1343
+        },
+        "endLoc": {
+          "line": 171,
+          "column": 32,
+          "position": 1451
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = (req as any).user?.id;\r\n      const { productId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 142,
+        "end": 155,
+        "startLoc": {
+          "line": 142,
+          "column": 8,
+          "position": 1154
+        },
+        "endLoc": {
+          "line": 155,
+          "column": 10,
+          "position": 1296
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 83,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 83,
+          "column": 6,
+          "position": 709
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 17,
+      "fragment": ")) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Update cart item quantity\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 174,
+        "end": 190,
+        "startLoc": {
+          "line": 174,
+          "column": 21,
+          "position": 1487
+        },
+        "endLoc": {
+          "line": 190,
+          "column": 6,
+          "position": 1585
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 109,
+        "end": 125,
+        "startLoc": {
+          "line": 109,
+          "column": 12,
+          "position": 962
+        },
+        "endLoc": {
+          "line": 125,
+          "column": 6,
+          "position": 1060
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = (req as any).user?.id;\r\n      const { itemId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 191,
+        "end": 204,
+        "startLoc": {
+          "line": 191,
+          "column": 11,
+          "position": 1594
+        },
+        "endLoc": {
+          "line": 204,
+          "column": 7,
+          "position": 1736
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 83,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 83,
+          "column": 6,
+          "position": 709
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", error);\r\n      if (error instanceof Error && error.message.includes('insufficient stock')) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: error.message,\r\n        });\r\n        return;\r\n      }\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Remove item from cart\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 240,
+        "end": 257,
+        "startLoc": {
+          "line": 240,
+          "column": 26,
+          "position": 2037
+        },
+        "endLoc": {
+          "line": 257,
+          "column": 6,
+          "position": 2161
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\cartController.ts",
+        "start": 173,
+        "end": 125,
+        "startLoc": {
+          "line": 173,
+          "column": 23,
+          "position": 1461
+        },
+        "endLoc": {
+          "line": 125,
+          "column": 6,
+          "position": 1060
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "{\r\n      try {\r\n        const errors = validationResult(req);\r\n        if (!errors.isEmpty()) {\r\n          res.status(400).json({\r\n            success: false,\r\n            message: 'Validation failed',\r\n            errors: errors.array(),\r\n          });\r\n          return;\r\n        }\r\n\r\n        const { email",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authControllerSecure.ts",
+        "start": 127,
+        "end": 139,
+        "startLoc": {
+          "line": 127,
+          "column": 2,
+          "position": 1044
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 6,
+          "position": 1145
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 2,
+          "position": 490
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { email, password, firstName, lastName, companyName, customerType = 'B2C' } = req.body;\r\n\r\n      // Validate password strength",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 54,
+        "end": 68,
+        "startLoc": {
+          "line": 54,
+          "column": 9,
+          "position": 526
+        },
+        "endLoc": {
+          "line": 68,
+          "column": 30,
+          "position": 680
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 141,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 141,
+          "column": 41,
+          "position": 1179
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": "},\r\n        });\r\n\r\n        const customer = await tx.customer.create({\r\n          data: {\r\n            userId: user.id,\r\n            companyName: companyName || null,\r\n            customerType: customerType as 'B2B' | 'B2C',\r\n          },\r\n        });\r\n\r\n        return { user, customer };\r\n      });\r\n\r\n      // Generate tokens",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 118,
+        "end": 132,
+        "startLoc": {
+          "line": 118,
+          "column": 11,
+          "position": 1111
+        },
+        "endLoc": {
+          "line": 132,
+          "column": 19,
+          "position": 1222
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\authControllerSecure.ts",
+        "start": 167,
+        "end": 181,
+        "startLoc": {
+          "line": 167,
+          "column": 13,
+          "position": 1412
+        },
+        "endLoc": {
+          "line": 181,
+          "column": 24,
+          "position": 1523
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { email, password }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 162,
+        "end": 174,
+        "startLoc": {
+          "line": 162,
+          "column": 6,
+          "position": 1453
+        },
+        "endLoc": {
+          "line": 174,
+          "column": 2,
+          "position": 1578
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 139,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 2,
+          "position": 1149
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 33,
+      "fragment": "const user = await prisma.user.findUnique({\r\n        where: { id: decoded.userId },\r\n        select: {\r\n          id: true,\r\n          email: true,\r\n          firstName: true,\r\n          lastName: true,\r\n          role: true,\r\n          isActive: true,\r\n          isVerified: true,\r\n          lastLoginAt: true,\r\n        },\r\n      });\r\n\r\n      if (!user || !user.isActive) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'User not found or inactive',\r\n          code: 'USER_INACTIVE'\r\n        });\r\n        return;\r\n      }\r\n\r\n      if (!user.isVerified) {\r\n        res.status(401).json({\r\n          success: false,\r\n          message: 'Email verification required',\r\n          code: 'EMAIL_NOT_VERIFIED'\r\n        });\r\n        return;\r\n      }\r\n\r\n      // Revoke old refresh token first",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 323,
+        "end": 355,
+        "startLoc": {
+          "line": 323,
+          "column": 7,
+          "position": 2914
+        },
+        "endLoc": {
+          "line": 355,
+          "column": 34,
+          "position": 3170
+        }
+      },
+      "secondFile": {
+        "name": "src\\middleware\\auth.ts",
+        "start": 85,
+        "end": 117,
+        "startLoc": {
+          "line": 85,
+          "column": 5,
+          "position": 651
+        },
+        "endLoc": {
+          "line": 117,
+          "column": 46,
+          "position": 907
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "static async updateProfile(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = req",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 517,
+        "end": 529,
+        "startLoc": {
+          "line": 517,
+          "column": 3,
+          "position": 4471
+        },
+        "endLoc": {
+          "line": 529,
+          "column": 4,
+          "position": 4598
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 261,
+        "end": 71,
+        "startLoc": {
+          "line": 261,
+          "column": 3,
+          "position": 2199
+        },
+        "endLoc": {
+          "line": 71,
+          "column": 2,
+          "position": 593
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const userId = req.user?.id;\r\n      const { currentPassword",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 575,
+        "end": 588,
+        "startLoc": {
+          "line": 575,
+          "column": 15,
+          "position": 4951
+        },
+        "endLoc": {
+          "line": 588,
+          "column": 16,
+          "position": 5087
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 530,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 530,
+          "column": 10,
+          "position": 4612
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { email }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 679,
+        "end": 691,
+        "startLoc": {
+          "line": 679,
+          "column": 21,
+          "position": 5805
+        },
+        "endLoc": {
+          "line": 691,
+          "column": 2,
+          "position": 5927
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 139,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 2,
+          "position": 1146
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { token",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\authController.ts",
+        "start": 728,
+        "end": 740,
+        "startLoc": {
+          "line": 728,
+          "column": 14,
+          "position": 6170
+        },
+        "endLoc": {
+          "line": 740,
+          "column": 6,
+          "position": 6290
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { orderId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 104,
+        "end": 116,
+        "startLoc": {
+          "line": 104,
+          "column": 18,
+          "position": 881
+        },
+        "endLoc": {
+          "line": 116,
+          "column": 8,
+          "position": 1001
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 11,
+      "fragment": "const pagination = {\r\n        page: parseInt(page as string),\r\n        limit: parseInt(limit as string),\r\n      };\r\n\r\n      const sort = {\r\n        field: sortBy as string,\r\n        order: sortOrder as 'asc' | 'desc',\r\n      };\r\n\r\n      const result = await AdminService.getCustomers",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 162,
+        "end": 172,
+        "startLoc": {
+          "line": 162,
+          "column": 7,
+          "position": 1380
+        },
+        "endLoc": {
+          "line": 172,
+          "column": 13,
+          "position": 1482
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 76,
+        "end": 86,
+        "startLoc": {
+          "line": 76,
+          "column": 7,
+          "position": 654
+        },
+        "endLoc": {
+          "line": 86,
+          "column": 10,
+          "position": 756
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ".getCustomers(filters, pagination, sort);\r\n\r\n      res.json({\r\n        success: true,\r\n        data: result,\r\n      });\r\n    } catch (error) {\r\n      console.error('Get customers error:', error);\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Get customer details\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 172,
+        "end": 189,
+        "startLoc": {
+          "line": 172,
+          "column": 13,
+          "position": 1481
+        },
+        "endLoc": {
+          "line": 189,
+          "column": 6,
+          "position": 1598
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 37,
+        "end": 54,
+        "startLoc": {
+          "line": 37,
+          "column": 16,
+          "position": 363
+        },
+        "endLoc": {
+          "line": 54,
+          "column": 6,
+          "position": 480
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 16,
+      "fragment": ");\r\n\r\n      if (!customer) {\r\n        res.status(404).json({\r\n          success: false,\r\n          message: 'Customer not found',\r\n        });\r\n        return;\r\n      }\r\n\r\n      res.json({\r\n        success: true,\r\n        data: { customer },\r\n      });\r\n    } catch (error) {\r\n      console.error('Get customer details error:'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 193,
+        "end": 208,
+        "startLoc": {
+          "line": 193,
+          "column": 11,
+          "position": 1666
+        },
+        "endLoc": {
+          "line": 208,
+          "column": 30,
+          "position": 1780
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\customerController.ts",
+        "start": 59,
+        "end": 74,
+        "startLoc": {
+          "line": 59,
+          "column": 3,
+          "position": 550
+        },
+        "endLoc": {
+          "line": 74,
+          "column": 22,
+          "position": 664
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": ".dateTo = new Date(dateTo as string);\r\n      }\r\n\r\n      const pagination = {\r\n        page: parseInt(page as string),\r\n        limit: parseInt(limit as string),\r\n      };\r\n\r\n      const sort = {\r\n        field: sortBy as string,\r\n        order: sortOrder as 'asc' | 'desc',\r\n      };\r\n\r\n      const result = await AdminService.getServiceRequests",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 243,
+        "end": 256,
+        "startLoc": {
+          "line": 243,
+          "column": 15,
+          "position": 2052
+        },
+        "endLoc": {
+          "line": 256,
+          "column": 19,
+          "position": 2179
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 73,
+        "end": 86,
+        "startLoc": {
+          "line": 73,
+          "column": 8,
+          "position": 629
+        },
+        "endLoc": {
+          "line": 86,
+          "column": 10,
+          "position": 756
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 18,
+      "fragment": ", pagination, sort);\r\n\r\n      res.json({\r\n        success: true,\r\n        data: result,\r\n      });\r\n    } catch (error) {\r\n      console.error('Get service requests error:', error);\r\n      res.status(500).json({\r\n        success: false,\r\n        message: 'Internal server error',\r\n      });\r\n    }\r\n  }\r\n\r\n  /**\r\n   * Assign technician to service request\r\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 256,
+        "end": 273,
+        "startLoc": {
+          "line": 256,
+          "column": 15,
+          "position": 2182
+        },
+        "endLoc": {
+          "line": 273,
+          "column": 6,
+          "position": 2295
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 180,
+        "end": 197,
+        "startLoc": {
+          "line": 180,
+          "column": 8,
+          "position": 1610
+        },
+        "endLoc": {
+          "line": 197,
+          "column": 6,
+          "position": 1723
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const { serviceId",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 274,
+        "end": 286,
+        "startLoc": {
+          "line": 274,
+          "column": 17,
+          "position": 2304
+        },
+        "endLoc": {
+          "line": 286,
+          "column": 10,
+          "position": 2424
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 265,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 265,
+          "column": 3,
+          "position": 2326
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 13,
+      "fragment": "(req: Request, res: Response): Promise<void> {\r\n    try {\r\n      const errors = validationResult(req);\r\n      if (!errors.isEmpty()) {\r\n        res.status(400).json({\r\n          success: false,\r\n          message: 'Validation failed',\r\n          errors: errors.array(),\r\n        });\r\n        return;\r\n      }\r\n\r\n      const technicianData",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminController.ts",
+        "start": 340,
+        "end": 352,
+        "startLoc": {
+          "line": 340,
+          "column": 17,
+          "position": 2839
+        },
+        "endLoc": {
+          "line": 352,
+          "column": 15,
+          "position": 2957
+        }
+      },
+      "secondFile": {
+        "name": "src\\controllers\\serviceRequestController.ts",
+        "start": 59,
+        "end": 71,
+        "startLoc": {
+          "line": 59,
+          "column": 21,
+          "position": 471
+        },
+        "endLoc": {
+          "line": 71,
+          "column": 7,
+          "position": 589
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 14,
+      "fragment": "const user = await prisma.user.findUnique({\r\n      where: { id: decoded.userId },\r\n      select: {\r\n        id: true,\r\n        email: true,\r\n        firstName: true,\r\n        lastName: true,\r\n        role: true,\r\n        isActive: true,\r\n        isVerified: true,\r\n      },\r\n    });\r\n\r\n    if (!",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\controllers\\adminAuthController.ts",
+        "start": 213,
+        "end": 226,
+        "startLoc": {
+          "line": 213,
+          "column": 5,
+          "position": 1816
+        },
+        "endLoc": {
+          "line": 226,
+          "column": 2,
+          "position": 1930
+        }
+      },
+      "secondFile": {
+        "name": "src\\middleware\\auth.ts",
+        "start": 85,
+        "end": 225,
+        "startLoc": {
+          "line": 85,
+          "column": 5,
+          "position": 651
+        },
+        "endLoc": {
+          "line": 225,
+          "column": 5,
+          "position": 1744
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 26,
+      "fragment": "],\r\n        imgSrc: [\r\n          \"'self'\",\r\n          \"data:\",\r\n          \"https:\",\r\n          \"blob:\",\r\n          \"https://images.unsplash.com\",\r\n          \"https://via.placeholder.com\"\r\n        ],\r\n        fontSrc: [\r\n          \"'self'\",\r\n          \"https://fonts.gstatic.com\",\r\n          \"https://cdn.jsdelivr.net\"\r\n        ],\r\n        connectSrc: [\r\n          \"'self'\",\r\n          \"https://api.stripe.com\",\r\n          \"https://maps.googleapis.com\",\r\n          config.frontend.url\r\n        ],\r\n        frameSrc: [\r\n          \"'self'\",\r\n          \"https://js.stripe.com\"\r\n        ],\r\n        objectSrc: [\"'none'\"],\r\n        baseUri",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\config\\security.ts",
+        "start": 139,
+        "end": 164,
+        "startLoc": {
+          "line": 139,
+          "column": 9,
+          "position": 1014
+        },
+        "endLoc": {
+          "line": 164,
+          "column": 8,
+          "position": 1152
+        }
+      },
+      "secondFile": {
+        "name": "src\\middleware\\security.ts",
+        "start": 74,
+        "end": 99,
+        "startLoc": {
+          "line": 74,
+          "column": 7,
+          "position": 628
+        },
+        "endLoc": {
+          "line": 99,
+          "column": 24,
+          "position": 766
+        }
+      }
+    }
+  ]
+}

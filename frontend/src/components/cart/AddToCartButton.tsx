@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart, CartItem } from '@/contexts/CartContext'
+import { useCart } from '@/hooks/useCart'
+import type { AddItemInput } from '@/hooks/useCart'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useAnalyticsContext } from '../analytics/AnalyticsProvider'
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react'
@@ -35,14 +36,15 @@ export function AddToCartButton({
   const [isAdding, setIsAdding] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [error, setError] = useState('')
-  const { addItem, items, formatPrice, validateStock } = useCart()
+  const { addItem, items, formatPrice } = useCart()
   const { t, locale } = useLanguage()
   const { trackAddToCart } = useAnalyticsContext()
 
   // Check if item is already in cart
   const cartItem = items.find(item => item.productId === product.id)
   const isInCart = !!cartItem
-  const maxQuantity = Math.max(0, product.stockQuantity - (cartItem?.quantity || 0))
+  const availableStock = cartItem?.maxStock ?? product.stockQuantity
+  const maxQuantity = Math.max(0, availableStock - (cartItem?.quantity || 0))
 
   const handleAddToCart = async () => {
     if (maxQuantity <= 0) return
@@ -72,7 +74,7 @@ export function AddToCartButton({
         return
       }
 
-      const cartItemData: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number } = {
+      const cartItemData: AddItemInput = {
         productId: product.id,
         name: product.name,
         nameAr: product.nameAr,
@@ -81,7 +83,7 @@ export function AddToCartButton({
         sku: product.sku,
         maxStock: currentStock,
         image: product.images?.[0]?.url,
-        quantity: quantity
+        quantity
       }
 
       addItem(cartItemData)

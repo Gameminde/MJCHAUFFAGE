@@ -348,14 +348,29 @@ export const queryValidation = {
 
 // Validation result handler
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
+  // LOG DÉTAILLÉ 1 - Informations de la requête
+  console.log('🔍 Validation Request Details:');
+  console.log('Method:', req.method);
+  console.log('URL:', req.originalUrl);
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('Headers Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+  console.log('Content-Type:', req.headers['content-type']);
+  
   const errors = validationResult(req);
   
   if (!errors.isEmpty()) {
+    // LOG DÉTAILLÉ 2 - Erreurs de validation
+    console.log('❌ Erreurs de validation détectées:');
+    console.log('Nombre d\'erreurs:', errors.array().length);
+    console.log('Erreurs complètes:', JSON.stringify(errors.array(), null, 2));
+    
     const formattedErrors = errors.array().map(error => ({
       field: error.type === 'field' ? error.path : 'unknown',
       message: error.msg,
       value: error.type === 'field' ? error.value : undefined
     }));
+
+    console.log('Erreurs formatées:', JSON.stringify(formattedErrors, null, 2));
 
     res.status(400).json({
       success: false,
@@ -366,6 +381,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
     return;
   }
 
+  console.log('✅ Validation passée avec succès');
   next();
 };
 

@@ -73,7 +73,7 @@ cp frontend/.env.example frontend/.env.local
 
 # Éditer les variables selon votre environnement
 # NEXT_PUBLIC_API_URL=http://localhost:3001
-# NEXTAUTH_SECRET=your-secret-key
+# (NextAuth retiré) Utilisation d'auth maison (cookies/JWT), pas de NEXTAUTH_SECRET
 ```
 
 ### 4. Lancement en développement
@@ -91,7 +91,7 @@ cd backend && node simple-server.js
 
 ### 5. Accès aux interfaces
 - **Site web** : http://localhost:3000
-- **Admin** : http://localhost:3000/admin
+- **Admin** : http://localhost:3005
   - Email : `admin@mjchauffage.com`
   - Mot de passe : `Admin123!`
 
@@ -130,7 +130,7 @@ MJCHAUFFAGE/
 - **Styling** : Tailwind CSS 3.0
 - **Icons** : Lucide React
 - **Internationalisation** : next-intl
-- **Authentification** : NextAuth.js
+- **Authentification** : Auth maison (JWT en cookies + services)
 - **State Management** : React Context + Hooks
 
 ### Backend
@@ -210,8 +210,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # Auth
-NEXTAUTH_SECRET=your-super-secret-key
-NEXTAUTH_URL=http://localhost:3000
+# (NextAuth retiré) Utilisation d'auth maison basée sur JWT/cookies
 
 # Database (si utilisée côté frontend)
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"

@@ -75,7 +75,6 @@ export const testAnalyticsOperations = async (): Promise<boolean> => {
         os: 'Windows',
         country: 'Algeria',
         city: 'Algiers',
-        pageViews: 1,
       },
     });
 

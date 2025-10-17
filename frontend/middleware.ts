@@ -1,20 +1,25 @@
-import createMiddleware from 'next-intl/middleware'
+import createMiddleware from 'next-intl/middleware';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { adminAuthMiddleware } from './src/middleware/adminAuth'
 
-export default createMiddleware({
-  // A list of all locales that are supported
-  locales: ['ar', 'fr', 'en'],
-
-  // Used when no locale matches
+const intlMiddleware = createMiddleware({
+  locales: ['fr', 'ar'],
   defaultLocale: 'fr',
+  localePrefix: 'as-needed',
+});
 
-  // Redirect to localized path by default
-  localeDetection: true,
+export default function middleware(request: NextRequest) {
+  // Apply admin authentication middleware first
+  const adminAuthResponse = adminAuthMiddleware(request)
+  if (adminAuthResponse) {
+    return adminAuthResponse
+  }
 
-  // Always show the locale prefix
-  localePrefix: 'always'
-})
+  // Then apply i18n middleware
+  return intlMiddleware(request)
+}
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(ar|fr|en)/:path*']
-}
+  matcher: ['/((?!api|_next|.*\..*).*)'],
+};

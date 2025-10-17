@@ -7,21 +7,10 @@ import { config } from '@/config/environment';
 import { logger } from '@/utils/logger';
 
 // Extend Request interface for file uploads
-interface MulterFile {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  size: number;
-  destination: string;
-  filename: string;
-  path: string;
-  buffer: Buffer;
-}
 
 interface RequestWithFiles extends Request {
-  file?: MulterFile;
-  files?: MulterFile[] | { [fieldname: string]: MulterFile[] };
+  file?: Express.Multer.File;
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
 }
 
 // CORS configuration
@@ -204,12 +193,23 @@ export const adminRateLimit = createAdvancedRateLimit({
 export const progressiveDelay = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 10, // Allow 10 requests per window without delay
-  delayMs: 500, // Add 500ms delay per request after delayAfter
+  delayMs: () => 500, // Add 500ms delay per request after delayAfter
   maxDelayMs: 20000, // Maximum delay of 20 seconds
 });
 
 // Enhanced input validation and sanitization
 export const enhancedInputValidation = (req: Request, res: Response, next: NextFunction): void => {
+  // Skip validation for product endpoints to allow legitimate product data
+  const skipValidationPaths = [
+    '/api/products',
+    '/api/orders',
+    '/api/customers'
+  ];
+  
+  if (skipValidationPaths.some(path => req.path.startsWith(path))) {
+    return next();
+  }
+
   // Check for common attack patterns
   const maliciousPatterns = [
     // XSS patterns
@@ -220,10 +220,10 @@ export const enhancedInputValidation = (req: Request, res: Response, next: NextF
     /onerror\s*=/gi,
     /onclick\s*=/gi,
     
-    // SQL injection patterns
-    /(\b(union|select|insert|delete|drop|create|alter|exec|execute)\b)/gi,
-    /[;|&$`'"\\*?<>{}[\]()]/g,
-    /(\b(or|and)\b.*=.*)/gi,
+    // SQL injection patterns (more specific)
+    /(\b(union|select|insert|delete|drop|create|alter|exec|execute)\b.*\b(from|where|into)\b)/gi,
+    /(;.*--)|(\/\*.*\*\/)/g,
+    /(\b(or|and)\b.*=.*('|"))/gi,
     
     // Path traversal patterns
     /\.\.\//g,
@@ -231,11 +231,7 @@ export const enhancedInputValidation = (req: Request, res: Response, next: NextF
     /\.\.\\/g,
     
     // Command injection patterns
-    /[|&;$`]/g,
-    /(nc|netcat|wget|curl|ping|nslookup)/gi,
-    
-    // LDAP injection patterns
-    /[()&|!=*<>~]/g,
+    /[|&;$`].*\b(nc|netcat|wget|curl|ping|nslookup|rm|del|format)\b/gi,
     
     // NoSQL injection patterns
     /(\$where|\$ne|\$in|\$nin|\$gt|\$lt|\$regex)/gi
@@ -511,15 +507,29 @@ export const validateContentType = (allowedTypes: string[]) => {
 
 // SQL injection prevention for query parameters
 export const preventSQLInjection = (req: Request, res: Response, next: NextFunction): void => {
+  // Allow known-safe analytics tracking payloads which include nested metadata
+  const safePaths = ['/api/analytics/track'];
+  if (safePaths.some(path => req.path === path || req.originalUrl?.startsWith(path))) {
+    next();
+    return;
+  }
+
   const sqlPatterns = [
-    /(\b(union|select|insert|delete|drop|create|alter|exec|execute)\b)/gi,
-    /[;|&$`'"\\*?<>{}[\]()]/g,
-    /(\b(or|and)\b.*=.*)/gi
+    /'\s*or\s*'1'='1/i,
+    /;\s*drop\s+table/i,
+    /union\s+select/i,
+    /insert\s+into\s+\w+\s*\(/i,
+    /\bexec(?:ute)?\s+\w+/i,
+    /--\s*[^\n]*$/m
   ];
 
   const checkForSQLInjection = (obj: any, path = ''): boolean => {
     if (typeof obj === 'string') {
-      return sqlPatterns.some(pattern => pattern.test(obj));
+      const value = obj.trim();
+      if (!value) {
+        return false;
+      }
+      return sqlPatterns.some(pattern => pattern.test(value));
     } else if (Array.isArray(obj)) {
       return obj.some((item, index) => checkForSQLInjection(item, `${path}[${index}]`));
     } else if (obj && typeof obj === 'object') {

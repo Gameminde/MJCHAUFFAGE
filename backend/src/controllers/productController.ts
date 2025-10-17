@@ -93,8 +93,14 @@ export class ProductController {
    */
   static async createProduct(req: Request, res: Response): Promise<void> {
     try {
+      // LOG DÉTAILLÉ 3 - Controller appelé
+      console.log('📦 Controller createProduct appelé');
+      console.log('User:', req.user ? { id: req.user.id, role: req.user.role } : 'Non défini');
+      console.log('Body reçu:', JSON.stringify(req.body, null, 2));
+      
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('❌ Erreurs de validation dans le controller:', errors.array());
         res.status(400).json({
           success: false,
           message: 'Validation failed',
@@ -104,7 +110,14 @@ export class ProductController {
       }
 
       const productData = req.body;
+      
+      // LOG DÉTAILLÉ 4 - Avant appel service
+      console.log('🔄 Appel du service ProductService.createProduct...');
+      console.log('Données à créer:', JSON.stringify(productData, null, 2));
+      
       const product = await ProductService.createProduct(productData);
+      
+      console.log('✅ Produit créé avec succès:', product.id);
 
       res.status(201).json({
         success: true,
@@ -112,8 +125,13 @@ export class ProductController {
         data: { product },
       });
     } catch (error) {
-      console.error('Create product error:', error);
+      console.error('❌ Erreur dans createProduct:', error);
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack);
+      }
+      
       if (error instanceof Error && error.message.includes('unique constraint')) {
+        console.log('🔄 Erreur de contrainte unique détectée');
         res.status(409).json({
           success: false,
           message: 'Product with this SKU or slug already exists',
@@ -123,6 +141,7 @@ export class ProductController {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }

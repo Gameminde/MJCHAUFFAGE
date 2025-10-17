@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import fs from 'fs';
 import compression from 'compression';
 import morgan from 'morgan';
 import session from 'express-session';
@@ -26,6 +28,9 @@ import analyticsRoutes from '@/routes/analytics';
 import adminRoutes from '@/routes/admin';
 import realtimeRoutes from '@/routes/realtime';
 import cartRoutes from '@/routes/cart';
+import healthRoutes from '@/routes/health';
+import paymentRoutes from '@/routes/payments';
+import uploadsRoutes from '@/routes/uploads';
 
 const app = express();
 const server = createServer(app);
@@ -44,9 +49,6 @@ const io = new SocketServer(server, {
   },
 });
 
-// Apply comprehensive security middleware
-app.use(applySecurity);
-
 // Core Middleware
 app.use(compression());
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
@@ -54,12 +56,28 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Security middleware (after cookieParser to access req.cookies)
+app.use(applySecurity);
+
 // Input sanitization
 app.use(sanitizeRequestBody);
 
 // Enhanced Rate Limiting with progressive delays
 app.use('/api', progressiveDelay);
 app.use('/api', apiRateLimit);
+
+// Payments routes
+app.use('/api/payments', paymentRoutes);
+
+// Static serving for uploaded files
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir));
+
+// Uploads API
+app.use('/api/uploads', uploadsRoutes);
 
 // Specific rate limits for different endpoint types
 app.use('/api/auth/login', authRateLimit);
@@ -81,6 +99,7 @@ app.use(session({
 }));
 
 // API Routes
+app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
@@ -111,25 +130,46 @@ process.on('SIGTERM', () => {
 });
 
 const startServer = async () => {
+  const isTestEnv = process.env.NODE_ENV === 'test';
   try {
-    await prisma.$connect();
-    logger.info('Database connected successfully.');
+    console.log('🚀 Starting MJ Chauffage Backend...');
     
+    console.log('📊 Connecting to database...');
+    // Test simple de connexion
+    await prisma.$queryRaw`SELECT 1 as test`;
+    console.log('✅ Database connected successfully.');
+    
+    console.log('🔗 Connecting to Redis...');
     await connectRedis();
-    logger.info('Redis connected successfully.');
+    console.log('✅ Redis connected successfully.');
 
     const port = config.api.port || 3001;
+    console.log(`🌐 Starting server on port ${port}...`);
+    
     server.listen(port, () => {
-      logger.info(`Server listening on port ${port}`);
+      console.log(`✅ Server listening on http://localhost:${port}`);
+      console.log(`🔍 Health check: http://localhost:${port}/health`);
+      console.log(`📦 Uploads served at: http://localhost:${port}/uploads`);
+      console.log(`🔐 Admin login: http://localhost:3005/login`);
     });
+
+    // Ajouter un gestionnaire d'erreur pour server.listen
+    server.on('error', (error: any) => {
+      console.error('❌ Server error:', error);
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${port} is already in use`);
+      }
+      if (!isTestEnv) process.exit(1);
+    });
+
   } catch (error) {
-    logger.error('Failed to start server:', error);
-    prisma.$disconnect();
+    console.error('❌ Failed to start server:', error);
+    await prisma.$disconnect();
     redisClient.quit();
-    process.exit(1);
+    if (!isTestEnv) process.exit(1);
   }
 };
 
-startServer();
+if (process.env.NODE_ENV !== 'test') startServer();
 
 export { app, server, io };

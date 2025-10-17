@@ -1,18 +1,33 @@
-import ClientProductsPage from './ClientProductsPage';
 import { setRequestLocale } from 'next-intl/server';
+import ClientProductsPage from './ClientProductsPage';
+import { fetchProductsSSR } from '@/lib/ssr-api';
 
 type Props = {
   params: { locale: string };
+  searchParams?: { page?: string };
 };
 
-export default function ProductsPage({ params }: Props) {
-  const { locale } = params;
-  setRequestLocale(locale);
-  
-  return <ClientProductsPage locale={locale} />;
-}
+export const revalidate = 3600;
 
 export const metadata = {
   title: 'Produits - MJ CHAUFFAGE',
-  description: 'Découvrez notre gamme complète de chaudières, radiateurs, et équipements de chauffage premium.',
+  description:
+    'Découvrez notre gamme complète de chaudières, radiateurs, et équipements de chauffage premium.',
 };
+
+export default async function ProductsPage({ params, searchParams }: Props) {
+  const { locale } = params;
+  setRequestLocale(locale);
+
+  const page = Number(searchParams?.page ?? 1) || 1;
+  const { products, pagination } = await fetchProductsSSR(page);
+
+  return (
+    <ClientProductsPage
+      locale={locale}
+      initialProducts={products}
+      initialPagination={pagination}
+      initialPage={page}
+    />
+  );
+}

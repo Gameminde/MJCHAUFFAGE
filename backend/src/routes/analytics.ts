@@ -122,6 +122,7 @@ if (process.env.NODE_ENV !== 'production') {
   // Analytics tracking endpoint (no auth required for tracking)
   try {
     router.post('/track', AnalyticsTrackingController.trackEvent);
+    router.post('/events', AnalyticsTrackingController.trackEvent); // Alias pour /events
     router.get('/realtime', AnalyticsTrackingController.getRealTimeMetrics);
     router.get('/session/:sessionId', AnalyticsTrackingController.getSessionAnalytics);
   } catch (trackingError) {
@@ -130,6 +131,10 @@ if (process.env.NODE_ENV !== 'production') {
     // Fallback tracking endpoints
     router.post('/track', (_req: Request, res: Response) => {
       res.json({ success: true, message: 'Tracking temporarily unavailable' });
+    });
+    
+    router.post('/events', (_req: Request, res: Response) => {
+      res.json({ success: true, message: 'Events tracking temporarily unavailable' });
     });
     
     router.get('/realtime', (_req: Request, res: Response) => {
@@ -177,6 +182,7 @@ if (process.env.NODE_ENV !== 'production') {
 
     // Analytics tracking endpoint (no auth required for tracking)
     router.post('/track', AnalyticsTrackingController.trackEvent);
+    router.post('/events', AnalyticsTrackingController.trackEvent); // Alias pour /events
 
     // Real-time metrics (authentication required in production)
     router.get('/realtime', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), AnalyticsTrackingController.getRealTimeMetrics);

@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { analyticsEvents, testUser } from './fixtures/test-data';
+import { TestHelpers } from './helpers/test-helpers';
 
 test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Clear any existing analytics data
-    await page.goto('/');
+    await TestHelpers.gotoAndReady(page, '/');
     await page.evaluate(() => {
       localStorage.clear();
       sessionStorage.clear();
@@ -13,8 +14,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
 
   test('Page view tracking and session management', async ({ page }) => {
     // 1. Track homepage visit
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/');
     
     // Verify analytics script loaded
     await expect(page.locator('[data-testid="analytics-loaded"]')).toBeVisible();
@@ -24,14 +24,14 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(sessionId).toBeTruthy();
     
     // 2. Navigate to different pages and track views
-    await page.click('[data-testid="products-link"]');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('link', { name: 'Produits' }).click();
+    await page.waitForLoadState('domcontentloaded');
     
-    await page.click('[data-testid="services-link"]');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('link', { name: 'Services' }).click();
+    await page.waitForLoadState('domcontentloaded');
     
-    await page.click('[data-testid="about-link"]');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('link', { name: 'À propos' }).click();
+    await page.waitForLoadState('domcontentloaded');
     
     // 3. Verify page views were tracked
     const pageViews = await page.evaluate(() => {
@@ -52,12 +52,11 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
 
   test('E-commerce event tracking', async ({ page }) => {
     // 1. Track product view events
-    await page.goto('/products');
-    await page.waitForSelector('[data-testid="product-card"]');
+    await TestHelpers.gotoAndReady(page, '/products', { readySelectors: ['[data-testid="product-card"]', 'main'] });
     
     // Click on first product
     await page.click('[data-testid="product-card"]:first-child');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // Verify product view event
     const productViewEvents = await page.evaluate(() => {
@@ -83,8 +82,8 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(addToCartEvents[0].quantity).toBe(1);
     
     // 3. Track cart view event
-    await page.click('[data-testid="cart-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Ouvrir le panier' }).click();
+    await page.waitForTimeout(200);
     
     const cartViewEvents = await page.evaluate(() => {
       return JSON.parse(localStorage.getItem('analytics_ecommerce_events') || '[]')
@@ -94,8 +93,8 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(cartViewEvents.length).toBeGreaterThan(0);
     
     // 4. Track checkout initiation
-    await page.click('[data-testid="checkout-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('link', { name: 'Commander' }).click();
+    await page.waitForLoadState('domcontentloaded');
     
     const checkoutEvents = await page.evaluate(() => {
       return JSON.parse(localStorage.getItem('analytics_ecommerce_events') || '[]')
@@ -131,8 +130,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
 
   test('Traffic source attribution tracking', async ({ page }) => {
     // 1. Test direct traffic (no referrer)
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/');
     
     let trafficSource = await page.evaluate(() => {
       return JSON.parse(sessionStorage.getItem('analytics_traffic_source') || '{}');
@@ -143,8 +141,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     
     // 2. Test referral traffic
     await page.goto('https://google.com');
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/');
     
     trafficSource = await page.evaluate(() => {
       return JSON.parse(sessionStorage.getItem('analytics_traffic_source') || '{}');
@@ -154,8 +151,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(trafficSource.medium).toBe('referral');
     
     // 3. Test UTM parameter tracking
-    await page.goto('/?utm_source=facebook&utm_medium=social&utm_campaign=summer_sale&utm_term=heating&utm_content=banner');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/?utm_source=facebook&utm_medium=social&utm_campaign=summer_sale&utm_term=heating&utm_content=banner');
     
     trafficSource = await page.evaluate(() => {
       return JSON.parse(sessionStorage.getItem('analytics_traffic_source') || '{}');
@@ -169,11 +165,12 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     
     // 4. Test organic search simulation
     await page.goto('/', {
+      waitUntil: 'domcontentloaded',
       extraHTTPHeaders: {
         'Referer': 'https://www.google.com/search?q=mj+chauffage'
       }
     });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     trafficSource = await page.evaluate(() => {
       return JSON.parse(sessionStorage.getItem('analytics_traffic_source') || '{}');
@@ -184,8 +181,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
   });
 
   test('User behavior and engagement tracking', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/');
     
     // 1. Track scroll depth
     await page.evaluate(() => {
@@ -215,8 +211,10 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(timeOnPage.duration).toBeGreaterThan(4000); // At least 4 seconds
     
     // 3. Track click events on important elements
-    await page.click('[data-testid="products-link"]');
-    await page.click('[data-testid="services-link"]');
+    await page.getByRole('link', { name: 'Produits' }).click();
+    await page.waitForLoadState('domcontentloaded');
+    await page.getByRole('link', { name: 'Services' }).click();
+    await page.waitForLoadState('domcontentloaded');
     
     const clickEvents = await page.evaluate(() => {
       return JSON.parse(localStorage.getItem('analytics_click_events') || '[]');
@@ -226,7 +224,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(clickEvents.some((event: any) => event.element_type === 'navigation')).toBeTruthy();
     
     // 4. Track form interactions
-    await page.goto('/contact');
+    await TestHelpers.gotoAndReady(page, '/contact');
     await page.fill('[data-testid="contact-name"]', 'Test User');
     await page.fill('[data-testid="contact-email"]', 'test@example.com');
     
@@ -238,8 +236,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
   });
 
   test('Search and filter analytics', async ({ page }) => {
-    await page.goto('/products');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/products', { readySelectors: ['[data-testid="product-card"]', 'main'] });
     
     // 1. Track search queries
     await page.fill('[data-testid="search-input"]', 'heating system');
@@ -291,17 +288,16 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
 
   test('Analytics dashboard data verification', async ({ page, context }) => {
     // Generate some analytics data first
-    await page.goto('/');
-    await page.click('[data-testid="products-link"]');
+    await TestHelpers.gotoAndReady(page, '/');
+    await page.getByRole('link', { name: 'Produits' }).click();
+    await page.waitForLoadState('domcontentloaded');
     await page.click('[data-testid="product-card"]:first-child');
     await page.click('[data-testid="add-to-cart-button"]');
     
     // Login to admin dashboard
     const adminPage = await context.newPage();
-    await adminPage.goto('/admin/login');
-    await adminPage.fill('[data-testid="admin-email"]', 'admin@mjchauffage.com');
-    await adminPage.fill('[data-testid="admin-password"]', 'AdminPassword123!');
-    await adminPage.click('[data-testid="admin-login-submit"]');
+    const adminHelpers = new TestHelpers(adminPage);
+    await adminHelpers.loginAsAdmin();
     
     // Navigate to analytics dashboard
     await adminPage.click('[data-testid="analytics-menu"]');
@@ -345,7 +341,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
 
   test('Error tracking and monitoring', async ({ page }) => {
     // 1. Test JavaScript error tracking
-    await page.goto('/');
+    await TestHelpers.gotoAndReady(page, '/');
     
     // Trigger a JavaScript error
     await page.evaluate(() => {
@@ -372,7 +368,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
       });
     });
     
-    await page.goto('/products');
+    await TestHelpers.gotoAndReady(page, '/products', { readySelectors: ['[data-testid="product-card"]', 'main'] });
     await page.waitForTimeout(2000);
     
     const apiErrorEvents = await page.evaluate(() => {
@@ -383,7 +379,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
     expect(apiErrorEvents[0].status_code).toBe(500);
     
     // 3. Test 404 error tracking
-    await page.goto('/non-existent-page');
+    await TestHelpers.gotoAndReady(page, '/non-existent-page');
     await page.waitForTimeout(1000);
     
     const notFoundEvents = await page.evaluate(() => {
@@ -395,8 +391,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
   });
 
   test('Performance metrics tracking', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await TestHelpers.gotoAndReady(page, '/');
     
     // Wait for performance metrics to be collected
     await page.waitForTimeout(3000);
@@ -430,7 +425,7 @@ test.describe('Analytics Data Collection and Reporting E2E Tests', () => {
   });
 
   test('Custom event tracking', async ({ page }) => {
-    await page.goto('/');
+    await TestHelpers.gotoAndReady(page, '/');
     
     // 1. Track custom business events
     await page.evaluate(() => {

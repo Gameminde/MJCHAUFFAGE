@@ -81,7 +81,7 @@ enum ServiceStatus {
 
 // User Management
 model User {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String   @id @default(cuid())
   email        String   @unique
   firstName    String   @map("first_name")
   lastName     String   @map("last_name")
@@ -121,8 +121,8 @@ model User {
 }
 
 model UserSession {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
   sessionToken String  @unique @map("session_token")
   ipAddress   String?  @map("ip_address")
   userAgent   String?  @map("user_agent")
@@ -135,8 +135,8 @@ model UserSession {
 }
 
 model PasswordReset {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
   token     String   @unique
   expiresAt DateTime @map("expires_at")
   usedAt    DateTime? @map("used_at")
@@ -149,8 +149,8 @@ model PasswordReset {
 
 // Customer Management
 model Customer {
-  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String?      @unique @map("user_id") @db.Uuid
+  id            String       @id @default(cuid())
+  userId        String?      @unique @map("user_id")
   companyName   String?      @map("company_name")
   customerType  CustomerType @default(B2C) @map("customer_type")
   vatNumber     String?      @map("vat_number")
@@ -184,8 +184,8 @@ model Customer {
 }
 
 model Address {
-  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customerId String      @map("customer_id") @db.Uuid
+  id         String      @id @default(cuid())
+  customerId String      @map("customer_id")
   type       AddressType
   label      String?     // "Home", "Office", etc.
   street     String
@@ -205,9 +205,9 @@ model Address {
 
 // Shopping Cart
 model CartItem {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customerId String   @map("customer_id") @db.Uuid
-  productId  String   @map("product_id") @db.Uuid
+  id         String   @id @default(cuid())
+  customerId String   @map("customer_id")
+  productId  String   @map("product_id")
   quantity   Int
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
@@ -221,12 +221,12 @@ model CartItem {
 
 // Product Management
 model Category {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String    @id @default(cuid())
   name        String    @unique
   slug        String    @unique
   description String?
   image       String?
-  parentId    String?   @map("parent_id") @db.Uuid
+  parentId    String?   @map("parent_id")
   isActive    Boolean   @default(true) @map("is_active")
   sortOrder   Int       @default(0) @map("sort_order")
   createdAt   DateTime  @default(now()) @map("created_at")
@@ -244,14 +244,14 @@ model Category {
 }
 
 model Product {
-  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id            String      @id @default(cuid())
   name          String
   slug          String      @unique
   sku           String      @unique
   description   String?
   shortDescription String?  @map("short_description")
-  categoryId    String      @map("category_id") @db.Uuid
-  manufacturerId String?    @map("manufacturer_id") @db.Uuid
+  categoryId    String      @map("category_id")
+  manufacturerId String?    @map("manufacturer_id")
   
   // Pricing
   price         Decimal
@@ -267,7 +267,7 @@ model Product {
   weight        Decimal?
   dimensions    Json?       // JSON object: {length, width, height}
   specifications Json?      // JSON object: Technical specifications
-  features      String[]    // PostgreSQL array support
+  features      String?     // JSON string for SQLite compatibility
   
   // Media
   images        ProductImage[]
@@ -299,8 +299,8 @@ model Product {
 }
 
 model ProductImage {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  productId String   @map("product_id") @db.Uuid
+  id        String   @id @default(cuid())
+  productId String   @map("product_id")
   url       String
   altText   String?  @map("alt_text")
   sortOrder Int      @default(0) @map("sort_order")
@@ -312,7 +312,7 @@ model ProductImage {
 }
 
 model Manufacturer {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String    @id @default(cuid())
   name        String    @unique
   slug        String    @unique
   description String?
@@ -329,8 +329,8 @@ model Manufacturer {
 
 // Inventory Management
 model InventoryLog {
-  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  productId   String          @map("product_id") @db.Uuid
+  id          String          @id @default(cuid())
+  productId   String          @map("product_id")
   type        InventoryLogType
   quantity    Int
   reason      String?
@@ -346,10 +346,10 @@ model InventoryLog {
 
 // Order Management
 model Order {
-  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id              String      @id @default(cuid())
   orderNumber     String      @unique @map("order_number")
-  customerId      String      @map("customer_id") @db.Uuid
-  addressId       String      @map("address_id") @db.Uuid
+  customerId      String      @map("customer_id")
+  addressId       String      @map("address_id")
   
   status          OrderStatus @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
@@ -385,9 +385,9 @@ model Order {
 }
 
 model OrderItem {
-  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId    String  @map("order_id") @db.Uuid
-  productId  String  @map("product_id") @db.Uuid
+  id         String  @id @default(cuid())
+  orderId    String  @map("order_id")
+  productId  String  @map("product_id")
   quantity   Int
   unitPrice  Decimal @map("unit_price")
   totalPrice Decimal @map("total_price")
@@ -400,8 +400,8 @@ model OrderItem {
 
 // Payment Management
 model Payment {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId         String        @map("order_id") @db.Uuid
+  id              String        @id @default(cuid())
+  orderId         String        @map("order_id")
   method          PaymentMethod
   provider        String        // "stripe", "paypal", etc.
   providerPaymentId String?     @map("provider_payment_id")
@@ -420,7 +420,7 @@ model Payment {
 
 // Service Management
 model ServiceType {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id @default(cuid())
   name        String   @unique
   description String?
   duration    Int      // Duration in minutes
@@ -435,10 +435,10 @@ model ServiceType {
 }
 
 model Technician {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String   @unique @map("user_id") @db.Uuid
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
   employeeId  String   @unique @map("employee_id")
-  specialties String[] // PostgreSQL supports arrays
+  specialties String?  // JSON string for SQLite compatibility
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -450,10 +450,10 @@ model Technician {
 }
 
 model ServiceRequest {
-  id               String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customerId       String              @map("customer_id") @db.Uuid
-  serviceTypeId    String              @map("service_type_id") @db.Uuid
-  technicianId     String?             @map("technician_id") @db.Uuid
+  id               String              @id @default(cuid())
+  customerId       String              @map("customer_id")
+  serviceTypeId    String              @map("service_type_id")
+  technicianId     String?             @map("technician_id")
   
   description      String
   priority         ServicePriority     @default(NORMAL)
@@ -487,9 +487,9 @@ model ServiceRequest {
 
 // Review System
 model Review {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customerId String   @map("customer_id") @db.Uuid
-  productId  String   @map("product_id") @db.Uuid
+  id         String   @id @default(cuid())
+  customerId String   @map("customer_id")
+  productId  String   @map("product_id")
   rating     Int      // 1-5 stars
   title      String?
   comment    String?
@@ -509,9 +509,9 @@ model Review {
 
 // Page Analytics for visitor tracking
 model PageAnalytics {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id            String   @id @default(cuid())
   sessionId     String   @map("session_id")
-  userId        String?  @map("user_id") @db.Uuid
+  userId        String?  @map("user_id")
   pagePath      String   @map("page_path")
   pageTitle     String?  @map("page_title")
   referrer      String?
@@ -536,12 +536,12 @@ model PageAnalytics {
 
 // E-commerce Events for conversion tracking
 model EcommerceEvent {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String   @id @default(cuid())
   sessionId  String   @map("session_id")
-  userId     String?  @map("user_id") @db.Uuid
+  userId     String?  @map("user_id")
   eventType  String   @map("event_type") // 'view_item', 'add_to_cart', 'purchase', etc.
-  productId  String?  @map("product_id") @db.Uuid
-  categoryId String?  @map("category_id") @db.Uuid
+  productId  String?  @map("product_id")
+  categoryId String?  @map("category_id")
   value      Decimal?
   currency   String   @default("DZD")
   quantity   Int?
@@ -562,7 +562,7 @@ model EcommerceEvent {
 
 // Traffic Sources for marketing attribution
 model TrafficSource {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id @default(cuid())
   sessionId   String   @map("session_id")
   source      String?  // 'google', 'facebook', 'direct', etc.
   medium      String?  // 'organic', 'cpc', 'social', etc.
@@ -594,11 +594,11 @@ model CacheEntry {
 
 // Error Logging for monitoring and debugging
 model ErrorLog {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String   @id @default(cuid())
   level      String   // 'error', 'warn', 'info', 'debug'
   message    String
   stackTrace String?  @map("stack_trace")
-  userId     String?  @map("user_id") @db.Uuid
+  userId     String?  @map("user_id")
   sessionId  String?  @map("session_id")
   url        String?
   userAgent  String?  @map("user_agent")
@@ -615,9 +615,9 @@ model ErrorLog {
 
 // User Sessions for analytics tracking
 model AnalyticsSession {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String    @id @default(cuid())
   sessionId    String    @unique @map("session_id")
-  userId       String?   @map("user_id") @db.Uuid
+  userId       String?   @map("user_id")
   ipAddress    String?   @map("ip_address")
   userAgent    String?   @map("user_agent")
   deviceType   String?   @map("device_type")
@@ -643,7 +643,7 @@ model AnalyticsSession {
 
 // Performance Metrics for monitoring
 model PerformanceMetric {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String   @id @default(cuid())
   sessionId String   @map("session_id")
   pagePath  String   @map("page_path")
   metricType String  @map("metric_type") // 'LCP', 'FID', 'CLS', 'TTFB', etc.

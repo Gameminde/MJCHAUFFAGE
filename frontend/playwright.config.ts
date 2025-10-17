@@ -74,9 +74,9 @@ export default defineConfig({
       timeout: 120 * 1000,
     },
     {
-      command: 'npm run dev',
+      command: 'npx tsx src/server.ts',
       cwd: '../backend',
-      url: 'http://localhost:5000/api/health',
+      url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     }

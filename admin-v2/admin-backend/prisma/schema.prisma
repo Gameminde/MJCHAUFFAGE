@@ -1,0 +1,661 @@
+// PostgreSQL schema for production deployment
+// Enhanced with proper enums and PostgreSQL-specific features
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enums for PostgreSQL
+enum UserRole {
+  ADMIN
+  CUSTOMER
+  TECHNICIAN
+}
+
+enum CustomerType {
+  B2C
+  B2B
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  CASH_ON_DELIVERY
+  PAYPAL
+  STRIPE
+}
+
+enum InventoryLogType {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+  RETURN
+  DAMAGE
+  TRANSFER
+}
+
+enum ServicePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ServiceStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// User Management
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  password     String?
+  phone        String?
+  avatar       String?
+  role         UserRole @default(CUSTOMER)
+  isActive     Boolean  @default(true) @map("is_active")
+  isVerified   Boolean  @default(false) @map("is_verified")
+  emailVerified DateTime? @map("email_verified")
+  lastLoginAt  DateTime? @map("last_login_at")
+  
+  // OAuth fields
+  googleId     String?  @unique @map("google_id")
+  
+  // Two-factor authentication
+  twoFactorEnabled Boolean @default(false) @map("two_factor_enabled")
+  twoFactorSecret  String? @map("two_factor_secret")
+  twoFactorBackupCodes String? @map("two_factor_backup_codes")
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  customer     Customer?
+  technician   Technician?
+  sessions     UserSession[]
+  passwordResets PasswordReset[]
+  
+  // Analytics relationships
+  pageAnalytics    PageAnalytics[]
+  ecommerceEvents  EcommerceEvent[]
+  errorLogs        ErrorLog[]
+  analyticsSessions AnalyticsSession[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  sessionToken String  @unique @map("session_token")
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
+
+// Customer Management
+model Customer {
+  id            String       @id @default(cuid())
+  userId        String?      @unique @map("user_id")
+  companyName   String?      @map("company_name")
+  customerType  CustomerType @default(B2C) @map("customer_type")
+  vatNumber     String?      @map("vat_number")
+  
+  // Guest customer fields
+  isGuest       Boolean      @default(false) @map("is_guest")
+  firstName     String?      @map("first_name")
+  lastName      String?      @map("last_name")
+  email         String?      @map("email")
+  phone         String?      @map("phone")
+  
+  // Contact Information
+  addresses     Address[]
+  
+  // Business Metrics
+  totalSpent    Decimal      @default(0) @map("total_spent")
+  orderCount    Int          @default(0) @map("order_count")
+  lastOrderAt   DateTime?    @map("last_order_at")
+  
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  // Relationships
+  user          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders        Order[]
+  serviceRequests ServiceRequest[]
+  reviews       Review[]
+  cartItems     CartItem[]
+
+  @@map("customers")
+}
+
+model Address {
+  id         String      @id @default(cuid())
+  customerId String      @map("customer_id")
+  type       AddressType
+  label      String?     // "Home", "Office", etc.
+  street     String
+  city       String
+  postalCode String      @map("postal_code")
+  region     String?
+  country    String      @default("Algeria")
+  isDefault  Boolean     @default(false) @map("is_default")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orders   Order[]
+
+  @@map("addresses")
+}
+
+// Shopping Cart
+model CartItem {
+  id         String   @id @default(cuid())
+  customerId String   @map("customer_id")
+  productId  String   @map("product_id")
+  quantity   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@map("cart_items")
+}
+
+// Product Management
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  image       String?
+  parentId    String?   @map("parent_id")
+  isActive    Boolean   @default(true) @map("is_active")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Self-referencing relationship for nested categories
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  
+  // Analytics relationships
+  ecommerceEvents EcommerceEvent[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  name          String
+  slug          String      @unique
+  sku           String      @unique
+  description   String?
+  shortDescription String?  @map("short_description")
+  categoryId    String      @map("category_id")
+  manufacturerId String?    @map("manufacturer_id")
+  
+  // Pricing
+  price         Decimal
+  costPrice     Decimal?    @map("cost_price")
+  salePrice     Decimal?    @map("sale_price")
+  
+  // Inventory
+  stockQuantity Int         @default(0) @map("stock_quantity")
+  minStock      Int         @default(0) @map("min_stock")
+  maxStock      Int?        @map("max_stock")
+  
+  // Product Details (PostgreSQL enhanced)
+  weight        Decimal?
+  dimensions    Json?       // JSON object: {length, width, height}
+  specifications Json?      // JSON object: Technical specifications
+  features      String?     // JSON string for SQLite compatibility
+  
+  // Media
+  images        ProductImage[]
+  
+  // Status
+  isActive      Boolean     @default(true) @map("is_active")
+  isFeatured    Boolean     @default(false) @map("is_featured")
+  isDigital     Boolean     @default(false) @map("is_digital")
+  
+  // SEO
+  metaTitle     String?     @map("meta_title")
+  metaDescription String?   @map("meta_description")
+  
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relationships
+  category      Category    @relation(fields: [categoryId], references: [id])
+  manufacturer  Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  orderItems    OrderItem[]
+  reviews       Review[]
+  inventoryLogs InventoryLog[]
+  
+  // Analytics relationships
+  ecommerceEvents EcommerceEvent[]
+  cartItems       CartItem[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String   @map("product_id")
+  url       String
+  altText   String?  @map("alt_text")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model Manufacturer {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  website     String?
+  logo        String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("manufacturers")
+}
+
+// Inventory Management
+model InventoryLog {
+  id          String          @id @default(cuid())
+  productId   String          @map("product_id")
+  type        InventoryLogType
+  quantity    Int
+  reason      String?
+  reference   String?         // Order ID, Purchase ID, etc.
+  oldQuantity Int             @map("old_quantity")
+  newQuantity Int             @map("new_quantity")
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("inventory_logs")
+}
+
+// Order Management
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique @map("order_number")
+  customerId      String      @map("customer_id")
+  addressId       String      @map("address_id")
+  
+  status          OrderStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
+  
+  // Amounts
+  subtotal        Decimal
+  taxAmount       Decimal     @default(0) @map("tax_amount")
+  shippingAmount  Decimal     @default(0) @map("shipping_amount")
+  discountAmount  Decimal     @default(0) @map("discount_amount")
+  totalAmount     Decimal     @map("total_amount")
+  
+  // Order Details
+  notes           String?
+  trackingNumber  String?     @map("tracking_number")
+  shippingCarrier String?     @map("shipping_carrier")
+  
+  // Dates
+  orderDate       DateTime    @default(now()) @map("order_date")
+  shippedAt       DateTime?   @map("shipped_at")
+  deliveredAt     DateTime?   @map("delivered_at")
+  estimatedDelivery DateTime? @map("estimated_delivery")
+  
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  // Relationships
+  customer        Customer    @relation(fields: [customerId], references: [id])
+  shippingAddress Address     @relation(fields: [addressId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String  @map("order_id")
+  productId  String  @map("product_id")
+  quantity   Int
+  unitPrice  Decimal @map("unit_price")
+  totalPrice Decimal @map("total_price")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Payment Management
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String        @map("order_id")
+  method          PaymentMethod
+  provider        String        // "stripe", "paypal", etc.
+  providerPaymentId String?     @map("provider_payment_id")
+  amount          Decimal
+  currency        String        @default("DZD")
+  status          PaymentStatus
+  paidAt          DateTime?     @map("paid_at")
+  failureReason   String?       @map("failure_reason")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+// Service Management
+model ServiceType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  duration    Int      // Duration in minutes
+  price       Decimal
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  serviceRequests ServiceRequest[]
+
+  @@map("service_types")
+}
+
+model Technician {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  employeeId  String   @unique @map("employee_id")
+  specialties String?  // JSON string for SQLite compatibility
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceRequests ServiceRequest[]
+
+  @@map("technicians")
+}
+
+model ServiceRequest {
+  id               String              @id @default(cuid())
+  customerId       String              @map("customer_id")
+  serviceTypeId    String              @map("service_type_id")
+  technicianId     String?             @map("technician_id")
+  
+  description      String
+  priority         ServicePriority     @default(NORMAL)
+  status           ServiceStatus       @default(PENDING)
+  
+  // Scheduling
+  requestedDate    DateTime            @map("requested_date")
+  scheduledDate    DateTime?           @map("scheduled_date")
+  completedAt      DateTime?           @map("completed_at")
+  
+  // Service Details
+  equipmentDetails Json?               @map("equipment_details") // JSON object
+  completionNotes  String?             @map("completion_notes")
+  customerRating   Int?                @map("customer_rating") // 1-5 stars
+  customerFeedback String?             @map("customer_feedback")
+  
+  // Pricing
+  estimatedCost    Decimal?            @map("estimated_cost")
+  actualCost       Decimal?            @map("actual_cost")
+  
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  // Relationships
+  customer         Customer            @relation(fields: [customerId], references: [id])
+  serviceType      ServiceType         @relation(fields: [serviceTypeId], references: [id])
+  technician       Technician?         @relation(fields: [technicianId], references: [id])
+
+  @@map("service_requests")
+}
+
+// Review System
+model Review {
+  id         String   @id @default(cuid())
+  customerId String   @map("customer_id")
+  productId  String   @map("product_id")
+  rating     Int      // 1-5 stars
+  title      String?
+  comment    String?
+  isVerified Boolean  @default(false) @map("is_verified")
+  isPublished Boolean @default(true) @map("is_published")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@unique([customerId, productId])
+  @@map("reviews")
+}
+
+// Analytics and Performance Tracking Tables
+
+// Page Analytics for visitor tracking
+model PageAnalytics {
+  id            String   @id @default(cuid())
+  sessionId     String   @map("session_id")
+  userId        String?  @map("user_id")
+  pagePath      String   @map("page_path")
+  pageTitle     String?  @map("page_title")
+  referrer      String?
+  userAgent     String?  @map("user_agent")
+  deviceType    String?  @map("device_type")
+  browser       String?
+  os            String?
+  country       String?
+  city          String?
+  durationSeconds Int?   @map("duration_seconds")
+  bounce        Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([pagePath])
+  @@index([createdAt])
+  @@map("page_analytics")
+}
+
+// E-commerce Events for conversion tracking
+model EcommerceEvent {
+  id         String   @id @default(cuid())
+  sessionId  String   @map("session_id")
+  userId     String?  @map("user_id")
+  eventType  String   @map("event_type") // 'view_item', 'add_to_cart', 'purchase', etc.
+  productId  String?  @map("product_id")
+  categoryId String?  @map("category_id")
+  value      Decimal?
+  currency   String   @default("DZD")
+  quantity   Int?
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([productId])
+  @@index([createdAt])
+  @@map("ecommerce_events")
+}
+
+// Traffic Sources for marketing attribution
+model TrafficSource {
+  id          String   @id @default(cuid())
+  sessionId   String   @map("session_id")
+  source      String?  // 'google', 'facebook', 'direct', etc.
+  medium      String?  // 'organic', 'cpc', 'social', etc.
+  campaign    String?
+  utmSource   String?  @map("utm_source")
+  utmMedium   String?  @map("utm_medium")
+  utmCampaign String?  @map("utm_campaign")
+  utmTerm     String?  @map("utm_term")
+  utmContent  String?  @map("utm_content")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@index([source])
+  @@index([medium])
+  @@index([createdAt])
+  @@map("traffic_sources")
+}
+
+// Cache Management for optimization
+model CacheEntry {
+  key       String    @id
+  value     String
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("cache_entries")
+}
+
+// Error Logging for monitoring and debugging
+model ErrorLog {
+  id         String   @id @default(cuid())
+  level      String   // 'error', 'warn', 'info', 'debug'
+  message    String
+  stackTrace String?  @map("stack_trace")
+  userId     String?  @map("user_id")
+  sessionId  String?  @map("session_id")
+  url        String?
+  userAgent  String?  @map("user_agent")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([level])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("error_logs")
+}
+
+// User Sessions for analytics tracking
+model AnalyticsSession {
+  id           String    @id @default(cuid())
+  sessionId    String    @unique @map("session_id")
+  userId       String?   @map("user_id")
+  ipAddress    String?   @map("ip_address")
+  userAgent    String?   @map("user_agent")
+  deviceType   String?   @map("device_type")
+  browser      String?
+  os           String?
+  country      String?
+  city         String?
+  startedAt    DateTime  @default(now()) @map("started_at")
+  lastActivity DateTime? @map("last_activity")
+  endedAt      DateTime? @map("ended_at")
+  duration     Int?      // Duration in seconds
+  pageViews    Int       @default(0) @map("page_views")
+  isBot        Boolean   @default(false) @map("is_bot")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([startedAt])
+  @@index([country])
+  @@map("analytics_sessions")
+}
+
+// Performance Metrics for monitoring
+model PerformanceMetric {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  pagePath  String   @map("page_path")
+  metricType String  @map("metric_type") // 'LCP', 'FID', 'CLS', 'TTFB', etc.
+  value     Decimal
+  unit      String   // 'ms', 'score', 'bytes', etc.
+  deviceType String? @map("device_type")
+  connection String? // 'slow-2g', '2g', '3g', '4g', etc.
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@index([pagePath])
+  @@index([metricType])
+  @@index([createdAt])
+  @@map("performance_metrics")
+}

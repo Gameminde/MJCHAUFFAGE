@@ -3,9 +3,47 @@ import { validationResult } from 'express-validator';
 import { AuthService } from '@/services/authService';
 // import { // EmailService } from '@/services/emailService';
 import { prisma } from '@/lib/database';
+import { logger } from '@/utils/logger';
 
 // UserRole is stored as string in database
 // Valid values: 'ADMIN', 'CUSTOMER', 'TECHNICIAN'
+
+interface ClientInfo {
+  ipAddress: string | null;
+  userAgent: string | null;
+}
+
+const getClientInfo = (req: Request): ClientInfo => {
+  const forwarded = (req.headers['x-forwarded-for'] as string | undefined)
+    ?.split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return {
+    ipAddress:
+      forwarded?.[0] ||
+      (req.headers['x-real-ip'] as string | undefined) ||
+      req.socket.remoteAddress ||
+      null,
+    userAgent: (req.headers['user-agent'] as string | undefined) || null,
+  };
+};
+
+const formatUserForResponse = (user: any) => ({
+  id: user.id,
+  email: user.email,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  role: user.role,
+  phone: user.phone ?? null,
+  avatar: user.avatar ?? null,
+  isActive: user.isActive,
+  isVerified: user.isVerified ?? false,
+  createdAt:
+    user.createdAt?.toISOString?.() ?? new Date(user.createdAt).toISOString(),
+  updatedAt:
+    user.updatedAt?.toISOString?.() ?? new Date(user.updatedAt).toISOString(),
+});
 
 
 
@@ -104,14 +142,9 @@ export class AuthController {
         success: true,
         message: 'Registration successful. Please check your email for verification.',
         data: {
-          user: {
-            id: result.user.id,
-            email: result.user.email,
-            firstName: result.user.firstName,
-            lastName: result.user.lastName,
-            role: result.user.role,
-            isVerified: result.user.isVerified,
-          },
+          user: formatUserForResponse(result.user),
+          accessToken,
+          refreshToken,
         },
       });
     } catch (error) {
@@ -140,7 +173,6 @@ export class AuthController {
 
       const { email, password } = req.body;
 
-      // Find user with rate limiting check
       const user = await prisma.user.findUnique({
         where: { email: email.toLowerCase() },
         include: {
@@ -149,94 +181,96 @@ export class AuthController {
         },
       });
 
-      // Always use constant-time comparison to prevent timing attacks
-      const userExists = user && user.isActive;
-      const hasPassword = user?.password;
-      
-      // Verify password (always run to prevent timing attacks)
-      const isValidPassword = hasPassword ? 
-        await AuthService.comparePassword(password, user.password!) : 
-        await AuthService.comparePassword(password, '$2b$12$dummy.hash.to.prevent.timing.attacks');
-
-      if (!userExists || !isValidPassword) {
-        // Increment failed login attempts for rate limiting
-        if (req.rateLimitKey) {
-          try {
-            const { redisClient } = await import('@/config/redis');
-            await redisClient.setEx(req.rateLimitKey, 15 * 60, ((req.currentAttempts || 0) + 1).toString());
-          } catch (error) {
-            console.error('Error updating rate limit:', error);
-          }
-        }
-
-        // Log failed attempt for security monitoring
-        console.warn(`Failed login attempt for email: ${email} from IP: ${req.ip}`);
-        
+      if (!user || !user.password) {
         res.status(401).json({
           success: false,
           message: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
+          code: 'INVALID_CREDENTIALS',
         });
         return;
       }
 
-      // Additional security checks
+      if (!user.isActive) {
+        res.status(403).json({
+          success: false,
+          message: 'Your account has been deactivated. Please contact support.',
+          code: 'ACCOUNT_INACTIVE',
+        });
+        return;
+      }
+
+      const isPasswordValid = await AuthService.comparePassword(password, user.password);
+
+      if (!isPasswordValid) {
+        // Debug logs to diagnose invalid credential path in development
+        let debugInfo: any = undefined;
+        try {
+          debugInfo = {
+            emailAttempt: email?.toLowerCase?.() || email,
+            passwordLength: typeof password === 'string' ? password.length : null,
+            hashPrefix: typeof user.password === 'string' ? user.password.slice(0, 7) : null,
+            userHasPassword: !!user.password,
+            userId: user.id,
+            isActive: user.isActive,
+            isVerified: user.isVerified,
+            isPasswordValid,
+          };
+          console.log('🔎 Login debug:', debugInfo);
+        } catch {}
+        res.status(401).json({
+          success: false,
+          message: 'Invalid email or password',
+          code: 'INVALID_CREDENTIALS',
+          ...(process.env.NODE_ENV !== 'production' && debugInfo ? { debug: debugInfo } : {}),
+        });
+        return;
+      }
+
       if (!user.isVerified) {
         res.status(401).json({
           success: false,
           message: 'Please verify your email address before logging in',
-          code: 'EMAIL_NOT_VERIFIED'
+          code: 'EMAIL_NOT_VERIFIED',
         });
         return;
       }
 
-      // Generate tokens
-      const { accessToken, refreshToken } = AuthService.generateTokens(user);
-      await AuthService.storeRefreshToken(user.id, refreshToken);
+      const tokens = AuthService.generateTokens(user);
 
-      // Create session with enhanced tracking
-      const sessionToken = await AuthService.createSession(
-        user.id,
-        req.ip,
-        req.get('User-Agent')
-      );
-
-      // Update last login and login count
-      await AuthService.updateLastLogin(user.id);
-
-      // Clear rate limiting on successful login
-      if (req.rateLimitKey) {
-        try {
-          const { redisClient } = await import('@/config/redis');
-          await redisClient.del(req.rateLimitKey);
-        } catch (error) {
-          console.error('Error clearing rate limit:', error);
-        }
+      try {
+        await AuthService.storeRefreshToken(user.id, tokens.refreshToken);
+      } catch (error) {
+        logger.warn('Failed to store refresh token', { userId: user.id, error });
       }
 
-      // Log successful login for security monitoring
-      console.info(`Successful login for user: ${user.id} from IP: ${req.ip}`);
+      AuthService.setAuthCookies(res, tokens);
 
-      AuthService.setAuthCookies(res, { accessToken, refreshToken });
+      await prisma.user
+        .update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        })
+        .catch((error) => {
+          logger.warn('Failed to update lastLoginAt', { userId: user.id, error });
+        });
+
+      logger.info('User logged in successfully', {
+        userId: user.id,
+        email: user.email,
+        ...getClientInfo(req),
+      });
 
       res.json({
         success: true,
         message: 'Login successful',
         data: {
-          user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            isVerified: user.isVerified,
-            profile: user.customer || user.technician,
-          },
-          sessionToken,
+          user: formatUserForResponse(user),
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
         },
       });
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error', { error });
       res.status(500).json({
         success: false,
         message: 'Internal server error',

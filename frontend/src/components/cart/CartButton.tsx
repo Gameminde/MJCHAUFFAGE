@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart } from '@/contexts/CartContext'
+import { useCart } from '@/hooks/useCart'
 import { useLanguage } from '@/hooks/useLanguage'
 import { ShoppingCart } from '@/components/cart/ShoppingCart'
 import { ShoppingBag } from 'lucide-react'

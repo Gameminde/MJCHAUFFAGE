@@ -37,6 +37,12 @@ model User {
   sessions     UserSession[]
   passwordResets PasswordReset[]
 
+  // Analytics relationships (for tracking and E2E tests)
+  pageAnalytics    PageAnalytics[]
+  ecommerceEvents  EcommerceEvent[]
+  errorLogs        ErrorLog[]
+  analyticsSessions AnalyticsSession[]
+
   @@map("users")
 }
 
@@ -75,6 +81,13 @@ model Customer {
   customerType  String       @default("B2C") @map("customer_type") // String instead of enum
   vatNumber     String?      @map("vat_number")
   
+  // Guest customer fields (used when user is not registered)
+  isGuest       Boolean      @default(false) @map("is_guest")
+  firstName     String?      @map("first_name")
+  lastName      String?      @map("last_name")
+  email         String?      @map("email")
+  phone         String?      @map("phone")
+  
   // Contact Information
   addresses     Address[]
   
@@ -91,6 +104,7 @@ model Customer {
   orders        Order[]
   serviceRequests ServiceRequest[]
   reviews       Review[]
+  cartItems     CartItem[]
 
   @@map("customers")
 }
@@ -132,6 +146,9 @@ model Category {
   parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]
+  
+  // Analytics relationships
+  ecommerceEvents EcommerceEvent[]
 
   @@map("categories")
 }
@@ -183,6 +200,10 @@ model Product {
   orderItems    OrderItem[]
   reviews       Review[]
   inventoryLogs InventoryLog[]
+  
+  // Analytics relationships
+  ecommerceEvents EcommerceEvent[]
+  cartItems       CartItem[]
 
   @@map("products")
 }
@@ -392,4 +413,148 @@ model Review {
 
   @@unique([customerId, productId])
   @@map("reviews")
+}
+// Shopping Cart
+model CartItem {
+  id         String   @id @default(uuid())
+  customerId String   @map("customer_id")
+  productId  String   @map("product_id")
+  quantity   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@map("cart_items")
+}
+
+// Page Analytics for visitor tracking
+model PageAnalytics {
+  id            String   @id @default(uuid())
+  sessionId     String   @map("session_id")
+  userId        String?  @map("user_id")
+  pagePath      String   @map("page_path")
+  pageTitle     String?  @map("page_title")
+  referrer      String?
+  userAgent     String?  @map("user_agent")
+  deviceType    String?  @map("device_type")
+  browser       String?
+  os            String?
+  country       String?
+  city          String?
+  durationSeconds Int?   @map("duration_seconds")
+  bounce        Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([pagePath])
+  @@index([createdAt])
+  @@map("page_analytics")
+}
+
+// E-commerce Events for conversion tracking
+model EcommerceEvent {
+  id         String   @id @default(uuid())
+  sessionId  String   @map("session_id")
+  userId     String?  @map("user_id")
+  eventType  String   @map("event_type") // 'view_item', 'add_to_cart', 'purchase', etc.
+  productId  String?  @map("product_id")
+  categoryId String?  @map("category_id")
+  value      Decimal?
+  currency   String   @default("DZD")
+  quantity   Int?
+  metadata   String?  // JSON string
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([productId])
+  @@index([createdAt])
+  @@map("ecommerce_events")
+}
+
+// Traffic Sources for marketing attribution
+model TrafficSource {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  source      String?  // 'google', 'facebook', 'direct', etc.
+  medium      String?  // 'organic', 'cpc', 'social', etc.
+  campaign    String?
+  utmSource   String?  @map("utm_source")
+  utmMedium   String?  @map("utm_medium")
+  utmCampaign String?  @map("utm_campaign")
+  utmTerm     String?  @map("utm_term")
+  utmContent  String?  @map("utm_content")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@index([source])
+  @@index([medium])
+  @@index([createdAt])
+  @@map("traffic_sources")
+}
+
+// Cache Management for optimization
+model CacheEntry {
+  key       String    @id
+  value     String
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("cache_entries")
+}
+
+// Error Logging for monitoring and debugging
+model ErrorLog {
+  id         String   @id @default(uuid())
+  level      String   // 'error', 'warn', 'info', 'debug'
+  message    String
+  stackTrace String?  @map("stack_trace")
+  userId     String?  @map("user_id")
+  sessionId  String?  @map("session_id")
+  url        String?
+  userAgent  String?  @map("user_agent")
+  metadata   String?  // JSON string
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([level])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("error_logs")
+}
+
+// User Sessions for analytics tracking
+model AnalyticsSession {
+  id           String    @id @default(uuid())
+  sessionId    String    @unique @map("session_id")
+  userId       String?   @map("user_id")
+  ipAddress    String?   @map("ip_address")
+  userAgent    String?   @map("user_agent")
+  deviceType   String?   @map("device_type")
+  browser      String?
+  os           String?
+  country      String?
+  city         String?
+  startedAt    DateTime  @default(now()) @map("started_at")
+  endedAt      DateTime? @map("ended_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([startedAt])
+  @@map("analytics_sessions")
 }

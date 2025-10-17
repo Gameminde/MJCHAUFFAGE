@@ -1,172 +1,136 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+// frontend/src/services/cartService.ts
+// 🛒 Service panier refactorisé avec client API centralisé
 
-export interface CartSyncData {
-  items: Array<{
-    productId: string
-    quantity: number
-  }>
+import { api } from '@/lib/api';
+
+/**
+ * Types pour le service panier
+ */
+export interface CartItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  name: string;
+  image?: string;
 }
 
-export interface CartValidationResult {
-  valid: boolean
-  errors: Array<{
-    productId: string
-    message: string
-    availableStock: number
-  }>
+export interface Cart {
+  id: string;
+  items: CartItem[];
+  total: number;
+  userId?: string;
 }
 
-class CartService {
-  /**
-   * Validate cart items against current stock
-   */
-  static async validateCart(items: CartSyncData['items']): Promise<CartValidationResult> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/cart/validate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ items }),
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        return result.data
-      }
-
-      // Fallback validation - check each product individually
-      const errors: CartValidationResult['errors'] = []
-      
-      for (const item of items) {
-        try {
-          const productResponse = await fetch(`${API_BASE_URL}/api/products/${item.productId}`)
-          if (productResponse.ok) {
-            const productResult = await productResponse.json()
-            if (productResult.success && productResult.data.product) {
-              const availableStock = productResult.data.product.stockQuantity
-              if (item.quantity > availableStock) {
-                errors.push({
-                  productId: item.productId,
-                  message: `Stock insuffisant. Disponible: ${availableStock}`,
-                  availableStock
-                })
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`Error validating product ${item.productId}:`, error)
-        }
-      }
-
-      return {
-        valid: errors.length === 0,
-        errors
-      }
-    } catch (error) {
-      console.error('Error validating cart:', error)
-      return {
-        valid: true, // Assume valid if validation fails
-        errors: []
-      }
-    }
-  }
-
-  /**
-   * Sync cart with user session (for logged-in users)
-   */
-  static async syncCart(items: CartSyncData['items'], userId?: string): Promise<boolean> {
-    if (!userId) return true // Skip sync for guest users
-
-    try {
-      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken')
-      
-      const response = await fetch(`${API_BASE_URL}/api/cart/sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({ items }),
-      })
-
-      return response.ok
-    } catch (error) {
-      console.error('Error syncing cart:', error)
-      return false
-    }
-  }
-
-  /**
-   * Get cart from server (for logged-in users)
-   */
-  static async getServerCart(userId: string): Promise<CartSyncData['items'] | null> {
-    try {
-      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken')
-      
-      const response = await fetch(`${API_BASE_URL}/api/cart`, {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        return result.data.items
-      }
-
-      return null
-    } catch (error) {
-      console.error('Error getting server cart:', error)
-      return null
-    }
-  }
-
-  /**
-   * Clear cart on server (for logged-in users)
-   */
-  static async clearServerCart(userId: string): Promise<boolean> {
-    try {
-      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken')
-      
-      const response = await fetch(`${API_BASE_URL}/api/cart`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-      })
-
-      return response.ok
-    } catch (error) {
-      console.error('Error clearing server cart:', error)
-      return false
-    }
-  }
-
-  /**
-   * Get product details for cart items
-   */
-  static async getCartProductDetails(productIds: string[]): Promise<any[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/products/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productIds }),
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        return result.data.products || []
-      }
-
-      return []
-    } catch (error) {
-      console.error('Error getting cart product details:', error)
-      return []
-    }
-  }
+export interface AddToCartRequest {
+  productId: string;
+  quantity: number;
+  userId?: string;
 }
 
-export default CartService
+export interface UpdateCartItemRequest {
+  itemId: string;
+  quantity: number;
+}
+
+/**
+ * Service de gestion du panier
+ * Utilise le client API centralisé (@/lib/api)
+ */
+export const cartService = {
+  /**
+   * Récupère le panier actuel
+   */
+  async getCart(userId?: string): Promise<Cart> {
+    const result = await api.get<{ success: boolean; data: Cart }>(
+      `/cart${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`
+    );
+    return result.data as Cart;
+  },
+
+  /**
+   * Ajoute un produit au panier
+   */
+  async addToCart(data: AddToCartRequest): Promise<Cart> {
+    const result = await api.post<{ success: boolean; data: Cart }>(
+      '/cart/items',
+      data
+    );
+    return result.data as Cart;
+  },
+
+  /**
+   * Met à jour la quantité d'un article
+   */
+  async updateCartItem(data: UpdateCartItemRequest): Promise<Cart> {
+    const { itemId, ...payload } = data;
+    const result = await api.patch<{ success: boolean; data: Cart }>(
+      `/cart/items/${itemId}`,
+      payload
+    );
+    return result.data as Cart;
+  },
+  /**
+   * Supprime un article du panier
+   */
+  async removeCartItem(itemId: string): Promise<Cart> {
+    const result = await api.delete<{ success: boolean; data: Cart }>(
+      `/cart/items/${itemId}`
+    );
+    return result.data as Cart;
+  },
+
+  /**
+   * Vide le panier
+   */
+  async clearCart(userId?: string): Promise<void> {
+    await api.delete(`/cart${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`);
+  },
+
+  /**
+   * Synchronise le panier local avec le serveur
+   * Utile après connexion ou pour réconcilier panier invité
+   */
+  async syncCart(localItems: CartItem[], userId: string): Promise<Cart> {
+    const result = await api.post<{ success: boolean; data: Cart }>(
+      '/cart/sync',
+      {
+        items: localItems,
+        userId,
+      }
+    );
+    return result.data as Cart;
+  },
+
+  /**
+   * Calcule le total du panier
+   * (peut être fait côté client ou serveur selon votre logique)
+   */
+  calculateTotal(items: CartItem[]): number {
+    return items.reduce((total, item) => total + item.price * item.quantity, 0);
+  },
+};
+
+/**
+ * Hook React pour gérer le panier (optionnel)
+ * Exemple d'utilisation avec le client API
+ */
+export function useCart() {
+  // À implémenter selon votre state management (Redux, Zustand, React Query, etc.)
+  // Exemple avec React Query:
+  /*
+  const { data: cart, isLoading, error, refetch } = useQuery({
+    queryKey: ['cart'],
+    queryFn: () => cartService.getCart(),
+  });
+
+  const addToCart = useMutation({
+    mutationFn: cartService.addToCart,
+    onSuccess: () => refetch(),
+  });
+
+  return { cart, isLoading, error, addToCart };
+  */
+}
+
+export default cartService;

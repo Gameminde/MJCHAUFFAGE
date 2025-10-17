@@ -1,8 +1,10 @@
+/// <reference types="jest" />
+import { jest, describe, it, expect, afterEach } from '@jest/globals';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { AuthService } from '@/services/authService';
 import { config } from '@/config/environment';
-import { prisma } from '@/config/database';
+import { prisma } from '@/lib/database';
 import { redisClient } from '@/config/redis';
 import { User } from '@prisma/client';
 
@@ -12,8 +14,8 @@ jest.mock('bcryptjs');
 jest.mock('@/config/environment', () => ({
   config: {
     jwt: {
-      secret: 'test-secret',
-      refreshSecret: 'test-refresh-secret',
+      secret: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      refreshSecret: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       expiresIn: '15m',
       refreshExpiresIn: '7d',
     },
@@ -22,7 +24,7 @@ jest.mock('@/config/environment', () => ({
     },
   },
 }));
-jest.mock('@/config/database', () => ({
+jest.mock('@/lib/database', () => ({
   prisma: {
     user: {
       update: jest.fn(),
@@ -48,10 +50,10 @@ jest.mock('@/config/redis', () => ({
   },
 }));
 
-const mockedJwt = jwt;
-const mockedBcrypt = bcrypt;
-const mockedPrisma = prisma;
-const mockedRedis = redisClient;
+const mockedJwt = jwt as unknown as jest.Mocked<typeof jwt>;
+const mockedBcrypt = bcrypt as unknown as jest.Mocked<typeof bcrypt>;
+const mockedPrisma = prisma as any;
+const mockedRedis = redisClient as unknown as { setEx: jest.Mock; get: jest.Mock; del: jest.Mock };
 
 describe('AuthService', () => {
   afterEach(() => {
@@ -62,14 +64,15 @@ describe('AuthService', () => {
     id: 'user-123',
     email: 'test@example.com',
     password: 'hashedpassword',
-    role: 'USER',
+    role: 'CUSTOMER',
     firstName: 'Test',
     lastName: 'User',
     phone: null,
-    address: null,
+    avatar: null,
     isActive: true,
-    is2FAEnabled: false,
-    twoFactorSecret: null,
+    isVerified: false,
+    emailVerified: null,
+    googleId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastLoginAt: null,
@@ -80,7 +83,7 @@ describe('AuthService', () => {
       const accessToken = 'access-token';
       const refreshToken = 'refresh-token';
 
-      mockedJwt.sign.mockImplementation((payload, secret, options) => {
+      (mockedJwt.sign as jest.Mock).mockImplementation((_payload: any, secret: any, _options: any) => { void _payload; void _options;
         if (secret === config.jwt.secret) {
           return accessToken;
         }
@@ -100,7 +103,7 @@ describe('AuthService', () => {
   describe('verifyToken', () => {
     it('should verify a valid token', () => {
       const payload = { userId: 'user-123', email: 'test@example.com', role: 'USER' };
-      mockedJwt.verify.mockReturnValue(payload as any);
+      (mockedJwt.verify as jest.Mock).mockReturnValue(payload as any);
 
       const result = AuthService.verifyToken('valid-token');
 
@@ -108,22 +111,24 @@ describe('AuthService', () => {
       expect(mockedJwt.verify).toHaveBeenCalledWith('valid-token', config.jwt.secret, {
         issuer: 'mj-chauffage',
         audience: 'mj-chauffage-app',
+        algorithms: ['HS256'],
+        clockTolerance: 30,
       });
     });
 
     it('should throw an error for an invalid token', () => {
-      mockedJwt.verify.mockImplementation(() => {
+      (mockedJwt.verify as jest.Mock).mockImplementation(() => {
         throw new Error('Invalid token');
       });
 
-      expect(() => AuthService.verifyToken('invalid-token')).toThrow('Invalid or expired token');
+      expect(() => AuthService.verifyToken('invalid-token')).toThrow('Token verification failed');
     });
   });
 
   describe('hashPassword and comparePassword', () => {
     it('should hash a password', async () => {
       const hashedPassword = 'hashed-password';
-      mockedBcrypt.hash.mockResolvedValue(hashedPassword);
+      (mockedBcrypt.hash as jest.Mock).mockImplementation(async () => hashedPassword);
 
       const result = await AuthService.hashPassword('password123');
 
@@ -132,7 +137,7 @@ describe('AuthService', () => {
     });
 
     it('should compare a password with a hash', async () => {
-      mockedBcrypt.compare.mockResolvedValue(true);
+      (mockedBcrypt.compare as jest.Mock).mockImplementation(async () => true);
 
       const result = await AuthService.comparePassword('password123', 'hashed-password');
 
@@ -148,13 +153,13 @@ describe('AuthService', () => {
     });
 
     it('should validate a refresh token', async () => {
-      mockedRedis.get.mockResolvedValue('refresh-token');
+      (mockedRedis.get as jest.Mock).mockImplementation(async () => 'refresh-token');
       const isValid = await AuthService.validateRefreshToken('user-123', 'refresh-token');
       expect(isValid).toBe(true);
     });
 
     it('should return false for an invalid refresh token', async () => {
-      mockedRedis.get.mockResolvedValue('different-token');
+      (mockedRedis.get as jest.Mock).mockImplementation(async () => 'different-token');
       const isValid = await AuthService.validateRefreshToken('user-123', 'refresh-token');
       expect(isValid).toBe(false);
     });
@@ -168,7 +173,7 @@ describe('AuthService', () => {
   describe('Session management', () => {
     it('should create a session', async () => {
       const sessionToken = 'session-token';
-      mockedJwt.sign.mockReturnValue(sessionToken);
+      (mockedJwt.sign as jest.Mock).mockReturnValue(sessionToken);
       
       await AuthService.createSession('user-123', '127.0.0.1', 'jest');
 
@@ -187,7 +192,7 @@ describe('AuthService', () => {
         expiresAt: new Date(Date.now() + 3600 * 1000),
         user: { isActive: true },
       };
-      (mockedPrisma.userSession.findUnique as jest.Mock).mockResolvedValue(session);
+      (mockedPrisma.userSession.findUnique as jest.Mock).mockImplementation(async () => session);
 
       const isValid = await AuthService.validateSession('session-token');
       expect(isValid).toBe(true);
@@ -198,12 +203,13 @@ describe('AuthService', () => {
             expiresAt: new Date(Date.now() - 3600 * 1000),
             user: { isActive: true },
         };
-        (mockedPrisma.userSession.findUnique as jest.Mock).mockResolvedValue(session);
+        (mockedPrisma.userSession.findUnique as jest.Mock).mockImplementation(async () => session);
         const isValid = await AuthService.validateSession('session-token');
         expect(isValid).toBe(false);
     });
 
     it('should revoke a session', async () => {
+      (mockedPrisma.userSession.delete as jest.Mock).mockImplementation(async () => ({}));
       await AuthService.revokeSession('session-token');
       expect(mockedPrisma.userSession.delete).toHaveBeenCalledWith({ where: { sessionToken: 'session-token' } });
     });
@@ -212,7 +218,7 @@ describe('AuthService', () => {
   describe('Password reset', () => {
     it('should generate a password reset token', async () => {
       const token = 'reset-token';
-      mockedJwt.sign.mockReturnValue(token);
+      (mockedJwt.sign as jest.Mock).mockReturnValue(token);
 
       const result = await AuthService.generatePasswordResetToken('user-123');
 
@@ -224,15 +230,15 @@ describe('AuthService', () => {
         const token = 'reset-token';
         const decoded = { userId: 'user-123' };
         const record = { token, usedAt: null, expiresAt: new Date(Date.now() + 3600 * 1000) };
-        mockedJwt.verify.mockReturnValue(decoded as any);
-        (mockedPrisma.passwordReset.findUnique as jest.Mock).mockResolvedValue(record);
+        (mockedJwt.verify as jest.Mock).mockReturnValue(decoded as any);
+        (mockedPrisma.passwordReset.findUnique as jest.Mock).mockImplementation(async () => record);
 
         const userId = await AuthService.validatePasswordResetToken(token);
         expect(userId).toBe('user-123');
     });
 
     it('should return null for an invalid password reset token', async () => {
-        mockedJwt.verify.mockImplementation(() => { throw new Error('Invalid'); });
+        (mockedJwt.verify as jest.Mock).mockImplementation(() => { throw new Error('Invalid'); });
         const userId = await AuthService.validatePasswordResetToken('invalid-token');
         expect(userId).toBe(null);
     });

@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { notFound } from 'next/navigation';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import '@/styles/globals.css'
 import '@/styles/accessibility.css'
 import { Inter } from 'next/font/google'
@@ -16,21 +16,20 @@ const inter = Inter({ subsets: ['latin'] })
 type Props = {
   children: React.ReactNode;
   params: { locale: string };
+  header: React.ReactNode;
+  footer: React.ReactNode;
+  modal: React.ReactNode;
+  sidebar: React.ReactNode;
 };
 
-async function getMessages(locale: string) {
-  try {
-    return (await import(`../../../messages/${locale}.json`)).default;
-  } catch (error) {
-    notFound();
-  }
-}
-
 export function generateStaticParams() {
-  return [{ locale: 'fr' }, { locale: 'ar' }, { locale: 'en' }];
+  return [{ locale: 'fr' }, { locale: 'ar' }];
 }
 
 export const metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  ),
   title: {
     default: 'MJ CHAUFFAGE - Professional Heating Solutions Algeria',
     template: '%s | MJ CHAUFFAGE',
@@ -152,12 +151,15 @@ export const metadata = {
 export default async function RootLayout({
   children,
   params: { locale },
+  header,
+  footer,
+  modal,
+  sidebar,
 }: Props) {
-  const messages = await getMessages(locale);
-  
-  // Enable static rendering
-  const { setRequestLocale } = await import('next-intl/server');
+  console.log('[locale] layout render', locale);
   setRequestLocale(locale);
+  const messages = await getMessages();
+  console.log('[locale] messages loaded', locale, Array.isArray(messages) ? 'array' : typeof messages);
   
   // Set document direction based on locale
   const dir = locale === 'ar' ? 'rtl' : 'ltr';

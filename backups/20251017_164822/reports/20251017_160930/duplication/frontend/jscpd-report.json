@@ -1,0 +1,3581 @@
+{
+  "statistics": {
+    "detectionDate": "2025-10-17T14:33:16.115Z",
+    "formats": {
+      "javascript": {
+        "sources": {
+          "src/app/[locale]/products/[id]/page.tsx": {
+            "lines": 113,
+            "tokens": 1060,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/checkout/success/page.tsx": {
+            "lines": 0,
+            "tokens": 10,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/auth/register/page.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/auth/login/page.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/__tests__/AddToCartButton.test.tsx": {
+            "lines": 17,
+            "tokens": 179,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/wishlist/page.tsx": {
+            "lines": 126,
+            "tokens": 1112,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 129,
+            "duplicatedTokens": 1168,
+            "percentage": 102.38,
+            "percentageTokens": 105.04,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/services/ServicesPageClient.tsx": {
+            "lines": 58,
+            "tokens": 595,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/services/page.tsx": {
+            "lines": 0,
+            "tokens": 9,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/seo-test/page.tsx": {
+            "lines": 189,
+            "tokens": 1985,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/products/page.tsx": {
+            "lines": 3,
+            "tokens": 21,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/products/ClientProductsPage.tsx": {
+            "lines": 242,
+            "tokens": 1981,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/dashboard/page.tsx": {
+            "lines": 0,
+            "tokens": 9,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/contact/page.tsx": {
+            "lines": 61,
+            "tokens": 1081,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/comparison/page.tsx": {
+            "lines": 266,
+            "tokens": 2471,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 71,
+            "duplicatedTokens": 633,
+            "percentage": 26.69,
+            "percentageTokens": 25.62,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/checkout/page.tsx": {
+            "lines": 0,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/cart/page.tsx": {
+            "lines": 252,
+            "tokens": 2278,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 58,
+            "duplicatedTokens": 535,
+            "percentage": 23.02,
+            "percentageTokens": 23.49,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/about/page.tsx": {
+            "lines": 98,
+            "tokens": 849,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/login/page.tsx": {
+            "lines": 47,
+            "tokens": 355,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/wishlist/WishlistButton.tsx": {
+            "lines": 27,
+            "tokens": 182,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/services/ServiceBooking.tsx": {
+            "lines": 411,
+            "tokens": 3812,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/seo/StructuredData.tsx": {
+            "lines": 21,
+            "tokens": 211,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/seo/SEOHead.tsx": {
+            "lines": 39,
+            "tokens": 559,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/products/ProductGrid.tsx": {
+            "lines": 2,
+            "tokens": 48,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/products/ProductCard.tsx": {
+            "lines": 205,
+            "tokens": 1783,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/customer/CustomerDashboard.tsx": {
+            "lines": 193,
+            "tokens": 1953,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/comparison/FloatingComparisonBar.tsx": {
+            "lines": 53,
+            "tokens": 502,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/comparison/ComparisonButton.tsx": {
+            "lines": 27,
+            "tokens": 256,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Skeleton.tsx": {
+            "lines": 175,
+            "tokens": 1781,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/PerformanceOptimizer.tsx": {
+            "lines": 37,
+            "tokens": 356,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/OptimizedImage.tsx": {
+            "lines": 125,
+            "tokens": 837,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Loading.tsx": {
+            "lines": 130,
+            "tokens": 1057,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/LazyWrapper.tsx": {
+            "lines": 0,
+            "tokens": 17,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/LanguageSwitcher.tsx": {
+            "lines": 26,
+            "tokens": 244,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Header.tsx": {
+            "lines": 142,
+            "tokens": 1088,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/FallbackUI.tsx": {
+            "lines": 96,
+            "tokens": 1005,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/ErrorBoundary.tsx": {
+            "lines": 42,
+            "tokens": 321,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/DynamicImports.tsx": {
+            "lines": 44,
+            "tokens": 484,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/checkout/CheckoutForm.tsx": {
+            "lines": 51,
+            "tokens": 1183,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/checkout/Checkout.tsx": {
+            "lines": 322,
+            "tokens": 2778,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/ShoppingCart.tsx": {
+            "lines": 145,
+            "tokens": 1224,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/MiniCart.tsx": {
+            "lines": 175,
+            "tokens": 1542,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/CartButton.tsx": {
+            "lines": 27,
+            "tokens": 234,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/AddToCartButton.tsx": {
+            "lines": 87,
+            "tokens": 660,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/auth/RegisterForm.tsx": {
+            "lines": 215,
+            "tokens": 1794,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/auth/LoginForm.tsx": {
+            "lines": 98,
+            "tokens": 850,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/auth/AuthForm.tsx": {
+            "lines": 225,
+            "tokens": 1909,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/TrafficSourceChart.tsx": {
+            "lines": 62,
+            "tokens": 620,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/ConversionMetrics.tsx": {
+            "lines": 105,
+            "tokens": 1091,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/AnalyticsProvider.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/AnalyticsDashboard.tsx": {
+            "lines": 197,
+            "tokens": 1806,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/TechniciansManagement.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/ServicesManagement.tsx": {
+            "lines": 2,
+            "tokens": 34,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/RealtimeStatus.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/ProductsManagement.tsx": {
+            "lines": 444,
+            "tokens": 3933,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/OrdersManagement.tsx": {
+            "lines": 232,
+            "tokens": 2335,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/InventoryManagement.tsx": {
+            "lines": 14,
+            "tokens": 172,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/DashboardOverview.tsx": {
+            "lines": 84,
+            "tokens": 1060,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/CustomersManagement.tsx": {
+            "lines": 329,
+            "tokens": 3200,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AnalyticsDashboard.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AdminSidebar.tsx": {
+            "lines": 134,
+            "tokens": 1354,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AdminDashboard.tsx": {
+            "lines": 6,
+            "tokens": 37,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/accessibility/AccessibilityToolbar.tsx": {
+            "lines": 84,
+            "tokens": 614,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/accessibility/AccessibilityProvider.tsx": {
+            "lines": 8,
+            "tokens": 19,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/page.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/not-found.tsx": {
+            "lines": 30,
+            "tokens": 275,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/LocalizedHomePageClient.tsx": {
+            "lines": 318,
+            "tokens": 2458,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/layout.tsx": {
+            "lines": 21,
+            "tokens": 215,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/error.tsx": {
+            "lines": 49,
+            "tokens": 442,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/contexts/WishlistContext.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/contexts/ComparisonContext.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/layout.tsx": {
+            "lines": 2,
+            "tokens": 49,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/error.tsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 6733,
+          "tokens": 62425,
+          "sources": 72,
+          "clones": 2,
+          "duplicatedLines": 129,
+          "duplicatedTokens": 1168,
+          "percentage": 1.92,
+          "percentageTokens": 1.87,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "tsx": {
+        "sources": {
+          "src/app/[locale]/products/[id]/page.tsx": {
+            "lines": 185,
+            "tokens": 1605,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/checkout/success/page.tsx": {
+            "lines": 69,
+            "tokens": 688,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/auth/register/page.tsx": {
+            "lines": 18,
+            "tokens": 168,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/auth/login/page.tsx": {
+            "lines": 18,
+            "tokens": 168,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/__tests__/AddToCartButton.test.tsx": {
+            "lines": 109,
+            "tokens": 1046,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/wishlist/page.tsx": {
+            "lines": 168,
+            "tokens": 1487,
+            "sources": 1,
+            "clones": 5,
+            "duplicatedLines": 89,
+            "duplicatedTokens": 730,
+            "percentage": 52.98,
+            "percentageTokens": 49.09,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/services/ServicesPageClient.tsx": {
+            "lines": 157,
+            "tokens": 1518,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/services/page.tsx": {
+            "lines": 66,
+            "tokens": 641,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/seo-test/page.tsx": {
+            "lines": 276,
+            "tokens": 2973,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/seo-test/layout.tsx": {
+            "lines": 20,
+            "tokens": 213,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/products/page.tsx": {
+            "lines": 32,
+            "tokens": 253,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/products/ClientProductsPage.tsx": {
+            "lines": 430,
+            "tokens": 3494,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/dashboard/page.tsx": {
+            "lines": 33,
+            "tokens": 271,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/contact/page.tsx": {
+            "lines": 140,
+            "tokens": 2151,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/comparison/page.tsx": {
+            "lines": 307,
+            "tokens": 2837,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 28,
+            "duplicatedTokens": 249,
+            "percentage": 9.12,
+            "percentageTokens": 8.78,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/checkout/page.tsx": {
+            "lines": 47,
+            "tokens": 435,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/cart/page.tsx": {
+            "lines": 373,
+            "tokens": 3391,
+            "sources": 1,
+            "clones": 3,
+            "duplicatedLines": 61,
+            "duplicatedTokens": 481,
+            "percentage": 16.35,
+            "percentageTokens": 14.18,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/about/page.tsx": {
+            "lines": 235,
+            "tokens": 1980,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/auth/register/page.tsx": {
+            "lines": 17,
+            "tokens": 115,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/auth/login/page.tsx": {
+            "lines": 17,
+            "tokens": 115,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/products/page.tsx": {
+            "lines": 44,
+            "tokens": 370,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 92,
+            "percentage": 31.82,
+            "percentageTokens": 24.86,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/orders/page.tsx": {
+            "lines": 38,
+            "tokens": 291,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 23,
+            "duplicatedTokens": 152,
+            "percentage": 60.53,
+            "percentageTokens": 52.23,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/login/page.tsx": {
+            "lines": 129,
+            "tokens": 1108,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/customers/page.tsx": {
+            "lines": 38,
+            "tokens": 291,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 23,
+            "duplicatedTokens": 152,
+            "percentage": 60.53,
+            "percentageTokens": 52.23,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/analytics/page.tsx": {
+            "lines": 24,
+            "tokens": 189,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/wishlist/WishlistButton.tsx": {
+            "lines": 106,
+            "tokens": 816,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 31,
+            "duplicatedTokens": 242,
+            "percentage": 29.25,
+            "percentageTokens": 29.66,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/services/ServiceBooking.tsx": {
+            "lines": 613,
+            "tokens": 5780,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 13,
+            "duplicatedTokens": 103,
+            "percentage": 2.12,
+            "percentageTokens": 1.78,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/seo/StructuredData.tsx": {
+            "lines": 215,
+            "tokens": 1687,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/seo/SEOHead.tsx": {
+            "lines": 111,
+            "tokens": 1198,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/providers/index.tsx": {
+            "lines": 21,
+            "tokens": 135,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/providers/AuthProvider.tsx": {
+            "lines": 16,
+            "tokens": 87,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/products/ProductGrid.tsx": {
+            "lines": 36,
+            "tokens": 351,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/products/ProductCard.tsx": {
+            "lines": 289,
+            "tokens": 2532,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/layout/AuthLayout.tsx": {
+            "lines": 38,
+            "tokens": 296,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/customer/CustomerDashboard.tsx": {
+            "lines": 298,
+            "tokens": 2896,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/comparison/FloatingComparisonBar.tsx": {
+            "lines": 97,
+            "tokens": 869,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/comparison/ComparisonButton.tsx": {
+            "lines": 116,
+            "tokens": 981,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 31,
+            "duplicatedTokens": 242,
+            "percentage": 26.72,
+            "percentageTokens": 24.67,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Skeleton.tsx": {
+            "lines": 230,
+            "tokens": 2250,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/ServiceWorkerRegistration.tsx": {
+            "lines": 139,
+            "tokens": 746,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/PerformanceOptimizer.tsx": {
+            "lines": 457,
+            "tokens": 4124,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/OptimizedImage.tsx": {
+            "lines": 215,
+            "tokens": 1610,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Loading.tsx": {
+            "lines": 206,
+            "tokens": 1722,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/LazyWrapper.tsx": {
+            "lines": 36,
+            "tokens": 396,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/LanguageSwitcher.tsx": {
+            "lines": 95,
+            "tokens": 845,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Header.tsx": {
+            "lines": 191,
+            "tokens": 1605,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/Footer.tsx": {
+            "lines": 57,
+            "tokens": 681,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/FallbackUI.tsx": {
+            "lines": 188,
+            "tokens": 1747,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/ErrorBoundary.tsx": {
+            "lines": 149,
+            "tokens": 1300,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/common/DynamicImports.tsx": {
+            "lines": 96,
+            "tokens": 976,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/checkout/CheckoutForm.tsx": {
+            "lines": 227,
+            "tokens": 3106,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/checkout/Checkout.tsx": {
+            "lines": 502,
+            "tokens": 4454,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 13,
+            "duplicatedTokens": 103,
+            "percentage": 2.59,
+            "percentageTokens": 2.31,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/ShoppingCart.tsx": {
+            "lines": 210,
+            "tokens": 1821,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/MiniCart.tsx": {
+            "lines": 250,
+            "tokens": 2217,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/CartButton.tsx": {
+            "lines": 47,
+            "tokens": 405,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/cart/AddToCartButton.tsx": {
+            "lines": 270,
+            "tokens": 2273,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/auth/RegisterForm.tsx": {
+            "lines": 354,
+            "tokens": 2996,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 106,
+            "percentage": 3.39,
+            "percentageTokens": 3.54,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/auth/LoginForm.tsx": {
+            "lines": 207,
+            "tokens": 1791,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 106,
+            "percentage": 5.8,
+            "percentageTokens": 5.92,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/auth/AuthForm.tsx": {
+            "lines": 315,
+            "tokens": 2768,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/TrafficSourceChart.tsx": {
+            "lines": 215,
+            "tokens": 2173,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 39,
+            "duplicatedTokens": 310,
+            "percentage": 18.14,
+            "percentageTokens": 14.27,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/SearchTracker.tsx": {
+            "lines": 27,
+            "tokens": 228,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/ProductViewTracker.tsx": {
+            "lines": 32,
+            "tokens": 258,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/ConversionMetrics.tsx": {
+            "lines": 271,
+            "tokens": 2577,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 39,
+            "duplicatedTokens": 310,
+            "percentage": 14.39,
+            "percentageTokens": 12.03,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/CategoryViewTracker.tsx": {
+            "lines": 25,
+            "tokens": 210,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/AnalyticsProvider.tsx": {
+            "lines": 60,
+            "tokens": 659,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/analytics/AnalyticsDashboard.tsx": {
+            "lines": 344,
+            "tokens": 3152,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/TechniciansManagement.tsx": {
+            "lines": 43,
+            "tokens": 463,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/SystemSettings.tsx": {
+            "lines": 137,
+            "tokens": 1502,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/ServicesManagement.tsx": {
+            "lines": 47,
+            "tokens": 575,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/RealtimeStatus.tsx": {
+            "lines": 28,
+            "tokens": 240,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/ProductsManagement.tsx": {
+            "lines": 873,
+            "tokens": 8321,
+            "sources": 1,
+            "clones": 4,
+            "duplicatedLines": 62,
+            "duplicatedTokens": 476,
+            "percentage": 7.1,
+            "percentageTokens": 5.72,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/OrdersManagement.tsx": {
+            "lines": 417,
+            "tokens": 4065,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 19,
+            "duplicatedTokens": 111,
+            "percentage": 4.56,
+            "percentageTokens": 2.73,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/InventoryManagement.tsx": {
+            "lines": 51,
+            "tokens": 580,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/DashboardOverview.tsx": {
+            "lines": 158,
+            "tokens": 1743,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/CustomersManagement.tsx": {
+            "lines": 496,
+            "tokens": 4825,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 19,
+            "duplicatedTokens": 111,
+            "percentage": 3.83,
+            "percentageTokens": 2.3,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AnalyticsDashboard.tsx": {
+            "lines": 37,
+            "tokens": 426,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AdminSidebar.tsx": {
+            "lines": 176,
+            "tokens": 1713,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AdminDashboard.tsx": {
+            "lines": 78,
+            "tokens": 669,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/admin/AdminAuthGuard.tsx": {
+            "lines": 59,
+            "tokens": 500,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/accessibility/AccessibilityToolbar.tsx": {
+            "lines": 144,
+            "tokens": 1010,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/accessibility/AccessibilityProvider.tsx": {
+            "lines": 87,
+            "tokens": 819,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/page.tsx": {
+            "lines": 15,
+            "tokens": 136,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/not-found.tsx": {
+            "lines": 83,
+            "tokens": 702,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 92,
+            "percentage": 12.05,
+            "percentageTokens": 13.11,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/LocalizedHomePageClient.tsx": {
+            "lines": 389,
+            "tokens": 3056,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/layout.tsx": {
+            "lines": 187,
+            "tokens": 1506,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/[locale]/error.tsx": {
+            "lines": 117,
+            "tokens": 992,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 125,
+            "percentage": 11.97,
+            "percentageTokens": 12.6,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/admin/page.tsx": {
+            "lines": 37,
+            "tokens": 299,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 92,
+            "percentage": 37.84,
+            "percentageTokens": 30.77,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/contexts/WishlistContext.tsx": {
+            "lines": 144,
+            "tokens": 1263,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/contexts/ComparisonContext.tsx": {
+            "lines": 155,
+            "tokens": 1336,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/not-found.tsx": {
+            "lines": 45,
+            "tokens": 393,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 92,
+            "percentage": 22.22,
+            "percentageTokens": 23.41,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/layout.tsx": {
+            "lines": 78,
+            "tokens": 559,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/error.tsx": {
+            "lines": 80,
+            "tokens": 691,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 125,
+            "percentage": 17.5,
+            "percentageTokens": 18.09,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 14522,
+          "tokens": 132900,
+          "sources": 91,
+          "clones": 17,
+          "duplicatedLines": 295,
+          "duplicatedTokens": 2301,
+          "percentage": 2.03,
+          "percentageTokens": 1.73,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "typescript": {
+        "sources": {
+          "src/app/api/analytics/traffic-sources/route.ts": {
+            "lines": 61,
+            "tokens": 515,
+            "sources": 1,
+            "clones": 5,
+            "duplicatedLines": 80,
+            "duplicatedTokens": 637,
+            "percentage": 131.15,
+            "percentageTokens": 123.69,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/analytics/realtime/route.ts": {
+            "lines": 43,
+            "tokens": 353,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 31,
+            "duplicatedTokens": 233,
+            "percentage": 72.09,
+            "percentageTokens": 66.01,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/analytics/performance/route.ts": {
+            "lines": 100,
+            "tokens": 712,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/analytics/events/route.ts": {
+            "lines": 99,
+            "tokens": 851,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/analytics/errors/route.ts": {
+            "lines": 98,
+            "tokens": 655,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/analytics/dashboard/route.ts": {
+            "lines": 46,
+            "tokens": 401,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 31,
+            "duplicatedTokens": 233,
+            "percentage": 67.39,
+            "percentageTokens": 58.1,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/analytics/conversions/route.ts": {
+            "lines": 65,
+            "tokens": 547,
+            "sources": 1,
+            "clones": 3,
+            "duplicatedLines": 48,
+            "duplicatedTokens": 421,
+            "percentage": 73.85,
+            "percentageTokens": 76.97,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/admin/analytics/route.ts": {
+            "lines": 66,
+            "tokens": 734,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/products/route.ts": {
+            "lines": 89,
+            "tokens": 800,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/orders/route.ts": {
+            "lines": 98,
+            "tokens": 801,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/geolocation/route.ts": {
+            "lines": 24,
+            "tokens": 201,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/api/contact/route.ts": {
+            "lines": 34,
+            "tokens": 404,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/seo.ts": {
+            "lines": 279,
+            "tokens": 2426,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/imageOptimization.ts": {
+            "lines": 303,
+            "tokens": 2673,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/accessibility.ts": {
+            "lines": 358,
+            "tokens": 3089,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/tests/performance.test.ts": {
+            "lines": 293,
+            "tokens": 2936,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/test/checkout-integration.test.ts": {
+            "lines": 196,
+            "tokens": 1755,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/test/cartStore.test.ts": {
+            "lines": 157,
+            "tokens": 1336,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/test/cart-integration.test.ts": {
+            "lines": 148,
+            "tokens": 1423,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/styles/design-tokens.ts": {
+            "lines": 280,
+            "tokens": 2412,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/store/cartStore.ts": {
+            "lines": 203,
+            "tokens": 1781,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/realtimeService.ts": {
+            "lines": 163,
+            "tokens": 1481,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/productService.ts": {
+            "lines": 293,
+            "tokens": 2897,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 36,
+            "duplicatedTokens": 390,
+            "percentage": 12.29,
+            "percentageTokens": 13.46,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/performanceService.ts": {
+            "lines": 247,
+            "tokens": 2529,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/paymentService.ts": {
+            "lines": 318,
+            "tokens": 2795,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/cartService.ts": {
+            "lines": 171,
+            "tokens": 1433,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/cacheService.ts": {
+            "lines": 167,
+            "tokens": 1756,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/authService.ts": {
+            "lines": 86,
+            "tokens": 808,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/apiClient.ts": {
+            "lines": 33,
+            "tokens": 276,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/services/analyticsService.ts": {
+            "lines": 451,
+            "tokens": 4127,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/middleware/adminAuth.ts": {
+            "lines": 20,
+            "tokens": 156,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/utils.ts": {
+            "lines": 263,
+            "tokens": 2275,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/ssr-api.ts": {
+            "lines": 217,
+            "tokens": 2003,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/i18n.ts": {
+            "lines": 92,
+            "tokens": 805,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/auth.ts": {
+            "lines": 16,
+            "tokens": 107,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/hooks/useRealtime.ts": {
+            "lines": 195,
+            "tokens": 1742,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/hooks/usePerformance.ts": {
+            "lines": 250,
+            "tokens": 2386,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/hooks/useLanguage.ts": {
+            "lines": 35,
+            "tokens": 280,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/hooks/useIntersectionObserver.ts": {
+            "lines": 69,
+            "tokens": 743,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/hooks/useCart.ts": {
+            "lines": 177,
+            "tokens": 1606,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/hooks/useAnalytics.ts": {
+            "lines": 127,
+            "tokens": 1271,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/viewport.ts": {
+            "lines": 10,
+            "tokens": 87,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/sitemap.ts": {
+            "lines": 64,
+            "tokens": 545,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/app/robots.ts": {
+            "lines": 32,
+            "tokens": 214,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 6536,
+          "tokens": 59127,
+          "sources": 44,
+          "clones": 7,
+          "duplicatedLines": 113,
+          "duplicatedTokens": 957,
+          "percentage": 1.73,
+          "percentageTokens": 1.62,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "json": {
+        "sources": {
+          "src/lib/dictionaries/fr.json": {
+            "lines": 97,
+            "tokens": 745,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/lib/dictionaries/ar.json": {
+            "lines": 180,
+            "tokens": 1379,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 277,
+          "tokens": 2124,
+          "sources": 2,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "css": {
+        "sources": {
+          "src/styles/globals.css": {
+            "lines": 515,
+            "tokens": 3147,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/styles/admin.css": {
+            "lines": 135,
+            "tokens": 578,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/styles/accessibility.css": {
+            "lines": 243,
+            "tokens": 1466,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 893,
+          "tokens": 5191,
+          "sources": 3,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 28961,
+      "tokens": 261767,
+      "sources": 212,
+      "clones": 26,
+      "duplicatedLines": 537,
+      "duplicatedTokens": 4426,
+      "percentage": 1.85,
+      "percentageTokens": 1.69,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": [
+    {
+      "format": "typescript",
+      "lines": 17,
+      "fragment": "},\r\n      { status: 500 }\r\n    );\r\n  }\r\n}\r\n\r\n// Handle OPTIONS for CORS\r\nexport async function OPTIONS() {\r\n  return new NextResponse(null, {\r\n    status: 200,\r\n    headers: {\r\n      'Access-Control-Allow-Origin': '*',\r\n      'Access-Control-Allow-Methods': 'GET, OPTIONS',\r\n      'Access-Control-Allow-Headers': 'Content-Type',\r\n    },\r\n  });\r\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\api\\analytics\\realtime\\route.ts",
+        "start": 28,
+        "end": 44,
+        "startLoc": {
+          "line": 28,
+          "column": 7,
+          "position": 245
+        },
+        "endLoc": {
+          "line": 44,
+          "column": 2,
+          "position": 353
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\api\\analytics\\traffic-sources\\route.ts",
+        "start": 46,
+        "end": 62,
+        "startLoc": {
+          "line": 46,
+          "column": 7,
+          "position": 407
+        },
+        "endLoc": {
+          "line": 62,
+          "column": 2,
+          "position": 515
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 16,
+      "fragment": ", {\r\n      method: 'GET',\r\n      headers: {\r\n        'Content-Type': 'application/json',\r\n      }\r\n    });\r\n\r\n    if (!response.ok) {\r\n      throw new Error(`Backend responded with status: ${response.status}`);\r\n    }\r\n\r\n    const data = await response.json();\r\n    return NextResponse.json(data);\r\n\r\n  } catch (error) {\r\n    console.error('Dashboard analytics error:'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\api\\analytics\\dashboard\\route.ts",
+        "start": 11,
+        "end": 26,
+        "startLoc": {
+          "line": 11,
+          "column": 2,
+          "position": 131
+        },
+        "endLoc": {
+          "line": 26,
+          "column": 29,
+          "position": 256
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\api\\analytics\\realtime\\route.ts",
+        "start": 8,
+        "end": 23,
+        "startLoc": {
+          "line": 8,
+          "column": 25,
+          "position": 83
+        },
+        "endLoc": {
+          "line": 23,
+          "column": 29,
+          "position": 208
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 17,
+      "fragment": "},\r\n      { status: 500 }\r\n    );\r\n  }\r\n}\r\n\r\n// Handle OPTIONS for CORS\r\nexport async function OPTIONS() {\r\n  return new NextResponse(null, {\r\n    status: 200,\r\n    headers: {\r\n      'Access-Control-Allow-Origin': '*',\r\n      'Access-Control-Allow-Methods': 'GET, OPTIONS',\r\n      'Access-Control-Allow-Headers': 'Content-Type',\r\n    },\r\n  });\r\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\api\\analytics\\dashboard\\route.ts",
+        "start": 31,
+        "end": 47,
+        "startLoc": {
+          "line": 31,
+          "column": 7,
+          "position": 293
+        },
+        "endLoc": {
+          "line": 47,
+          "column": 2,
+          "position": 401
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\api\\analytics\\traffic-sources\\route.ts",
+        "start": 46,
+        "end": 62,
+        "startLoc": {
+          "line": 46,
+          "column": 7,
+          "position": 407
+        },
+        "endLoc": {
+          "line": 62,
+          "column": 2,
+          "position": 515
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 12,
+      "fragment": "import { NextRequest, NextResponse } from 'next/server';\r\n\r\nexport async function GET(request: NextRequest) {\r\n  try {\r\n    const { searchParams } = new URL(request.url);\r\n    const timeframe = searchParams.get('timeframe') || '7d';\r\n    \r\n    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';\r\n    \r\n    // Try to fetch real data from backend\r\n    try {\r\n      const response = await fetch(`${backendUrl}/api/analytics/conversions?timeframe=",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\api\\analytics\\conversions\\route.ts",
+        "start": 1,
+        "end": 12,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 12,
+          "column": 38,
+          "position": 132
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\api\\analytics\\traffic-sources\\route.ts",
+        "start": 1,
+        "end": 12,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 12,
+          "column": 42,
+          "position": 132
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 22,
+      "fragment": "${timeframe}`, {\r\n        headers: {\r\n          'Content-Type': 'application/json',\r\n        },\r\n        // Add timeout to prevent hanging\r\n        signal: AbortSignal.timeout(5000)\r\n      });\r\n\r\n      if (response.ok) {\r\n        const data = await response.json();\r\n        return NextResponse.json(data);\r\n      } else {\r\n        throw new Error(`Backend responded with status: ${response.status}`);\r\n      }\r\n    } catch (backendError) {\r\n      console.warn('Backend analytics unavailable, returning empty data:', backendError);\r\n      \r\n      // Return empty data structure instead of mock data\r\n      return NextResponse.json({\r\n        success: true,\r\n        data: {\r\n          conversionRate",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\api\\analytics\\conversions\\route.ts",
+        "start": 12,
+        "end": 33,
+        "startLoc": {
+          "line": 12,
+          "column": 38,
+          "position": 133
+        },
+        "endLoc": {
+          "line": 33,
+          "column": 15,
+          "position": 314
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\api\\analytics\\traffic-sources\\route.ts",
+        "start": 12,
+        "end": 33,
+        "startLoc": {
+          "line": 12,
+          "column": 42,
+          "position": 133
+        },
+        "endLoc": {
+          "line": 33,
+          "column": 14,
+          "position": 314
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 17,
+      "fragment": "},\r\n      { status: 500 }\r\n    );\r\n  }\r\n}\r\n\r\n// Handle OPTIONS for CORS\r\nexport async function OPTIONS() {\r\n  return new NextResponse(null, {\r\n    status: 200,\r\n    headers: {\r\n      'Access-Control-Allow-Origin': '*',\r\n      'Access-Control-Allow-Methods': 'GET, OPTIONS',\r\n      'Access-Control-Allow-Headers': 'Content-Type',\r\n    },\r\n  });\r\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\api\\analytics\\conversions\\route.ts",
+        "start": 50,
+        "end": 66,
+        "startLoc": {
+          "line": 50,
+          "column": 7,
+          "position": 439
+        },
+        "endLoc": {
+          "line": 66,
+          "column": 2,
+          "position": 547
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\api\\analytics\\traffic-sources\\route.ts",
+        "start": 46,
+        "end": 62,
+        "startLoc": {
+          "line": 46,
+          "column": 7,
+          "position": 407
+        },
+        "endLoc": {
+          "line": 62,
+          "column": 2,
+          "position": 515
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 72,
+      "fragment": "={`min-h-screen bg-gray-50 py-12 ${isRTL ? 'rtl' : 'ltr'}`}>\r\n        <div className=\"max-w-4xl mx-auto px-4 sm:px-6 lg:px-8\">\r\n          <div className=\"text-center\">\r\n            <Layers className=\"mx-auto h-24 w-24 text-gray-300 mb-8\" />\r\n            <h1 className=\"text-3xl font-bold text-gray-900 mb-4\">\r\n              {locale === 'ar' ? 'قائمة المقارنة فارغة' : 'Votre liste de comparaison est vide'}\r\n            </h1>\r\n            <p className=\"text-lg text-gray-600 mb-8\">\r\n              {locale === 'ar' \r\n                ? 'أضف منتجات للمقارنة لعرضها هنا' \r\n                : 'Ajoutez des produits à comparer pour les voir ici'\r\n              }\r\n            </p>\r\n            <div className=\"space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center\">\r\n              <Link\r\n                href={`/${locale}/products`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors\"\r\n              >\r\n                <ShoppingCart className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'تصفح المنتجات' : 'Parcourir les produits'}\r\n              </Link>\r\n              <Link\r\n                href={`/${locale}`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors\"\r\n              >\r\n                <ArrowLeft className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'العودة للرئيسية' : 'Retour à l\\'accueil'}\r\n              </Link>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    )\r\n  }\r\n\r\n  // Get all unique features for comparison\r\n  const allFeatures = Array.from(\r\n    new Set(\r\n      items.flatMap(item => [\r\n        'brand',\r\n        'category',\r\n        'power',\r\n        'efficiency',\r\n        'warranty',\r\n        ...(item as any).features ? Object.keys((item as any).features) : []\r\n      ])\r\n    )\r\n  )\r\n\r\n  return (\r\n    <div className={`min-h-screen bg-gray-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>\r\n      <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">\r\n        {/* Header */}\r\n        <div className=\"mb-8\">\r\n          <Link\r\n            href={`/${locale}/products`}\r\n            className=\"inline-flex items-center text-primary-600 hover:text-primary-700 mb-4\"\r\n          >\r\n            <ArrowLeft className=\"h-4 w-4 mr-2\" />\r\n            {locale === 'ar' ? 'متابعة التسوق' : 'Continuer les achats'}\r\n          </Link>\r\n          \r\n          <div className=\"flex items-center justify-between\">\r\n            <h1 className=\"text-3xl font-bold text-gray-900\">\r\n              {locale === 'ar' ? 'مقارنة المنتجات' : 'Comparer les produits'}\r\n              <span className=\"text-lg font-normal text-gray-600 ml-2\">\r\n                ({items.length} {locale === 'ar' ? 'منتجات' : 'produits'})\r\n              </span>\r\n            </h1>\r\n            \r\n            <button\r\n              onClick={handleClearComparison",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\comparison\\page.tsx",
+        "start": 31,
+        "end": 102,
+        "startLoc": {
+          "line": 31,
+          "column": 10,
+          "position": 302
+        },
+        "endLoc": {
+          "line": 102,
+          "column": 22,
+          "position": 935
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 31,
+        "end": 88,
+        "startLoc": {
+          "line": 31,
+          "column": 10,
+          "position": 305
+        },
+        "endLoc": {
+          "line": 88,
+          "column": 20,
+          "position": 825
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 16,
+      "fragment": "}\r\n            </p>\r\n            <div className=\"space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center\">\r\n              <Link\r\n                href={`/${locale}/products`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors\"\r\n              >\r\n                <ShoppingCart className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'تصفح المنتجات' : 'Parcourir les produits'}\r\n              </Link>\r\n              <Link\r\n                href={`/${locale}`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors\"\r\n              >\r\n                <ArrowLeft className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'العودة للرئيسية' : 'Retour à l\\'accueil'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\comparison\\page.tsx",
+        "start": 42,
+        "end": 57,
+        "startLoc": {
+          "line": 42,
+          "column": 15,
+          "position": 427
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 22,
+          "position": 558
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 42,
+        "end": 57,
+        "startLoc": {
+          "line": 42,
+          "column": 15,
+          "position": 430
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 21,
+          "position": 561
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 14,
+      "fragment": "\">\r\n        {/* Header */}\r\n        <div className=\"mb-8\">\r\n          <Link\r\n            href={`/${locale}/products`}\r\n            className=\"inline-flex items-center text-primary-600 hover:text-primary-700 mb-4\"\r\n          >\r\n            <ArrowLeft className=\"h-4 w-4 mr-2\" />\r\n            {locale === 'ar' ? 'متابعة التسوق' : 'Continuer les achats'}\r\n          </Link>\r\n          \r\n          <div className=\"flex items-center justify-between\">\r\n            <h1 className=\"text-3xl font-bold text-gray-900\">\r\n              {locale === 'ar' ? 'مقارنة المنتجات'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\comparison\\page.tsx",
+        "start": 82,
+        "end": 95,
+        "startLoc": {
+          "line": 82,
+          "column": 39,
+          "position": 750
+        },
+        "endLoc": {
+          "line": 95,
+          "column": 18,
+          "position": 868
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 68,
+        "end": 81,
+        "startLoc": {
+          "line": 68,
+          "column": 39,
+          "position": 642
+        },
+        "endLoc": {
+          "line": 81,
+          "column": 17,
+          "position": 760
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 59,
+      "fragment": "={`min-h-screen bg-gray-50 py-12 ${isRTL ? 'rtl' : 'ltr'}`}>\r\n        <div className=\"max-w-4xl mx-auto px-4 sm:px-6 lg:px-8\">\r\n          <div className=\"text-center\">\r\n            <ShoppingBag className=\"mx-auto h-24 w-24 text-gray-300 mb-8\" />\r\n            <h1 className=\"text-3xl font-bold text-gray-900 mb-4\">\r\n              {locale === 'ar' ? 'سلة التسوق فارغة' : 'Votre panier est vide'}\r\n            </h1>\r\n            <p className=\"text-lg text-gray-600 mb-8\">\r\n              {locale === 'ar' \r\n                ? 'أضف بعض المنتجات لبدء التسوق' \r\n                : 'Ajoutez des produits pour commencer vos achats'\r\n              }\r\n            </p>\r\n            <div className=\"space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center\">\r\n              <Link\r\n                href={`/${locale}/products`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors\"\r\n              >\r\n                <ShoppingCart className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'تصفح المنتجات' : 'Parcourir les produits'}\r\n              </Link>\r\n              <Link\r\n                href={`/${locale}`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors\"\r\n              >\r\n                <ArrowLeft className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'العودة للرئيسية' : 'Retour à l\\'accueil'}\r\n              </Link>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    )\r\n  }\r\n\r\n  return (\r\n    <div className={`min-h-screen bg-gray-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>\r\n      <div className=\"max-w-6xl mx-auto px-4 sm:px-6 lg:px-8\">\r\n        {/* Header */}\r\n        <div className=\"mb-8\">\r\n          <Link\r\n            href={`/${locale}/products`}\r\n            className=\"inline-flex items-center text-primary-600 hover:text-primary-700 mb-4\"\r\n          >\r\n            <ArrowLeft className=\"h-4 w-4 mr-2\" />\r\n            {locale === 'ar' ? 'متابعة التسوق' : 'Continuer les achats'}\r\n          </Link>\r\n          \r\n          <div className=\"flex items-center justify-between\">\r\n            <h1 className=\"text-3xl font-bold text-gray-900\">\r\n              {locale === 'ar' ? 'سلة التسوق' : 'Panier d\\'achat'}\r\n              <span className=\"text-lg font-normal text-gray-600 ml-2\">\r\n                ({itemCount} {locale === 'ar' ? 'عنصر' : 'articles'})\r\n              </span>\r\n            </h1>\r\n            \r\n            {items.length > 0 && (\r\n              <button\r\n                onClick={handleClearCart",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\cart\\page.tsx",
+        "start": 89,
+        "end": 147,
+        "startLoc": {
+          "line": 89,
+          "column": 10,
+          "position": 818
+        },
+        "endLoc": {
+          "line": 147,
+          "column": 16,
+          "position": 1353
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 31,
+        "end": 88,
+        "startLoc": {
+          "line": 31,
+          "column": 10,
+          "position": 305
+        },
+        "endLoc": {
+          "line": 88,
+          "column": 20,
+          "position": 825
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 25,
+      "fragment": "}\r\n            </p>\r\n            <div className=\"space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center\">\r\n              <Link\r\n                href={`/${locale}/products`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors\"\r\n              >\r\n                <ShoppingCart className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'تصفح المنتجات' : 'Parcourir les produits'}\r\n              </Link>\r\n              <Link\r\n                href={`/${locale}`}\r\n                className=\"inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors\"\r\n              >\r\n                <ArrowLeft className=\"h-5 w-5 mr-2\" />\r\n                {locale === 'ar' ? 'العودة للرئيسية' : 'Retour à l\\'accueil'}\r\n              </Link>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    )\r\n  }\r\n\r\n  return",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\cart\\page.tsx",
+        "start": 100,
+        "end": 124,
+        "startLoc": {
+          "line": 100,
+          "column": 15,
+          "position": 943
+        },
+        "endLoc": {
+          "line": 124,
+          "column": 7,
+          "position": 1119
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 42,
+        "end": 66,
+        "startLoc": {
+          "line": 42,
+          "column": 15,
+          "position": 430
+        },
+        "endLoc": {
+          "line": 66,
+          "column": 42,
+          "position": 603
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 25,
+      "fragment": "}\r\n              </Link>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    )\r\n  }\r\n\r\n  return (\r\n    <div className={`min-h-screen bg-gray-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>\r\n      <div className=\"max-w-6xl mx-auto px-4 sm:px-6 lg:px-8\">\r\n        {/* Header */}\r\n        <div className=\"mb-8\">\r\n          <Link\r\n            href={`/${locale}/products`}\r\n            className=\"inline-flex items-center text-primary-600 hover:text-primary-700 mb-4\"\r\n          >\r\n            <ArrowLeft className=\"h-4 w-4 mr-2\" />\r\n            {locale === 'ar' ? 'متابعة التسوق' : 'Continuer les achats'}\r\n          </Link>\r\n          \r\n          <div className=\"flex items-center justify-between\">\r\n            <h1 className=\"text-3xl font-bold text-gray-900\">\r\n              {locale === 'ar' ? 'سلة التسوق'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\cart\\page.tsx",
+        "start": 115,
+        "end": 139,
+        "startLoc": {
+          "line": 115,
+          "column": 22,
+          "position": 1075
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 13,
+          "position": 1273
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 57,
+        "end": 81,
+        "startLoc": {
+          "line": 57,
+          "column": 21,
+          "position": 562
+        },
+        "endLoc": {
+          "line": 81,
+          "column": 17,
+          "position": 760
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 14,
+      "fragment": "/>\r\n                        </div>\r\n\r\n                        {/* Product Details */}\r\n                        <div className=\"flex-1 min-w-0\">\r\n                          <h3 className=\"text-lg font-medium text-gray-900 mb-2\">\r\n                            {item.name}\r\n                          </h3>\r\n                          \r\n                          <div className=\"space-y-1 text-sm text-gray-600 mb-4\">\r\n                            <p>\r\n                              <span className=\"font-medium\">SKU:</span> {item.sku}\r\n                            </p>\r\n                            <p>",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\[locale]\\cart\\page.tsx",
+        "start": 192,
+        "end": 205,
+        "startLoc": {
+          "line": 192,
+          "column": 27,
+          "position": 1755
+        },
+        "endLoc": {
+          "line": 205,
+          "column": 2,
+          "position": 1862
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\wishlist\\page.tsx",
+        "start": 116,
+        "end": 129,
+        "startLoc": {
+          "line": 116,
+          "column": 21,
+          "position": 1067
+        },
+        "endLoc": {
+          "line": 129,
+          "column": 2,
+          "position": 1174
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 24,
+      "fragment": "Management</h1>\r\n            </div>\r\n            <div className=\"flex items-center space-x-4\">\r\n              <a \r\n                href=\"/admin\"\r\n                className=\"text-gray-500 hover:text-gray-700 transition-colors\"\r\n              >\r\n                ← Back to Dashboard\r\n              </a>\r\n              <a \r\n                href=\"/\"\r\n                className=\"text-gray-500 hover:text-gray-700 transition-colors\"\r\n              >\r\n                ← Back to Site\r\n              </a>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </header>\r\n\r\n      {/* Main Content */}\r\n      <main className=\"p-8\">\r\n        <div className=\"max-w-7xl mx-auto\">\r\n          <DynamicCustomersManagement",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\admin\\customers\\page.tsx",
+        "start": 11,
+        "end": 34,
+        "startLoc": {
+          "line": 11,
+          "column": 2,
+          "position": 112
+        },
+        "endLoc": {
+          "line": 34,
+          "column": 27,
+          "position": 264
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\admin\\orders\\page.tsx",
+        "start": 11,
+        "end": 34,
+        "startLoc": {
+          "line": 11,
+          "column": 2,
+          "position": 112
+        },
+        "endLoc": {
+          "line": 34,
+          "column": 24,
+          "position": 264
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 32,
+      "fragment": ", error)\r\n    } finally {\r\n      setIsProcessing(false)\r\n    }\r\n  }\r\n\r\n  // Size classes\r\n  const sizeClasses = {\r\n    sm: 'h-8 w-8',\r\n    md: 'h-10 w-10',\r\n    lg: 'h-12 w-12'\r\n  }\r\n\r\n  // Variant classes\r\n  const variantClasses = {\r\n    icon: 'p-2 rounded-full',\r\n    text: 'px-4 py-2 rounded-md flex items-center space-x-2'\r\n  }\r\n\r\n  if (variant === 'icon') {\r\n    return (\r\n      <button\r\n        onClick={handleToggleComparison}\r\n        disabled={isProcessing || (!isComparing && items.length >= 4)}\r\n        className={`${sizeClasses[size]} ${variantClasses[variant]} ${\r\n          isComparing \r\n            ? 'text-blue-500 bg-blue-50 hover:bg-blue-100' \r\n            : 'text-gray-400 bg-gray-100 hover:bg-gray-200 hover:text-gray-600'\r\n        } transition-colors ${className} ${(items.length >= 4 && !isComparing) ? 'opacity-50 cursor-not-allowed' : ''}`}\r\n        aria-label={isComparing ? t('comparison.remove') : t('comparison.add')}\r\n      >\r\n        <Layers",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\comparison\\ComparisonButton.tsx",
+        "start": 61,
+        "end": 92,
+        "startLoc": {
+          "line": 61,
+          "column": 29,
+          "position": 544
+        },
+        "endLoc": {
+          "line": 92,
+          "column": 7,
+          "position": 786
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\wishlist\\WishlistButton.tsx",
+        "start": 51,
+        "end": 82,
+        "startLoc": {
+          "line": 51,
+          "column": 27,
+          "position": 453
+        },
+        "endLoc": {
+          "line": 82,
+          "column": 6,
+          "position": 658
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 14,
+      "fragment": ")}\r\n        </h2>\r\n        \r\n        <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">\r\n          <div>\r\n            <label className=\"block text-sm font-medium text-gray-700 mb-1\">\r\n              {t('firstName')} *\r\n            </label>\r\n            <input\r\n              type=\"text\"\r\n              value={shippingAddress.firstName}\r\n              onChange={(e) => handleAddressChange('firstName', e.target.value)}\r\n              className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500\"\r\n              ",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\checkout\\Checkout.tsx",
+        "start": 194,
+        "end": 207,
+        "startLoc": {
+          "line": 194,
+          "column": 18,
+          "position": 1787
+        },
+        "endLoc": {
+          "line": 207,
+          "column": 15,
+          "position": 1890
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\services\\ServiceBooking.tsx",
+        "start": 289,
+        "end": 301,
+        "startLoc": {
+          "line": 289,
+          "column": 15,
+          "position": 2859
+        },
+        "endLoc": {
+          "line": 301,
+          "column": 13,
+          "position": 2961
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 13,
+      "fragment": "setFormData(prev => ({\r\n      ...prev,\r\n      [name]: type === 'checkbox' ? checked : value\r\n    }))\r\n    \r\n    // Clear specific field error when user starts typing\r\n    if (errors[name]) {\r\n      setErrors(prev => ({ ...prev, [name]: '' }))\r\n    }\r\n  }\r\n\r\n  return (\r\n    <div",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\auth\\LoginForm.tsx",
+        "start": 69,
+        "end": 81,
+        "startLoc": {
+          "line": 69,
+          "column": 5,
+          "position": 625
+        },
+        "endLoc": {
+          "line": 81,
+          "column": 4,
+          "position": 731
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\auth\\RegisterForm.tsx",
+        "start": 104,
+        "end": 116,
+        "startLoc": {
+          "line": 104,
+          "column": 5,
+          "position": 910
+        },
+        "endLoc": {
+          "line": 116,
+          "column": 5,
+          "position": 1016
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 28,
+      "fragment": "></div>\r\n            ))}\r\n          </div>\r\n        </div>\r\n      </div>\r\n    );\r\n  }\r\n\r\n  if (error) {\r\n    return (\r\n      <div className=\"bg-white rounded-lg shadow p-6\">\r\n        <div className=\"text-center\">\r\n          <p className=\"text-red-600 mb-4\">{error}</p>\r\n          <button \r\n            onClick={fetchConversionData}\r\n            className=\"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700\"\r\n          >\r\n            Retry\r\n          </button>\r\n        </div>\r\n      </div>\r\n    );\r\n  }\r\n\r\n  return (\r\n    <div className=\"bg-white rounded-lg shadow p-6\">\r\n      <div className=\"flex justify-between items-center mb-6\">\r\n        <h3 className=\"text-lg font-semibold text-gray-900\">Conversion",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\analytics\\ConversionMetrics.tsx",
+        "start": 110,
+        "end": 137,
+        "startLoc": {
+          "line": 110,
+          "column": 2,
+          "position": 1035
+        },
+        "endLoc": {
+          "line": 137,
+          "column": 11,
+          "position": 1226
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\analytics\\TrafficSourceChart.tsx",
+        "start": 87,
+        "end": 115,
+        "startLoc": {
+          "line": 87,
+          "column": 4,
+          "position": 963
+        },
+        "endLoc": {
+          "line": 115,
+          "column": 8,
+          "position": 1157
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 13,
+      "fragment": "</h3>\r\n        <select\r\n          value={timeframe}\r\n          onChange={(e) => setTimeframe(e.target.value)}\r\n          className=\"px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500\"\r\n        >\r\n          <option value=\"7d\">Last 7 days</option>\r\n          <option value=\"30d\">Last 30 days</option>\r\n          <option value=\"90d\">Last 90 days</option>\r\n        </select>\r\n      </div>\r\n\r\n      {metrics",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\analytics\\ConversionMetrics.tsx",
+        "start": 137,
+        "end": 149,
+        "startLoc": {
+          "line": 137,
+          "column": 8,
+          "position": 1229
+        },
+        "endLoc": {
+          "line": 149,
+          "column": 8,
+          "position": 1348
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\analytics\\TrafficSourceChart.tsx",
+        "start": 115,
+        "end": 127,
+        "startLoc": {
+          "line": 115,
+          "column": 8,
+          "position": 1160
+        },
+        "endLoc": {
+          "line": 127,
+          "column": 12,
+          "position": 1279
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 19,
+      "fragment": "{\r\n  id: string\r\n  name: string\r\n  description: string | null\r\n  price: number\r\n  originalPrice?: number\r\n  category: string\r\n  brand: string\r\n  images: string[]\r\n  inStock: boolean\r\n  stockQuantity: number\r\n  features: string[]\r\n  specifications: Record<string, string>\r\n  isActive: boolean\r\n  isFeatured: boolean\r\n  createdAt: string\r\n}\r\n\r\n// Convert backend product to frontend product",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\admin\\ProductsManagement.tsx",
+        "start": 29,
+        "end": 47,
+        "startLoc": {
+          "line": 29,
+          "column": 2,
+          "position": 229
+        },
+        "endLoc": {
+          "line": 47,
+          "column": 47,
+          "position": 357
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\admin\\ProductsManagement.tsx",
+        "start": 7,
+        "end": 25,
+        "startLoc": {
+          "line": 7,
+          "column": 2,
+          "position": 80
+        },
+        "endLoc": {
+          "line": 25,
+          "column": 35,
+          "position": 208
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 14,
+      "fragment": "({\r\n      name: '',\r\n      description: '',\r\n      price: '',\r\n      salePrice: '',\r\n      categoryId: '',\r\n      manufacturerId: '',\r\n      stockQuantity: '',\r\n      features: [''],\r\n      specifications: {} as Record<string, string>,\r\n      isActive: true,\r\n      isFeatured: false\r\n    })\r\n    setUploadedImages",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\admin\\ProductsManagement.tsx",
+        "start": 245,
+        "end": 258,
+        "startLoc": {
+          "line": 245,
+          "column": 12,
+          "position": 2610
+        },
+        "endLoc": {
+          "line": 258,
+          "column": 18,
+          "position": 2720
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\admin\\ProductsManagement.tsx",
+        "start": 78,
+        "end": 92,
+        "startLoc": {
+          "line": 78,
+          "column": 9,
+          "position": 821
+        },
+        "endLoc": {
+          "line": 92,
+          "column": 6,
+          "position": 933
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 20,
+      "fragment": ">\r\n                  </div>\r\n                </div>\r\n              </div>\r\n\r\n              <div className=\"flex justify-end mt-6 pt-6 border-t\">\r\n                <button\r\n                  onClick={() => setShowCustomerDetails(false)}\r\n                  className=\"btn-secondary\"\r\n                >\r\n                  Close\r\n                </button>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      )}\r\n    </div>\r\n  )\r\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\components\\admin\\CustomersManagement.tsx",
+        "start": 478,
+        "end": 497,
+        "startLoc": {
+          "line": 478,
+          "column": 5,
+          "position": 4714
+        },
+        "endLoc": {
+          "line": 497,
+          "column": 2,
+          "position": 4825
+        }
+      },
+      "secondFile": {
+        "name": "src\\components\\admin\\OrdersManagement.tsx",
+        "start": 399,
+        "end": 418,
+        "startLoc": {
+          "line": 399,
+          "column": 4,
+          "position": 3954
+        },
+        "endLoc": {
+          "line": 418,
+          "column": 2,
+          "position": 4065
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 15,
+      "fragment": "<a \r\n                  href=\"/\"\r\n                  className=\"text-gray-500 hover:text-gray-700 transition-colors\"\r\n                >\r\n                  ← Back to Site\r\n                </a>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </header>\r\n\r\n        {/* Main Content */}\r\n        <main className=\"p-8\">\r\n          <div className=\"max-w-7xl mx-auto\">\r\n            <DashboardOverview",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\admin\\page.tsx",
+        "start": 18,
+        "end": 32,
+        "startLoc": {
+          "line": 18,
+          "column": 17,
+          "position": 174
+        },
+        "endLoc": {
+          "line": 32,
+          "column": 18,
+          "position": 266
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\admin\\products\\page.tsx",
+        "start": 22,
+        "end": 36,
+        "startLoc": {
+          "line": 22,
+          "column": 17,
+          "position": 187
+        },
+        "endLoc": {
+          "line": 36,
+          "column": 4,
+          "position": 279
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 19,
+      "fragment": ",\r\n        headers: {\r\n          'Content-Type': 'application/json',\r\n          'Authorization': token ? `Bearer ${token}` : '',\r\n        },\r\n        body: JSON.stringify(productData),\r\n      })\r\n      \r\n      if (!response.ok) {\r\n        const errorData = await response.json().catch(() => ({}))\r\n        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)\r\n      }\r\n      \r\n      const result = await response.json()\r\n      \r\n      if (result.success) {\r\n        return result.data.product\r\n      } else {\r\n        throw new Error(result.message || 'Failed to update product'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\services\\productService.ts",
+        "start": 222,
+        "end": 240,
+        "startLoc": {
+          "line": 222,
+          "column": 6,
+          "position": 2199
+        },
+        "endLoc": {
+          "line": 240,
+          "column": 27,
+          "position": 2394
+        }
+      },
+      "secondFile": {
+        "name": "src\\services\\productService.ts",
+        "start": 191,
+        "end": 209,
+        "startLoc": {
+          "line": 191,
+          "column": 7,
+          "position": 1866
+        },
+        "endLoc": {
+          "line": 209,
+          "column": 27,
+          "position": 2061
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 11,
+      "fragment": ">\r\n      <div className=\"max-w-md w-full text-center\">\r\n        {/* 404 Illustration */}\r\n        <div className=\"mb-8\">\r\n          <div className=\"text-8xl font-bold text-gray-300 mb-4\">404</div>\r\n          <div className=\"text-6xl mb-4\">🔍</div>\r\n        </div>\r\n\r\n        {/* Error Message */}\r\n        <h1 className=\"text-2xl font-bold text-gray-900 mb-4\">\r\n          Page",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\not-found.tsx",
+        "start": 12,
+        "end": 22,
+        "startLoc": {
+          "line": 12,
+          "column": 2,
+          "position": 103
+        },
+        "endLoc": {
+          "line": 22,
+          "column": 5,
+          "position": 195
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\not-found.tsx",
+        "start": 42,
+        "end": 52,
+        "startLoc": {
+          "line": 42,
+          "column": 2,
+          "position": 361
+        },
+        "endLoc": {
+          "line": 52,
+          "column": 2,
+          "position": 453
+        }
+      }
+    },
+    {
+      "format": "tsx",
+      "lines": 15,
+      "fragment": ">\r\n      <div className=\"max-w-md w-full text-center\">\r\n        {/* Error Illustration */}\r\n        <div className=\"mb-8\">\r\n          <div className=\"flex justify-center mb-4\">\r\n            <div className=\"p-4 bg-red-100 rounded-full\">\r\n              <AlertTriangle className=\"h-12 w-12 text-red-600\" />\r\n            </div>\r\n          </div>\r\n          <div className=\"text-6xl mb-4\">⚠️</div>\r\n        </div>\r\n\r\n        {/* Error Message */}\r\n        <h1 className=\"text-2xl font-bold text-gray-900 mb-4\">\r\n          Something",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src\\app\\error.tsx",
+        "start": 20,
+        "end": 34,
+        "startLoc": {
+          "line": 20,
+          "column": 2,
+          "position": 166
+        },
+        "endLoc": {
+          "line": 34,
+          "column": 10,
+          "position": 291
+        }
+      },
+      "secondFile": {
+        "name": "src\\app\\[locale]\\error.tsx",
+        "start": 57,
+        "end": 71,
+        "startLoc": {
+          "line": 57,
+          "column": 2,
+          "position": 484
+        },
+        "endLoc": {
+          "line": 71,
+          "column": 2,
+          "position": 609
+        }
+      }
+    }
+  ]
+}

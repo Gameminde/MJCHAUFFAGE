@@ -1,6 +1,7 @@
-// Simplified Redis client for development (no Redis server required)
-// In production, replace with actual Redis implementation
+import { createClient, type RedisClientType } from 'redis';
 
+// Simplified Redis client for development (no Redis server required)
+// Fallback when a real Redis URL is not provided
 class MockRedisClient {
   private cache = new Map<string, any>();
   private lists = new Map<string, any[]>();
@@ -134,15 +135,45 @@ class MockRedisClient {
   }
 }
 
-const redisClient = new MockRedisClient();
+const redisUrl = process.env.REDIS_URL;
 
-// Connect to Redis (mock)
-export async function connectRedis() {
-  try {
-    await redisClient.connect();
-  } catch (error) {
-    console.error('Redis connection failed:', error);
-  }
+type RealRedisClient = RedisClientType<any, any, any>;
+
+let redisClient: RealRedisClient | MockRedisClient;
+
+if (redisUrl) {
+  const client = createClient({
+    url: redisUrl,
+    socket: {
+      keepAlive: 5000,
+      reconnectStrategy: (retries) => Math.min(retries * 50, 2000),
+    },
+  }) as RealRedisClient;
+
+  client.on('error', (error) => {
+    console.error('Redis connection error:', error);
+  });
+
+  redisClient = client;
+} else {
+  redisClient = new MockRedisClient();
 }
+
+export const connectRedis = async () => {
+  if ('connect' in redisClient) {
+    await redisClient.connect();
+    console.log(
+      redisUrl
+        ? 'Redis connected successfully'
+        : 'Redis connected successfully (Mock)',
+    );
+  }
+};
+
+export const disconnectRedis = async () => {
+  if ('disconnect' in redisClient) {
+    await redisClient.disconnect();
+  }
+};
 
 export { redisClient };
