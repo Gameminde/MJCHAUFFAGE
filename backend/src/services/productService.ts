@@ -214,27 +214,45 @@ export class ProductService {
 
     return {
       ...productDto,
-      averageRating: Math.round(averageRating * 10)    const product = await prisma.product.create({
-      data: {
-        ...data,
-        // features is already a string from frontend, or convert array to string
-        features: typeof data.features === 'string' ? data.features : (data.features || []).join(','),
-        // specifications is already a JSON string from frontend, or convert object to string
-        specifications: typeof data.specifications === 'string' ? data.specifications : JSON.stringify(data.specifications || {}),
-        price: data.price,
-        costPrice: data.costPrice || null,
-        salePrice: data.salePrice || null,
-        weight: data.weight || null,
-      },       ...data,
-        features: JSON.stringify(data.features || []),
-        price: data.price,
-        costPrice: data.costPrice || null,
-        salePrice: data.salePrice || null,
-        weight: data.weight || null,
-      },
+      averageRating: Math.round(averageRating * 10) / 10,
+      reviewCount: ratings.length,
+      relatedProducts: relatedDtos,
+    };
+  }
+
+  /**
+   * Create product
+   */
+  static async createProduct(data: ProductCreateData) {
+    console.log('📝 Creating product with data:', JSON.stringify(data, null, 2));
+    
+    // Prepare the data for database insertion
+    const createData: any = {
+      ...data,
+      // Handle features - convert string or array to string for SQLite
+      features: typeof data.features === 'string' 
+        ? data.features 
+        : Array.isArray(data.features) 
+          ? data.features.filter(f => f).join(',')
+          : '',
+      // Handle specifications - convert to JSON string for SQLite
+      specifications: typeof data.specifications === 'string'
+        ? data.specifications
+        : JSON.stringify(data.specifications || {}),
+      price: data.price,
+      costPrice: data.costPrice || null,
+      salePrice: data.salePrice || null,
+      weight: data.weight || null,
+    };
+
+    console.log('💾 Prepared data for database:', createData);
+
+    const product = await prisma.product.create({
+      data: createData,
       include: {
         category: true,
         manufacturer: true,
+        images: true,
       },
     });
 

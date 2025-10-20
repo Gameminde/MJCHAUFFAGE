@@ -3,6 +3,8 @@ import { io, Socket } from 'socket.io-client'
 class RealtimeService {
   private socket: Socket | null = null
   private listeners: Map<string, Function[]> = new Map()
+  private connectionAttempts = 0
+  private maxReconnectAttempts = 5
 
   connect() {
     if (this.socket?.connected) {
@@ -12,21 +14,39 @@ class RealtimeService {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     
     this.socket = io(API_BASE_URL, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'], // Start with polling first
       timeout: 20000,
-      forceNew: true
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     })
 
     this.socket.on('connect', () => {
-      console.log('Connected to real-time server')
+      console.log('✅ Connected to real-time server')
+      this.connectionAttempts = 0
     })
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from real-time server')
+    this.socket.on('disconnect', (reason) => {
+      console.log('🔌 Disconnected from real-time server:', reason)
+      // If the disconnection wasn't initiated by the client, attempt reconnect
+      if (reason === 'io server disconnect') {
+        // Server disconnected, try reconnecting
+        this.socket?.connect()
+      }
+    })
+
+    this.socket.on('connect_error', (error) => {
+      this.connectionAttempts++
+      if (this.connectionAttempts <= this.maxReconnectAttempts) {
+        console.warn(`⚠️ Real-time connection error (attempt ${this.connectionAttempts}/${this.maxReconnectAttempts}):`, error.message)
+      } else {
+        console.error('❌ Failed to connect to real-time server after max attempts')
+      }
     })
 
     this.socket.on('error', (error) => {
-      console.error('Real-time connection error:', error)
+      console.error('Real-time error:', error)
     })
 
     // Set up event listeners
@@ -82,10 +102,13 @@ class RealtimeService {
 
   disconnect() {
     if (this.socket) {
+      // Clean up all listeners before disconnecting
+      this.socket.removeAllListeners()
       this.socket.disconnect()
       this.socket = null
     }
     this.listeners.clear()
+    this.connectionAttempts = 0
   }
 
   // Subscribe to events

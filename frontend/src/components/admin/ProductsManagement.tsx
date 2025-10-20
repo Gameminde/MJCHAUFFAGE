@@ -293,22 +293,22 @@ export function ProductsManagement() {
 
       // Prepare data for API (match backend expectations exactly)
       const productData: any = {
-        name: formData.name,
+        name: formData.name.trim(),
         slug: slug,
         sku: sku,
         categoryId: formData.categoryId,
         price: parseFloat(formData.price),
         stockQuantity: parseInt(formData.stockQuantity),
-        isActive: formData.isActive,
-        isFeatured: formData.isFeatured,
+        isActive: Boolean(formData.isActive),
+        isFeatured: Boolean(formData.isFeatured),
       }
 
       // Add optional fields only if they have values
-      if (formData.description) {
-        productData.description = formData.description
+      if (formData.description && formData.description.trim()) {
+        productData.description = formData.description.trim()
       }
       
-      if (formData.salePrice) {
+      if (formData.salePrice && parseFloat(formData.salePrice) > 0) {
         productData.salePrice = parseFloat(formData.salePrice)
       }
       
@@ -318,19 +318,32 @@ export function ProductsManagement() {
       }
       // If it's a name like "chappee", don't send it (will be null in database)
       
-      if (formData.features && formData.features.length > 0) {
-        // Convert array to comma-separated string for SQLite
-        productData.features = formData.features.filter(f => f.trim() !== '').join(',')
+      // Features handling - send as string (backend expects string)
+      const validFeatures = formData.features.filter(f => f.trim() !== '')
+      if (validFeatures.length > 0) {
+        productData.features = validFeatures.join(',')
+      } else {
+        productData.features = '' // Send empty string instead of undefined
       }
       
-      if (formData.specifications && Object.keys(formData.specifications).length > 0) {
-        // Convert object to JSON string for SQLite
-        productData.specifications = JSON.stringify(formData.specifications)
+      // Specifications handling - send as JSON string
+      const hasSpecs = formData.specifications && Object.keys(formData.specifications).length > 0
+      if (hasSpecs) {
+        // Filter out empty keys and values
+        const cleanSpecs = Object.entries(formData.specifications)
+          .filter(([key, value]) => key && value)
+          .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+        
+        if (Object.keys(cleanSpecs).length > 0) {
+          productData.specifications = JSON.stringify(cleanSpecs)
+        } else {
+          productData.specifications = '{}'
+        }
+      } else {
+        productData.specifications = '{}'
       }
       
       // Note: Images will be handled separately via upload endpoint
-      // Do not send empty arrays or objects
-
       console.log('📦 Sending product data to backend:', JSON.stringify(productData, null, 2))
 
       if (editingProduct) {
