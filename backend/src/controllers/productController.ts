@@ -93,14 +93,16 @@ export class ProductController {
    */
   static async createProduct(req: Request, res: Response): Promise<void> {
     try {
-      // LOG DÉTAILLÉ 3 - Controller appelé
-      console.log('📦 Controller createProduct appelé');
-      console.log('User:', req.user ? { id: req.user.id, role: req.user.role } : 'Non défini');
-      console.log('Body reçu:', JSON.stringify(req.body, null, 2));
+      // Detailed logging for debugging
+      console.log('🎯 ProductController.createProduct - Request received');
+      console.log('📝 Headers:', req.headers['content-type']);
+      console.log('🔐 User:', req.user ? { id: req.user.id, role: req.user.role } : 'Not authenticated');
+      console.log('📦 Body type:', typeof req.body);
+      console.log('📦 Body content:', JSON.stringify(req.body, null, 2));
       
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log('❌ Erreurs de validation dans le controller:', errors.array());
+        console.log('❌ Validation errors:', errors.array());
         res.status(400).json({
           success: false,
           message: 'Validation failed',
@@ -111,9 +113,13 @@ export class ProductController {
 
       const productData = req.body;
       
-      // LOG DÉTAILLÉ 4 - Avant appel service
-      console.log('🔄 Appel du service ProductService.createProduct...');
-      console.log('Données à créer:', JSON.stringify(productData, null, 2));
+      // Ensure proper data types
+      if (productData.price) productData.price = Number(productData.price);
+      if (productData.salePrice) productData.salePrice = Number(productData.salePrice);
+      if (productData.stockQuantity) productData.stockQuantity = Number(productData.stockQuantity);
+      
+      console.log('🔄 Calling ProductService.createProduct with processed data:');
+      console.log(JSON.stringify(productData, null, 2));
       
       const product = await ProductService.createProduct(productData);
       

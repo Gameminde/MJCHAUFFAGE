@@ -37,10 +37,11 @@ const server = createServer(app);
 
 // Define allowed origins for CORS
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3002',
+  'http://localhost:3000',  // Main frontend
+  'http://localhost:3002',  // Alternative frontend port
+  'http://localhost:3005',  // Admin dashboard
   config.frontend.url
-];
+].filter(Boolean); // Remove any undefined values
 
 const io = new SocketServer(server, {
   cors: {
@@ -99,7 +100,7 @@ app.use(session({
 }));
 
 // ==========================================
-// API v1 Routes (Current Version)
+// API v1 Routes (Primary Version)
 // ==========================================
 const v1Router = Router();
 
@@ -141,21 +142,11 @@ v1Router.use('/cart', cartRoutes);
 v1Router.use('/payments', paymentRoutes);
 v1Router.use('/uploads', uploadsRoutes);
 
+// Register v1 routes ONLY (removing duplicate registrations)
 app.use('/api/v1', v1Router);
 
-// ==========================================
-// Legacy API Routes (For backward compatibility)
-// ==========================================
+// Health check route (outside versioning)
 app.use('/health', healthRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/realtime', realtimeRoutes);
-app.use('/api/cart', cartRoutes);
 
 // Error Handling
 app.use(notFoundHandler);
