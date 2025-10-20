@@ -214,19 +214,22 @@ export class ProductService {
 
     return {
       ...productDto,
-      averageRating: Math.round(averageRating * 10)    const product = await prisma.product.create({
+      averageRating: Math.round(averageRating * 10) / 10,
+      relatedProducts: relatedDtos,
+    };
+  }
+
+  /**
+   * Create new product
+   */
+  static async createProduct(data: ProductCreateData) {
+    const product = await prisma.product.create({
       data: {
         ...data,
         // features is already a string from frontend, or convert array to string
         features: typeof data.features === 'string' ? data.features : (data.features || []).join(','),
         // specifications is already a JSON string from frontend, or convert object to string
         specifications: typeof data.specifications === 'string' ? data.specifications : JSON.stringify(data.specifications || {}),
-        price: data.price,
-        costPrice: data.costPrice || null,
-        salePrice: data.salePrice || null,
-        weight: data.weight || null,
-      },       ...data,
-        features: JSON.stringify(data.features || []),
         price: data.price,
         costPrice: data.costPrice || null,
         salePrice: data.salePrice || null,

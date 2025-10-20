@@ -86,6 +86,13 @@ app.use('/api/auth/reset-password', authRateLimit);
 app.use('/api/auth/change-password', strictRateLimit);
 app.use('/api/admin', adminRateLimit);
 
+// Rate limits for v1 API
+app.use('/api/v1/auth/login', authRateLimit);
+app.use('/api/v1/auth/register', authRateLimit);
+app.use('/api/v1/auth/reset-password', authRateLimit);
+app.use('/api/v1/auth/change-password', strictRateLimit);
+app.use('/api/v1/admin', adminRateLimit);
+
 // Session configuration (without Redis store)
 app.use(session({
   secret: config.session.secret,
