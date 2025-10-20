@@ -1,19 +1,4 @@
 {
-  "agentCanUpdateSnapshot": true,
-  "agentCanRunBackgroundTasks": true,
-  "agentCanAccessFileSystem": true,
-  "agentCanExecuteCommands": true,
-  "agentCanManageProcesses": true,
-  "backgroundMode": "enabled",
-  "autoSave": true,
-  "continuousMode": true,
-  "githubIntegration": {
-    "enabled": true,
-    "usePersonalAccessToken": true,
-    "fallbackToSSH": true
-  },
-  "authentication": {
-    "timeoutSeconds": 300,
-    "retryAttempts": 3
-  }
+  "snapshot": "snapshot-20251020-eb01a867-ef71-4fb1-99fd-672980954146",
+  "terminals": []
 }

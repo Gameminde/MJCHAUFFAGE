@@ -128,10 +128,18 @@ export default function ProductsPage() {
                   <tr key={product.id} className="border-b">
                     <td className="h-12 px-4 align-middle">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center">
-                          <span className="text-xs font-medium">
-                            {product.name.charAt(0).toUpperCase()}
-                          </span>
+                        <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
+                          {product.images && product.images.length > 0 ? (
+                            <img 
+                              src={product.images[0]} 
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-xs font-medium">
+                              {product.name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div>
                           <div className="font-medium">{product.name}</div>
