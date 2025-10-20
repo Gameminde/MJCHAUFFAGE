@@ -114,7 +114,7 @@ export function ProductCard({
           )}
           {showQuickView && (
             <Link
-              href={`/${locale}/products/${product.slug}`}
+              href={`/${locale}/products/${product.id}`}
               className="w-11 h-11 glass-effect rounded-xl flex items-center justify-center hover:bg-white/90 transition-all duration-200 text-neutral-600 hover:text-primary-600 interactive-scale hover:shadow-card"
               aria-label={isArabic ? 'عرض سريع' : 'Aperçu rapide'}
             >
@@ -173,7 +173,7 @@ export function ProductCard({
         <h3 className={`font-display font-bold text-neutral-900 mb-3 group-hover:text-primary-600 transition-colors duration-200 line-clamp-2 ${
           variant === 'featured' ? 'text-heading-lg' : variant === 'compact' ? 'text-heading-sm' : 'text-heading-md'
         }`}>
-          <Link href={`/${locale}/products/${product.slug}`} className="hover:underline decoration-2 underline-offset-2">
+          <Link href={`/${locale}/products/${product.id}`} className="hover:underline decoration-2 underline-offset-2">
             {productName}
           </Link>
         </h3>
@@ -277,7 +277,7 @@ export function ProductCard({
             />
           </div>
           <Link
-            href={`/${locale}/products/${product.slug}`}
+            href={`/${locale}/products/${product.id}`}
             className="px-4 py-3 border-2 border-primary-500 text-primary-600 hover:bg-primary-500 hover:text-white rounded-xl transition-all duration-200 flex items-center justify-center interactive-scale hover:shadow-card"
             aria-label={isArabic ? 'عرض التفاصيل' : 'Voir détails'}
           >
