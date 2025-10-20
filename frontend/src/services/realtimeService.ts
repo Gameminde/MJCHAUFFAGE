@@ -14,19 +14,46 @@ class RealtimeService {
     this.socket = io(API_BASE_URL, {
       transports: ['websocket', 'polling'],
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
+      autoConnect: true,
+      reconnection: true,
+      reconnectionDelay: 2000,
+      reconnectionAttempts: 10,
+      maxReconnectionAttempts: 10,
+      upgrade: true,
+      rememberUpgrade: true
     })
 
     this.socket.on('connect', () => {
-      console.log('Connected to real-time server')
+      console.log('✅ Connected to real-time server')
     })
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from real-time server')
+    this.socket.on('disconnect', (reason) => {
+      console.log('❌ Disconnected from real-time server:', reason)
+    })
+
+    this.socket.on('connect_error', (error) => {
+      console.error('❌ Real-time connection error:', error.message)
     })
 
     this.socket.on('error', (error) => {
-      console.error('Real-time connection error:', error)
+      console.error('❌ Real-time socket error:', error)
+    })
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Reconnected to real-time server after', attemptNumber, 'attempts')
+    })
+
+    this.socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('🔄 Attempting to reconnect to real-time server...', attemptNumber)
+    })
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('❌ Reconnection error:', error.message)
+    })
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('❌ Failed to reconnect to real-time server')
     })
 
     // Set up event listeners
