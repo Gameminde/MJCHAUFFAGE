@@ -291,25 +291,47 @@ export function ProductsManagement() {
       const slug = generateSlug(formData.name)
       const sku = generateSKU(formData.name, formData.categoryId)
 
-      // Prepare data for API (match backend expectations)
-      const selectedCategory = categories && categories.length > 0 
-        ? categories.find(cat => cat.id === formData.categoryId)
-        : null
-      
-      const productData = {
+      // Prepare data for API (match backend expectations exactly)
+      const productData: any = {
         name: formData.name,
-        description: formData.description || null,
+        slug: slug,
+        sku: sku,
+        categoryId: formData.categoryId,
         price: parseFloat(formData.price),
-        originalPrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
-        category: selectedCategory?.name || formData.categoryId || 'Unknown',
-        brand: formData.manufacturerId || null, // Utiliser directement la valeur tapée
         stockQuantity: parseInt(formData.stockQuantity),
-        features: formData.features.filter(f => f.trim() !== ''),
-        specifications: formData.specifications,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
-        images: uploadedImages // Ajouter les images uploadées
       }
+
+      // Add optional fields only if they have values
+      if (formData.description) {
+        productData.description = formData.description
+      }
+      
+      if (formData.salePrice) {
+        productData.salePrice = parseFloat(formData.salePrice)
+      }
+      
+      // Only send manufacturerId if it looks like a UUID (not a name)
+      if (formData.manufacturerId && formData.manufacturerId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        productData.manufacturerId = formData.manufacturerId
+      }
+      // If it's a name like "chappee", don't send it (will be null in database)
+      
+      if (formData.features && formData.features.length > 0) {
+        // Convert array to comma-separated string for SQLite
+        productData.features = formData.features.filter(f => f.trim() !== '').join(',')
+      }
+      
+      if (formData.specifications && Object.keys(formData.specifications).length > 0) {
+        // Convert object to JSON string for SQLite
+        productData.specifications = JSON.stringify(formData.specifications)
+      }
+      
+      // Note: Images will be handled separately via upload endpoint
+      // Do not send empty arrays or objects
+
+      console.log('📦 Sending product data to backend:', JSON.stringify(productData, null, 2))
 
       if (editingProduct) {
         // Update existing product
@@ -331,6 +353,14 @@ export function ProductsManagement() {
       setProducts(frontendProducts)
     } catch (err) {
       console.error('Error saving product:', err)
+      // Log detailed error info
+      if (err instanceof Error) {
+        console.error('Error name:', err.name)
+        console.error('Error message:', err.message)
+        if ((err as any).response) {
+          console.error('Response data:', (err as any).response)
+        }
+      }
       const errorMessage = err instanceof Error ? err.message : 'Failed to save product'
       alert(`Erreur: ${errorMessage}`)
     }

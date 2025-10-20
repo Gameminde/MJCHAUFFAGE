@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/database';
 import { Prisma } from '@prisma/client';
+import { AuthService } from './authService';
 
 const DEFAULT_LOW_STOCK_THRESHOLD = 10;
 
@@ -7,11 +8,9 @@ const decimalToNumber = (value: Prisma.Decimal | number | null | undefined): num
   if (value === null || value === undefined) {
     return 0;
   }
-
   if (typeof value === 'number') {
     return value;
   }
-
   return Number(value);
 };
 
@@ -37,13 +36,6 @@ const ServiceRequestStatus = {
 } as const;
 
 type ServiceRequestStatusType = typeof ServiceRequestStatus[keyof typeof ServiceRequestStatus];
-
-// UserRole constants - using string literals directly
-
-
-
-import { AuthService } from './authService';
-// import { // EmailService } from './emailService';
 
 interface DashboardFilters {
   status?: string;
@@ -109,196 +101,64 @@ export class AdminService {
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    const [
-      totalOrders,
-      totalRevenue,
-      newCustomers,
-      pendingOrders,
-      totalProducts,
-      lowStockProducts,
-      totalServiceRequests,
-      pendingServiceRequests,
-      totalCustomers,
-      activeCustomers,
-      recentOrders,
-      topProducts,
-    ] = await Promise.all([
-      // Total orders in timeframe
-      prisma.order.count({
-        where: { orderDate: { gte: startDate } }
-      }),
-
-      // Total revenue in timeframe
+    const [totalRevenue, totalOrders, totalCustomers, totalServices] = await Promise.all([
       prisma.order.aggregate({
-        where: { 
+        where: {
           orderDate: { gte: startDate },
           status: { not: 'CANCELLED' }
         },
         _sum: { totalAmount: true }
       }),
-
-      // New customers in timeframe
-      prisma.customer.count({
-        where: { createdAt: { gte: startDate } }
-      }),
-
-      // Pending orders
       prisma.order.count({
-        where: { status: 'PENDING' }
+        where: { orderDate: { gte: startDate } }
       }),
-
-      // Total active products
-      prisma.product.count({
-        where: { isActive: true }
-      }),
-
-      // Low stock products
-      prisma.product.count({
-        where: {
-          isActive: true,
-          stockQuantity: { lte: DEFAULT_LOW_STOCK_THRESHOLD }
-        }
-      }),
-
-      // Total service requests in timeframe
+      prisma.customer.count(),
       prisma.serviceRequest.count({
         where: { createdAt: { gte: startDate } }
-      }),
-
-      // Pending service requests
-      prisma.serviceRequest.count({
-        where: { status: 'PENDING' }
-      }),
-
-      // Total customers
-      prisma.customer.count(),
-
-      // Active customers (made an order in last 90 days)
-      prisma.customer.count({
-        where: {
-          lastOrderAt: {
-            gte: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-          }
-        }
-      }),
-
-      // Recent orders for activity feed
-      prisma.order.findMany({
-        take: 5,
-        orderBy: { orderDate: 'desc' },
-        include: {
-          customer: {
-            include: { user: { select: { firstName: true, lastName: true } } }
-          }
-        }
-      }),
-
-      // Top products by order count
-      prisma.orderItem.groupBy({
-        by: ['productId'],
-        _sum: { quantity: true },
-        _count: { productId: true },
-        orderBy: { _sum: { quantity: 'desc' } },
-        take: 5,
-      }).then(async (items) => {
-        const productIds = items.map(item => item.productId);
-        const products = await prisma.product.findMany({
-          where: { id: { in: productIds } },
-          select: { id: true, name: true, price: true }
-        });
-        
-        return items.map(item => {
-          const product = products.find(p => p.id === item.productId);
-
-          return {
-            id: item.productId,
-            name: product?.name ?? 'Unknown Product',
-            price: decimalToNumber((product as { price?: Prisma.Decimal | number })?.price),
-            totalSold: item._sum.quantity ?? 0,
-            orderCount: item._count.productId ?? 0
-          };
-        });
-      }),
+      })
     ]);
 
-    const totalRevenueValue = decimalToNumber(totalRevenue._sum.totalAmount);
-
-    // Calculate growth rates (compare with previous period)
+    // Calculate growth
     const previousStartDate = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
-    
-    const [previousOrders, previousRevenue, previousCustomers] = await Promise.all([
-      prisma.order.count({
-        where: { 
-          orderDate: { gte: previousStartDate, lt: startDate }
-        }
-      }),
+    const [previousRevenue, previousOrders, previousCustomers] = await Promise.all([
       prisma.order.aggregate({
-        where: { 
+        where: {
           orderDate: { gte: previousStartDate, lt: startDate },
           status: { not: 'CANCELLED' }
         },
         _sum: { totalAmount: true }
       }),
-      prisma.customer.count({
-        where: { 
-          createdAt: { gte: previousStartDate, lt: startDate }
-        }
+      prisma.order.count({
+        where: { orderDate: { gte: previousStartDate, lt: startDate } }
       }),
+      prisma.customer.count({
+        where: { createdAt: { gte: previousStartDate, lt: startDate } }
+      })
     ]);
 
+    const totalRevenueValue = decimalToNumber(totalRevenue._sum.totalAmount);
     const previousRevenueValue = decimalToNumber(previousRevenue._sum.totalAmount);
 
-    const orderGrowth = previousOrders > 0 ? ((totalOrders - previousOrders) / previousOrders) * 100 : 0;
     const revenueGrowth = previousRevenueValue > 0
       ? ((totalRevenueValue - previousRevenueValue) / previousRevenueValue) * 100
       : 0;
-    const customerGrowth = previousCustomers > 0 ? ((newCustomers - previousCustomers) / previousCustomers) * 100 : 0;
+    const orderGrowth = previousOrders > 0
+      ? ((totalOrders - previousOrders) / previousOrders) * 100
+      : 0;
+    const customerGrowth = previousCustomers > 0
+      ? ((totalCustomers - previousCustomers) / previousCustomers) * 100
+      : 0;
 
     return {
-      overview: {
-        totalOrders,
+      summary: {
         totalRevenue: totalRevenueValue,
-        newCustomers,
-        pendingOrders,
-        orderGrowth: Math.round(orderGrowth * 100) / 100,
-        revenueGrowth: Math.round(revenueGrowth * 100) / 100,
-        customerGrowth: Math.round(customerGrowth * 100) / 100,
-      },
-      inventory: {
-        totalProducts,
-        lowStockProducts,
-        outOfStockProducts: await prisma.product.count({
-          where: { isActive: true, stockQuantity: 0 }
-        })
-      },
-      services: {
-        totalServiceRequests,
-        pendingServiceRequests,
-        completedServiceRequests: await prisma.serviceRequest.count({
-          where: { 
-            createdAt: { gte: startDate },
-            status: 'COMPLETED' 
-          }
-        })
-      },
-      customers: {
+        totalOrders,
         totalCustomers,
-        activeCustomers,
-        customerRetentionRate: totalCustomers > 0 ? (activeCustomers / totalCustomers) * 100 : 0
-      },
-      recentActivity: recentOrders.map(order => {
-        const firstName = order.customer?.user?.firstName ?? 'Guest';
-        const lastName = order.customer?.user?.lastName ?? 'Customer';
-
-        return {
-          type: 'order',
-          id: order.id,
-          description: `New order ${order.orderNumber} from ${firstName} ${lastName}`,
-          amount: decimalToNumber(order.totalAmount),
-          timestamp: order.orderDate
-        };
-      }),
-      topProducts
+        totalServices,
+        revenueGrowth: Math.round(revenueGrowth * 100) / 100,
+        orderGrowth: Math.round(orderGrowth * 100) / 100,
+        customerGrowth: Math.round(customerGrowth * 100) / 100,
+      }
     };
   }
 
@@ -306,9 +166,9 @@ export class AdminService {
    * Get recent activities across the system
    */
   static async getRecentActivities(limit: number) {
-    const [recentOrders, recentCustomers, recentServices] = await Promise.all([
+    const [recentOrders, recentCustomers] = await Promise.all([
       prisma.order.findMany({
-        take: Math.floor(limit / 3),
+        take: Math.floor(limit / 2),
         orderBy: { orderDate: 'desc' },
         include: {
           customer: {
@@ -317,51 +177,30 @@ export class AdminService {
         }
       }),
       prisma.customer.findMany({
-        take: Math.floor(limit / 3),
+        take: Math.floor(limit / 2),
         orderBy: { createdAt: 'desc' },
         include: {
           user: { select: { firstName: true, lastName: true, email: true } }
-        }
-      }),
-      prisma.serviceRequest.findMany({
-        take: Math.floor(limit / 3),
-        orderBy: { createdAt: 'desc' },
-        include: {
-          customer: {
-            include: { user: { select: { firstName: true, lastName: true } } }
-          },
-          serviceType: { select: { name: true } }
         }
       })
     ]);
 
     const activities = [
-      ...recentOrders.map(order => {
-        const amount = decimalToNumber(order.totalAmount).toFixed(2);
-        return {
-          type: 'order' as const,
-          id: order.id,
-          title: `New Order ${order.orderNumber}`,
-          description: `${order.customer.user?.firstName || 'Guest'} ${order.customer.user?.lastName || 'Customer'} placed an order worth DZD ${amount}`,
-          timestamp: order.orderDate,
-          status: order.status
-        };
-      }),
+      ...recentOrders.map(order => ({
+        type: 'order' as const,
+        id: order.id,
+        title: `New Order ${order.orderNumber}`,
+        description: `${order.customer?.user?.firstName || 'Guest'} placed an order`,
+        timestamp: order.orderDate,
+        status: order.status
+      })),
       ...recentCustomers.map(customer => ({
         type: 'customer' as const,
         id: customer.id,
-        title: 'New Customer Registration',
-        description: `${customer.user?.firstName || 'Guest'} ${customer.user?.lastName || 'Customer'} (${customer.user?.email || customer.email || 'No email'}) joined as ${customer.customerType} customer`,
+        title: 'New Customer',
+        description: `${customer.user?.firstName || 'Guest'} joined`,
         timestamp: customer.createdAt,
         status: 'active'
-      })),
-      ...recentServices.map(service => ({
-        type: 'service' as const,
-        id: service.id,
-        title: `Service Request: ${service.serviceType.name}`,
-        description: `${service.customer.user?.firstName || 'Guest'} ${service.customer.user?.lastName || 'Customer'} requested ${service.serviceType.name}`,
-        timestamp: service.createdAt,
-        status: service.status
       }))
     ];
 
@@ -382,11 +221,9 @@ export class AdminService {
     if (filters.status) {
       where.status = filters.status as OrderStatusType;
     }
-
     if (filters.customerId) {
       where.customerId = filters.customerId;
     }
-
     if (filters.dateFrom || filters.dateTo) {
       where.orderDate = {};
       if (filters.dateFrom) where.orderDate.gte = filters.dateFrom;
@@ -409,9 +246,7 @@ export class AdminService {
             include: {
               product: { select: { name: true, price: true } }
             }
-          },
-          payments: true,
-          shippingAddress: true
+          }
         },
         orderBy,
         skip,
@@ -427,8 +262,6 @@ export class AdminService {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1,
       }
     };
   }
@@ -437,17 +270,17 @@ export class AdminService {
    * Update order status
    */
   static async updateOrderStatus(
-    orderId: string, 
-    status: OrderStatusType, 
-    trackingNumber?: string, 
+    orderId: string,
+    status: OrderStatusType,
+    trackingNumber?: string,
     notes?: string
   ) {
-    const order = await prisma.order.update({
+    return prisma.order.update({
       where: { id: orderId },
       data: {
         status,
-        ...(trackingNumber !== undefined && { trackingNumber }),
-        ...(notes !== undefined && { notes }),
+        ...(trackingNumber && { trackingNumber }),
+        ...(notes && { notes }),
         ...(status === 'SHIPPED' && { shippedAt: new Date() }),
         ...(status === 'DELIVERED' && { deliveredAt: new Date() }),
       } as any,
@@ -457,23 +290,232 @@ export class AdminService {
         }
       }
     });
+  }
 
-    // Send notification email based on status
-    try {
-      if (status === 'SHIPPED' && trackingNumber) {
-        // Send shipping notification
-        // await // EmailService.sendOrderConfirmationEmail(
-        //   order.customer.user.email,
-        //   order.customer.user.firstName,
-        //   order.orderNumber,
-        //   Number(order.totalAmount)
-        // );
+  /**
+   * Get order details by ID
+   */
+  static async getOrderDetails(orderId: string) {
+    return prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        customer: {
+          include: { user: true }
+        },
+        items: {
+          include: { product: true }
+        },
+        shippingAddress: true,
       }
-    } catch (emailError) {
-      console.error('Failed to send order status email:', emailError);
+    });
+  }
+
+  /**
+   * Create a manual order
+   */
+  static async createOrder(data: any) {
+    // Get customer to get default address
+    const customer = await prisma.customer.findUnique({
+      where: { id: data.customerId },
+      include: {
+        addresses: {
+          where: { isDefault: true },
+          take: 1
+        }
+      }
+    });
+
+    if (!customer) {
+      throw new Error('Customer not found');
     }
 
-    return order;
+    // Use provided addressId or customer's default address
+    let addressId = data.addressId;
+    if (!addressId && customer.addresses.length > 0) {
+      addressId = customer.addresses[0].id;
+    }
+
+    if (!addressId) {
+      throw new Error('No address found for customer. Please provide addressId.');
+    }
+
+    // Calculate totals
+    const subtotal = data.subtotal || data.totalAmount || 0;
+    const taxAmount = data.taxAmount || 0;
+    const shippingAmount = data.shippingAmount || 0;
+    const discountAmount = data.discountAmount || 0;
+    const totalAmount = data.totalAmount || (subtotal + taxAmount + shippingAmount - discountAmount);
+
+    // Create order first
+    const order = await prisma.order.create({
+      data: {
+        customerId: data.customerId,
+        addressId: addressId,
+        orderNumber: `ORD-${Date.now()}`,
+        subtotal: subtotal,
+        taxAmount: taxAmount,
+        shippingAmount: shippingAmount,
+        discountAmount: discountAmount,
+        totalAmount: totalAmount,
+        status: data.status || 'PENDING',
+        paymentStatus: data.paymentStatus || 'PENDING',
+        notes: data.notes || null,
+      }
+    });
+
+    // Then create items
+    if (data.items && data.items.length > 0) {
+      await prisma.orderItem.createMany({
+        data: data.items.map((item: any) => ({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice || item.price || 0,
+          totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0))
+        }))
+      });
+    }
+
+    // Return order with items
+    return prisma.order.findUnique({
+      where: { id: order.id },
+      include: {
+        items: {
+          include: { product: true }
+        },
+        shippingAddress: true
+      }
+    });
+  }
+
+  /**
+   * Update order details
+   */
+  static async updateOrder(orderId: string, data: any) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) return null;
+
+    return prisma.order.update({
+      where: { id: orderId },
+      data: {
+        notes: data.notes,
+      },
+      include: {
+        items: {
+          include: { product: true }
+        }
+      }
+    });
+  }
+
+  /**
+   * Cancel an order
+   */
+  static async cancelOrder(orderId: string, reason?: string) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) return null;
+
+    return prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'CANCELLED',
+        notes: reason ? `Cancelled: ${reason}` : 'Cancelled by admin',
+      },
+      include: {
+        items: {
+          include: { product: true }
+        }
+      }
+    });
+  }
+
+  /**
+   * Mark order as shipped
+   */
+  static async shipOrder(orderId: string, trackingNumber: string, carrier?: string) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) return null;
+
+    return prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'SHIPPED',
+        trackingNumber,
+        shippedAt: new Date(),
+        notes: carrier ? `Shipped via ${carrier}` : 'Shipped',
+      } as any,
+      include: {
+        items: {
+          include: { product: true }
+        }
+      }
+    });
+  }
+
+  /**
+   * Mark order as delivered
+   */
+  static async deliverOrder(orderId: string) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) return null;
+
+    return prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'DELIVERED',
+        deliveredAt: new Date(),
+      } as any,
+      include: {
+        items: {
+          include: { product: true }
+        }
+      }
+    });
+  }
+
+  /**
+   * Get order statistics
+   */
+  static async getOrderStats() {
+    const [totalOrders, pendingOrders, shippedOrders, deliveredOrders, cancelledOrders] = await Promise.all([
+      prisma.order.count(),
+      prisma.order.count({ where: { status: 'PENDING' } }),
+      prisma.order.count({ where: { status: 'SHIPPED' } }),
+      prisma.order.count({ where: { status: 'DELIVERED' } }),
+      prisma.order.count({ where: { status: 'CANCELLED' } }),
+    ]);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        status: {
+          in: ['DELIVERED', 'SHIPPED', 'PROCESSING']
+        }
+      },
+      select: { totalAmount: true }
+    });
+
+    const totalRevenue = orders.reduce((sum, order) => sum + decimalToNumber(order.totalAmount), 0);
+
+    return {
+      totalOrders,
+      pendingOrders,
+      shippedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      totalRevenue,
+    };
   }
 
   /**
@@ -490,7 +532,6 @@ export class AdminService {
         { user: { firstName: { contains: filters.search } } },
         { user: { lastName: { contains: filters.search } } },
         { user: { email: { contains: filters.search } } },
-        { companyName: { contains: filters.search } }
       ];
     }
 
@@ -509,9 +550,14 @@ export class AdminService {
       prisma.customer.findMany({
         where,
         include: {
-          user: { select: { firstName: true, lastName: true, email: true, createdAt: true, lastLoginAt: true } },
-          orders: { select: { id: true, totalAmount: true, orderDate: true, status: true } },
-          _count: { select: { orders: true, serviceRequests: true } }
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+              createdAt: true,
+            }
+          }
         },
         orderBy,
         skip,
@@ -521,24 +567,15 @@ export class AdminService {
     ]);
 
     return {
-      customers: customers.map(customer => ({
-        ...customer,
-        totalSpent: customer.orders.reduce((sum, order) => sum + decimalToNumber(order.totalAmount), 0),
-        lastOrderDate: customer.orders.length > 0 ? customer.orders[0].orderDate : null
-      })),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1,
-      }
+      customers,
+      total,
+      page: pagination.page,
+      totalPages: Math.ceil(total / pagination.limit)
     };
   }
 
   /**
-   * Get customer details with order history
+   * Get customer details
    */
   static async getCustomerDetails(customerId: string) {
     return prisma.customer.findUnique({
@@ -551,10 +588,8 @@ export class AdminService {
             email: true,
             phone: true,
             createdAt: true,
-            lastLoginAt: true
           }
         },
-        addresses: true,
         orders: {
           include: {
             items: {
@@ -565,18 +600,157 @@ export class AdminService {
           },
           orderBy: { orderDate: 'desc' }
         },
-        serviceRequests: {
-          include: {
-            serviceType: { select: { name: true } },
-            technician: {
-              include: {
-                user: { select: { firstName: true, lastName: true } }
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        },
       }
+    });
+  }
+
+  /**
+   * Create a new customer
+   */
+  static async createCustomer(data: any) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: data.email }
+    });
+
+    if (existingUser) {
+      throw new Error('Customer with this email already exists');
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        role: 'CUSTOMER',
+        password: await AuthService.hashPassword(Math.random().toString(36)),
+      }
+    });
+
+    return prisma.customer.create({
+      data: {
+        userId: user.id,
+        customerType: data.customerType || 'B2C',
+      },
+      include: {
+        user: true
+      }
+    });
+  }
+
+  /**
+   * Update customer information
+   */
+  static async updateCustomer(customerId: string, data: any) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+      include: { user: true }
+    });
+
+    if (!customer) return null;
+
+    if (data.firstName || data.lastName || data.phone) {
+      await prisma.user.update({
+        where: { id: customer.userId },
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+        }
+      });
+    }
+
+    return prisma.customer.update({
+      where: { id: customerId },
+      data: {
+        customerType: data.customerType,
+      },
+      include: {
+        user: true
+      }
+    });
+  }
+
+  /**
+   * Delete a customer
+   */
+  static async deleteCustomer(customerId: string) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId }
+    });
+
+    if (!customer) return null;
+
+    await prisma.customer.delete({
+      where: { id: customerId }
+    });
+
+    return true;
+  }
+
+  /**
+   * Toggle customer status
+   */
+  static async toggleCustomerStatus(customerId: string, _status: string) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId }
+    });
+
+    if (!customer) return null;
+
+    return prisma.customer.findUnique({
+      where: { id: customerId },
+      include: {
+        user: true
+      }
+    });
+  }
+
+  /**
+   * Get customer statistics
+   */
+  static async getCustomerStats() {
+    const [totalCustomers, activeCustomers, newCustomersThisMonth] = await Promise.all([
+      prisma.customer.count(),
+      prisma.customer.count({
+        where: {
+          lastOrderAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          }
+        }
+      }),
+      prisma.customer.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+          }
+        }
+      })
+    ]);
+
+    return {
+      totalCustomers,
+      activeCustomers,
+      newCustomersThisMonth,
+      inactiveCustomers: totalCustomers - activeCustomers,
+    };
+  }
+
+  /**
+   * Get customer orders
+   */
+  static async getCustomerOrders(customerId: string, limit: number) {
+    return prisma.order.findMany({
+      where: { customerId },
+      include: {
+        items: {
+          include: {
+            product: true
+          }
+        }
+      },
+      orderBy: { orderDate: 'desc' },
+      take: limit
     });
   }
 
@@ -592,15 +766,12 @@ export class AdminService {
     if (filters.status) {
       where.status = filters.status as ServiceRequestStatusType;
     }
-
     if (filters.priority) {
       where.priority = filters.priority as any;
     }
-
     if (filters.technicianId) {
       where.technicianId = filters.technicianId;
     }
-
     if (filters.dateFrom || filters.dateTo) {
       where.createdAt = {};
       if (filters.dateFrom) where.createdAt.gte = filters.dateFrom;
@@ -616,13 +787,13 @@ export class AdminService {
         include: {
           customer: {
             include: {
-              user: { select: { firstName: true, lastName: true, email: true, phone: true } }
+              user: { select: { firstName: true, lastName: true, email: true } }
             }
           },
           serviceType: true,
           technician: {
             include: {
-              user: { select: { firstName: true, lastName: true, email: true } }
+              user: { select: { firstName: true, lastName: true } }
             }
           }
         },
@@ -640,8 +811,6 @@ export class AdminService {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1,
       }
     };
   }
@@ -650,7 +819,7 @@ export class AdminService {
    * Assign technician to service request
    */
   static async assignTechnician(serviceId: string, technicianId: string, scheduledDate: Date) {
-    const serviceRequest = await prisma.serviceRequest.update({
+    return prisma.serviceRequest.update({
       where: { id: serviceId },
       data: {
         technicianId,
@@ -667,20 +836,6 @@ export class AdminService {
         }
       }
     });
-
-    // Send confirmation email
-    try {
-      // await // EmailService.sendServiceConfirmationEmail(
-      //   serviceRequest.customer.user.email,
-      //   serviceRequest.customer.user.firstName,
-      //   serviceRequest.serviceType.name,
-      //   scheduledDate
-      // );
-    } catch (emailError) {
-      console.error('Failed to send service confirmation email:', emailError);
-    }
-
-    return serviceRequest;
   }
 
   /**
@@ -695,12 +850,6 @@ export class AdminService {
             lastName: true,
             email: true,
             phone: true,
-            isActive: true
-          }
-        },
-        _count: {
-          select: {
-            serviceRequests: true
           }
         }
       },
@@ -714,7 +863,6 @@ export class AdminService {
    * Create new technician
    */
   static async createTechnician(data: TechnicianCreateData) {
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email.toLowerCase() }
     });
@@ -723,7 +871,6 @@ export class AdminService {
       throw new Error('User with this email already exists');
     }
 
-    // Generate temporary password
     const tempPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await AuthService.hashPassword(tempPassword);
 
@@ -736,15 +883,14 @@ export class AdminService {
           phone: data.phone || null,
           password: hashedPassword,
           role: 'TECHNICIAN',
-          isVerified: true
         }
       });
 
-      const technician = await tx.technician.create({
+      return tx.technician.create({
         data: {
           userId: user.id,
           employeeId: data.employeeId,
-          specialties: JSON.stringify(data.specialties || [])
+          specialties: data.specialties.join(', ')
         },
         include: {
           user: {
@@ -757,10 +903,6 @@ export class AdminService {
           }
         }
       });
-
-      // TODO: Send welcome email with temporary password
-      
-      return technician;
     });
   }
 
@@ -768,43 +910,31 @@ export class AdminService {
    * Update technician
    */
   static async updateTechnician(technicianId: string, data: Partial<TechnicianCreateData>) {
-    const { email, firstName, lastName, phone, specialties } = data;
-    const technicianData: any = {};
-    
-    // Handle technician-specific fields
-    if (data.employeeId !== undefined) {
-      technicianData.employeeId = data.employeeId;
-    }
-    
-    // Convert specialties array to comma-separated string if provided
-    if (specialties !== undefined) {
-      technicianData.specialties = specialties ? specialties.join(', ') : '';
-    }
-
     return prisma.$transaction(async (tx) => {
-      // Update user data if provided
-      const userData: any = {};
-      if (email !== undefined) userData.email = email.toLowerCase();
-      if (firstName !== undefined) userData.firstName = firstName;
-      if (lastName !== undefined) userData.lastName = lastName;
-      if (phone !== undefined) userData.phone = phone;
-      
-      if (Object.keys(userData).length > 0) {
-        // First get the userId
-        const technician = await tx.technician.findUnique({ 
-          where: { id: technicianId },
-          select: { userId: true }
-        });
+      const technician = await tx.technician.findUnique({
+        where: { id: technicianId },
+        select: { userId: true }
+      });
+
+      if (!technician) return null;
+
+      if (data.firstName || data.lastName || data.phone) {
+        const updateData: any = {};
+        if (data.firstName) updateData.firstName = data.firstName;
+        if (data.lastName) updateData.lastName = data.lastName;
+        if (data.phone) updateData.phone = data.phone;
         
-        if (technician?.userId) {
-          await tx.user.update({
-            where: { id: technician.userId },
-            data: userData
-          });
-        }
+        await tx.user.update({
+          where: { id: technician.userId },
+          data: updateData
+        });
       }
 
-      // Update technician data
+      const technicianData: any = {};
+      if (data.specialties) {
+        technicianData.specialties = data.specialties.join(', ');
+      }
+
       return tx.technician.update({
         where: { id: technicianId },
         data: technicianData,
@@ -825,9 +955,7 @@ export class AdminService {
   /**
    * Get sales analytics
    */
-  static async getSalesAnalytics(timeframe: string, groupBy: string) {
-    // Implementation would depend on specific analytics requirements
-    // This is a simplified version
+  static async getSalesAnalytics(timeframe: string, _groupBy: string) {
     const now = new Date();
     let startDate: Date;
 
@@ -845,83 +973,96 @@ export class AdminService {
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Validate groupBy parameter against allowed values
-    const allowedGroupBy: ('orderDate' | 'status' | 'customerId')[] = ['orderDate', 'status', 'customerId'];
-    const validatedGroupBy = allowedGroupBy.includes(groupBy as any) ? groupBy : 'orderDate';
-    
-    const salesData = await prisma.order.groupBy({
-      by: [validatedGroupBy as any],
+    const orders = await prisma.order.findMany({
       where: {
         orderDate: { gte: startDate },
         status: { not: 'CANCELLED' }
       },
-      _sum: {
+      select: {
+        orderDate: true,
         totalAmount: true
       },
-      _count: {
-        id: true
-      }
+      orderBy: { orderDate: 'asc' }
     });
 
-    // Transform the data with null safety
-    const transformedSalesData = salesData.map(item => ({
-      date: item.orderDate,
-      revenue: decimalToNumber(item._sum?.totalAmount),  // Added optional chaining
-      orders: (item._count as { id: number })?.id || 0,  // Fixed typing issue
+    // Group by day
+    const salesByDate = orders.reduce((acc: any, order) => {
+      const date = order.orderDate.toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = { revenue: 0, orders: 0 };
+      }
+      acc[date].revenue += decimalToNumber(order.totalAmount);
+      acc[date].orders += 1;
+      return acc;
+    }, {});
+
+    const sales = Object.entries(salesByDate).map(([date, data]: [string, any]) => ({
+      date,
+      revenue: data.revenue,
+      orders: data.orders
     }));
 
-    // Fix average calculations with division by zero protection
-    const totalOrders = Math.max(1, salesData.reduce((sum, item) => 
-      sum + ((item._count as { id: number })?.id || 0), 0
-    ));
+    const totalRevenue = sales.reduce((sum, item) => sum + item.revenue, 0);
+    const totalOrders = sales.reduce((sum, item) => sum + item.orders, 0);
 
-    const totalRevenue = salesData.reduce((sum, item) => 
-      sum + decimalToNumber(item._sum?.totalAmount), 0
-    );
+    // Calculate growth
+    const previousStartDate = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
+    const previousRevenue = await prisma.order.aggregate({
+      where: {
+        orderDate: { gte: previousStartDate, lt: startDate },
+        status: { not: 'CANCELLED' }
+      },
+      _sum: { totalAmount: true }
+    });
 
-    const averageOrderValue = totalRevenue / totalOrders;
+    const previousRevenueValue = decimalToNumber(previousRevenue._sum.totalAmount);
+    const revenueGrowth = previousRevenueValue > 0
+      ? ((totalRevenue - previousRevenueValue) / previousRevenueValue) * 100
+      : 0;
 
     return {
-      chartData: transformedSalesData,
+      sales,
       summary: {
-        totalRevenue: totalRevenue,
-        totalOrders: totalOrders - 1, // Adjust for Math.max(1, ...) in totalOrders calculation
-        averageOrderValue: averageOrderValue
+        totalRevenue,
+        totalOrders,
+        averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+        revenueGrowth: Math.round(revenueGrowth * 100) / 100,
       }
     };
   }
 
   /**
-   * Get inventory alerts for low stock products
+   * Get inventory alerts
    */
   static async getInventoryAlerts() {
-    return prisma.product.findMany({
+    const products = await prisma.product.findMany({
       where: {
         isActive: true,
-        OR: [
-          { stockQuantity: { lte: prisma.product.fields.minStock } },
-          { stockQuantity: 0 }
-        ]
+        stockQuantity: { lte: DEFAULT_LOW_STOCK_THRESHOLD }
       },
       select: {
         id: true,
         name: true,
-        sku: true,
         stockQuantity: true,
-        minStock: true,
-        category: { select: { name: true } }
       },
       orderBy: { stockQuantity: 'asc' }
     });
+
+    return products.map(product => ({
+      id: product.id,
+      productId: product.id,
+      productName: product.name,
+      currentStock: product.stockQuantity,
+      minimumStock: DEFAULT_LOW_STOCK_THRESHOLD,
+      status: product.stockQuantity === 0 ? 'OUT_OF_STOCK' : 
+              product.stockQuantity <= 5 ? 'CRITICAL' : 'LOW_STOCK'
+    }));
   }
 
   /**
    * Export data in various formats
    */
   static async exportData(type: string, format: string, filters: any) {
-    // This is a simplified implementation
-    // In a real application, you'd want to use a proper CSV/Excel library
-    
     let data: any[] = [];
 
     switch (type) {
@@ -929,8 +1070,8 @@ export class AdminService {
         data = await prisma.order.findMany({
           where: {
             orderDate: {
-              gte: filters.dateFrom,
-              lte: filters.dateTo
+              ...(filters.dateFrom && { gte: filters.dateFrom }),
+              ...(filters.dateTo && { lte: filters.dateTo })
             }
           },
           include: {
@@ -940,26 +1081,25 @@ export class AdminService {
           }
         });
         break;
-      
+
       case 'customers':
         data = await prisma.customer.findMany({
           where: {
             createdAt: {
-              gte: filters.dateFrom,
-              lte: filters.dateTo
+              ...(filters.dateFrom && { gte: filters.dateFrom }),
+              ...(filters.dateTo && { lte: filters.dateTo })
             }
           },
           include: { user: true }
         });
         break;
-      
+
       default:
         return null;
     }
 
     if (format === 'csv') {
-      // Convert to CSV format
-      // This is a basic implementation - use a proper CSV library for production
+      if (data.length === 0) return '';
       const csvHeader = Object.keys(data[0] || {}).join(',');
       const csvRows = data.map(row => Object.values(row).join(','));
       return [csvHeader, ...csvRows].join('\n');
@@ -969,26 +1109,24 @@ export class AdminService {
   }
 
   /**
-   * Get system settings (placeholder)
+   * Get system settings
    */
   static async getSystemSettings() {
-    // In a real application, you'd store settings in a database table
     return {
       siteName: 'MJ CHAUFFAGE',
-      currency: 'EUR',
-      taxRate: 20,
+      currency: 'DZD',
+      taxRate: 19,
       shippingMethods: ['Standard', 'Express'],
-      paymentMethods: ['Credit Card', 'PayPal', 'Bank Transfer'],
+      paymentMethods: ['Credit Card', 'Dahabia'],
       emailNotifications: true,
       maintenanceMode: false
     };
   }
 
   /**
-   * Update system settings (placeholder)
+   * Update system settings
    */
   static async updateSystemSettings(settings: any) {
-    // In a real application, you'd update settings in a database table
     return settings;
   }
 }

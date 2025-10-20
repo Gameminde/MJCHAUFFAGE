@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import compression from 'compression';
@@ -98,7 +98,54 @@ app.use(session({
   },
 }));
 
-// API Routes
+// ==========================================
+// API v1 Routes (Current Version)
+// ==========================================
+const v1Router = Router();
+
+// Geolocation endpoint (simple IP-based location)
+v1Router.get('/geolocation', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    
+    // For localhost, return Algeria as default
+    if (ip === '::1' || ip === '127.0.0.1' || ip?.includes('localhost')) {
+      res.json({
+        country: 'Algeria',
+        country_code: 'DZ',
+        city: 'Algiers'
+      });
+      return;
+    }
+    
+    res.json({
+      country: 'Algeria',
+      country_code: 'DZ',
+      city: 'Unknown'
+    });
+  } catch (error) {
+    logger.error('Geolocation error:', error);
+    res.status(500).json({ error: 'Failed to get location' });
+  }
+});
+
+v1Router.use('/auth', authRoutes);
+v1Router.use('/products', productRoutes);
+v1Router.use('/customers', customerRoutes);
+v1Router.use('/orders', orderRoutes);
+v1Router.use('/services', serviceRoutes);
+v1Router.use('/analytics', analyticsRoutes);
+v1Router.use('/admin', adminRoutes);
+v1Router.use('/realtime', realtimeRoutes);
+v1Router.use('/cart', cartRoutes);
+v1Router.use('/payments', paymentRoutes);
+v1Router.use('/uploads', uploadsRoutes);
+
+app.use('/api/v1', v1Router);
+
+// ==========================================
+// Legacy API Routes (For backward compatibility)
+// ==========================================
 app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);

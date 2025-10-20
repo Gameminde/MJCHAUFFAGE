@@ -2,38 +2,28 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import authService from '@/services/authService'
+import { useAdminAuth } from '@/contexts/AdminAuthContext'
 
 export default function AdminLoginPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { login, isLoading } = useAdminAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError('')
 
     try {
-      const result = await authService.login(formData.email, formData.password);
-      
-      if (result) {
-        if (result.role === 'SUPER_ADMIN' || result.role === 'ADMIN') {
-          router.push('/admin');
-        } else {
-          setError('Accès non autorisé. Seuls les administrateurs peuvent accéder à cette section.');
-        }
-      } else {
-        setError('Erreur de connexion');
-      }
-    } catch (err) {
-      setError('Erreur de connexion');
-    } finally {
-      setLoading(false)
+      await login(formData.email, formData.password)
+      // Login successful - redirect to dashboard
+      router.push('/admin/dashboard')
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'Email ou mot de passe incorrect')
     }
   }
 
@@ -99,10 +89,10 @@ export default function AdminLoginPage() {
             <div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Connexion...' : 'Se connecter'}
+                {isLoading ? 'Connexion...' : 'Se connecter'}
               </button>
             </div>
           </form>
@@ -118,9 +108,9 @@ export default function AdminLoginPage() {
             </div>
 
             <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
-              <p className="font-medium">Compte admin de test :</p>
+              <p className="font-medium">Compte admin :</p>
               <p>Email: admin@mjchauffage.com</p>
-              <p>Mot de passe: Admin123!</p>
+              <p>Mot de passe: admin123</p>
             </div>
           </div>
         </div>

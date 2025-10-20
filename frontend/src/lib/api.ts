@@ -2,13 +2,13 @@
 // Inspiré du client Axios de l'admin mais adapté pour fetch() natif
 
 import React from 'react'
-import { getSession } from 'next-auth/react'
+// Note: Not using next-auth, using custom auth with localStorage
 
 /**
  * Configuration du client API
  */
 const API_CONFIG = {
-  baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api',
+  baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api/v1',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -71,19 +71,15 @@ const addAuthHeader = async (
 ): Promise<HeadersInit> => {
   if (skipAuth) return headers
 
-  // Next-Auth session (côté client)
+  // Custom auth from localStorage
   if (typeof window !== 'undefined') {
     try {
-      const session = await getSession()
-      const bearer =
-        (session as any)?.user?.token ||
-        (session as any)?.accessToken ||
-        (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null)
-
-      if (bearer) {
+      const token = localStorage.getItem('authToken')
+      
+      if (token) {
         return {
           ...headers,
-          Authorization: `Bearer ${bearer}`,
+          Authorization: `Bearer ${token}`,
         }
       }
     } catch {

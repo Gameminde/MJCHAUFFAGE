@@ -184,7 +184,8 @@ class AnalyticsService {
     this.eventQueue = [];
 
     try {
-      const response = await fetch('/api/analytics/events', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/v1/analytics/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -416,7 +417,8 @@ class AnalyticsService {
   private async getLocationData(): Promise<{ country?: string; city?: string }> {
     try {
       // Resolve via backend proxy to avoid browser CORS issues
-      const response = await fetch('/api/geolocation', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/v1/geolocation`, {
         headers: {
           'Accept': 'application/json'
         },

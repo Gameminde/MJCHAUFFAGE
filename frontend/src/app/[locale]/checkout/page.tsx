@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckoutForm } from '@/components/checkout/CheckoutForm'
+import { ModernCheckoutForm as CheckoutForm } from '@/components/checkout/ModernCheckoutForm'
 import { useCart } from '@/hooks/useCart'
 import { Metadata } from 'next'
 import { useRouter } from 'next/navigation'

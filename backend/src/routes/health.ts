@@ -156,7 +156,7 @@ async function checkDatabase(): Promise<HealthCheckResult> {
       timestamp: new Date().toISOString(),
     };
     
-    healthLogger.logHealthCheck('database', 'healthy', { responseTime });
+    healthLogger.info('database healthy', { responseTime });
     return result;
     
   } catch (error) {
@@ -169,7 +169,7 @@ async function checkDatabase(): Promise<HealthCheckResult> {
       timestamp: new Date().toISOString(),
     };
     
-    healthLogger.logHealthCheck('database', 'unhealthy', { error, responseTime });
+    healthLogger.info('database unhealthy', { error, responseTime });
     return result;
   }
 }
@@ -201,7 +201,7 @@ async function checkCache(): Promise<HealthCheckResult> {
       timestamp: new Date().toISOString(),
     };
     
-    healthLogger.logHealthCheck('cache', 'healthy', { responseTime });
+    healthLogger.info('cache healthy', { responseTime });
     return result;
     
   } catch (error) {
@@ -214,7 +214,7 @@ async function checkCache(): Promise<HealthCheckResult> {
       timestamp: new Date().toISOString(),
     };
     
-    healthLogger.logHealthCheck('cache', 'unhealthy', { error, responseTime });
+    healthLogger.info('cache unhealthy', { error, responseTime });
     return result;
   }
 }
@@ -241,7 +241,7 @@ function checkMemory(): HealthCheckResult {
     timestamp: new Date().toISOString(),
   };
   
-  healthLogger.logHealthCheck('memory', result.status, memoryUsageMB);
+  healthLogger.info(`memory ${result.status}`, memoryUsageMB);
   return result;
 }
 
@@ -264,7 +264,7 @@ async function checkDiskSpace(): Promise<HealthCheckResult> {
       timestamp: new Date().toISOString(),
     };
     
-    healthLogger.logHealthCheck('disk', 'healthy');
+    healthLogger.info('disk healthy');
     return result;
     
   } catch (error) {
@@ -275,7 +275,7 @@ async function checkDiskSpace(): Promise<HealthCheckResult> {
       timestamp: new Date().toISOString(),
     };
     
-    healthLogger.logHealthCheck('disk', 'unhealthy', { error });
+    healthLogger.info('disk unhealthy', { error });
     return result;
   }
 }

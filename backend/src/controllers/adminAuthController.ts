@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthService } from '@/services/authService';
 import { prisma } from '@/lib/database';
+
 // UserRole is stored as string in database
 // Valid values: 'ADMIN', 'CUSTOMER', 'TECHNICIAN'
 const UserRole = {
@@ -10,6 +11,7 @@ const UserRole = {
 } as const;
 
 type UserRoleType = typeof UserRole[keyof typeof UserRole];
+
 // Simple validation function for admin login
 const validateAdminLogin = (body: any) => {
   const errors: { message: string }[] = [];
@@ -141,6 +143,8 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
     res.status(200).json({
       success: true,
       message: 'Login successful',
+      token: tokens.accessToken, // Direct token for frontend
+      user: userWithoutPassword,
       data: {
         user: userWithoutPassword,
         tokens,
@@ -148,6 +152,70 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
     });
   } catch (error) {
     console.error('Admin login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+/**
+ * Get current admin user info
+ */
+export const adminMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // ✅ FIXED: Get user from req.user (set by authenticateToken middleware)
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      });
+      return;
+    }
+
+    // Fetch user from database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        avatar: true,
+        isActive: true,
+        isVerified: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+      return;
+    }
+
+    // Verify user is admin
+    if (user.role !== UserRole.ADMIN && user.role !== 'SUPER_ADMIN') {
+      res.status(403).json({
+        success: false,
+        message: 'Admin access required',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.error('Admin me error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',

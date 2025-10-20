@@ -1,25 +1,17 @@
-import { AnalyticsDashboard } from '../../../components/analytics/AnalyticsDashboard';
-import { TrafficSourceChart } from '../../../components/analytics/TrafficSourceChart';
-import { ConversionMetrics } from '../../../components/analytics/ConversionMetrics';
+'use client'
 
-export default function AnalyticsPage() {
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard'
+
+export default function AdminAnalyticsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Main Dashboard */}
-        <AnalyticsDashboard />
-        
-        {/* Additional Analytics Components */}
-        <div className="px-6 pb-6 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Traffic Sources */}
-            <TrafficSourceChart />
-            
-            {/* Conversion Metrics */}
-            <ConversionMetrics />
-          </div>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
+        <p className="text-gray-600 mt-1">
+          Track sales performance, customer behavior, and business metrics
+        </p>
       </div>
+      <AnalyticsDashboard />
     </div>
-  );
+  )
 }

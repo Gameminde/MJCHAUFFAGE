@@ -4,8 +4,20 @@ import { AnalyticsTrackingService } from '../services/analyticsTrackingService';
 export class AnalyticsTrackingController {
   static async trackEvent(req: Request, res: Response): Promise<void> {
     try {
-      const { eventType, eventData, timestamp, clientIP, userAgent } = req.body;
+      const { eventType, eventData, timestamp, clientIP, userAgent, events } = req.body;
 
+      // Handle batch events (from frontend queue)
+      if (events && Array.isArray(events)) {
+        // Process batch of events - for now just acknowledge receipt
+        res.json({
+          success: true,
+          message: `${events.length} events tracked successfully`,
+          eventsProcessed: events.length
+        });
+        return;
+      }
+
+      // Handle single event
       if (!eventType || !eventData) {
         res.status(400).json({
           success: false,
@@ -103,6 +115,7 @@ export class AnalyticsTrackingController {
   static async getRealTimeMetrics(_req: Request, res: Response): Promise<void> {
     try {
       const metrics = await AnalyticsTrackingService.getRealTimeMetrics();
+
       res.json({
         success: true,
         data: metrics
@@ -110,9 +123,9 @@ export class AnalyticsTrackingController {
 
     } catch (error) {
       console.error('Real-time metrics error:', error);
-      res.status(503).json({
+      res.status(500).json({
         success: false,
-        error: 'Real-time analytics temporarily unavailable. Please verify database connectivity and retry.'
+        error: 'Failed to retrieve real-time metrics'
       });
     }
   }

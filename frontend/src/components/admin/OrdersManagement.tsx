@@ -1,14 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Filter, Download, Eye, Edit, Trash2, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
+import { Search, Filter, Download, Eye, Trash2, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
+import { ordersService, type Order as OrderType } from '@/services/ordersService'
+import { ApiError } from '@/lib/api'
 
 interface Order {
   id: string
   orderNumber: string
   customerName: string
   customerEmail: string
-  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
   total: number
   items: Array<{
     id: string
@@ -26,22 +28,22 @@ interface Order {
   updatedAt: string
 }
 
-const statusColors = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  PROCESSING: 'bg-purple-100 text-purple-800',
-  SHIPPED: 'bg-indigo-100 text-indigo-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-red-100 text-red-800'
+const statusColors: Record<Order['status'], string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  processing: 'bg-purple-100 text-purple-800',
+  shipped: 'bg-indigo-100 text-indigo-800',
+  delivered: 'bg-green-100 text-green-800',
+  cancelled: 'bg-red-100 text-red-800',
+  refunded: 'bg-orange-100 text-orange-800'
 }
 
-const statusIcons = {
-  PENDING: Package,
-  CONFIRMED: CheckCircle,
-  PROCESSING: Package,
-  SHIPPED: Truck,
-  DELIVERED: CheckCircle,
-  CANCELLED: XCircle
+const statusIcons: Record<Order['status'], any> = {
+  pending: Package,
+  processing: Package,
+  shipped: Truck,
+  delivered: CheckCircle,
+  cancelled: XCircle,
+  refunded: XCircle
 }
 
 export function OrdersManagement() {
@@ -61,17 +63,14 @@ export function OrdersManagement() {
     setLoading(true)
     setError(null)
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/orders`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders')
-      }
-      
-      const data = await response.json()
-      setOrders(data.data || [])
+      const result = await ordersService.getOrders({
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      })
+      setOrders(result.orders || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch orders')
+      const message = err instanceof ApiError ? err.message : 'Failed to fetch orders'
+      setError(message)
       console.error('Error fetching orders:', err)
     } finally {
       setLoading(false)
@@ -80,49 +79,29 @@ export function OrdersManagement() {
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update order status')
-      }
-
-      // Refresh orders list
+      await ordersService.updateOrderStatus(orderId, newStatus)
       await fetchOrders()
       alert('Order status updated successfully!')
     } catch (err) {
       console.error('Error updating order status:', err)
-      alert('Failed to update order status')
+      const message = err instanceof ApiError ? err.message : 'Failed to update order status'
+      alert(message)
     }
   }
 
   const deleteOrder = async (orderId: string) => {
-    if (!confirm('Are you sure you want to delete this order?')) {
+    if (!confirm('Are you sure you want to cancel this order?')) {
       return
     }
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete order')
-      }
-
-      // Refresh orders list
+      await ordersService.cancelOrder(orderId, 'Cancelled by admin')
       await fetchOrders()
-      alert('Order deleted successfully!')
+      alert('Order cancelled successfully!')
     } catch (err) {
-      console.error('Error deleting order:', err)
-      alert('Failed to delete order')
+      console.error('Error cancelling order:', err)
+      const message = err instanceof ApiError ? err.message : 'Failed to cancel order'
+      alert(message)
     }
   }
 
@@ -182,12 +161,12 @@ export function OrdersManagement() {
             className="form-input w-auto"
           >
             <option value="">All Statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="SHIPPED">Shipped</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="refunded">Refunded</option>
           </select>
           <button 
             onClick={exportOrders}
@@ -300,17 +279,17 @@ export function OrdersManagement() {
                               onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
                               className="text-xs border rounded px-2 py-1"
                             >
-                              <option value="PENDING">Pending</option>
-                              <option value="CONFIRMED">Confirmed</option>
-                              <option value="PROCESSING">Processing</option>
-                              <option value="SHIPPED">Shipped</option>
-                              <option value="DELIVERED">Delivered</option>
-                              <option value="CANCELLED">Cancelled</option>
+                              <option value="pending">Pending</option>
+                              <option value="processing">Processing</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                              <option value="refunded">Refunded</option>
                             </select>
                             <button
                               onClick={() => deleteOrder(order.id)}
                               className="text-red-600 hover:text-red-900"
-                              title="Delete Order"
+                              title="Cancel Order"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

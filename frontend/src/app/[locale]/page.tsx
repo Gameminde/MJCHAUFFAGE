@@ -1,4 +1,4 @@
-import LocalizedHomePageClient from './LocalizedHomePageClient';
+import ModernHomePage from './ModernHomePage';
 import { setRequestLocale } from 'next-intl/server';
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
 
 export default function LocalizedHomePage({ params }: Props) {
   setRequestLocale(params.locale);
-  return <LocalizedHomePageClient params={params} />;
+  return <ModernHomePage params={params} />;
 }
 
 export const metadata = {

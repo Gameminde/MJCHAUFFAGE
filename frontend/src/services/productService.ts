@@ -136,7 +136,8 @@ export const productService = {
 
   async getCategories(): Promise<Category[]> {
     try {
-      const result = await api.get<CategoriesResponse>('/categories')
+      const result = await api.get<{ success: boolean; data: { categories: Category[] } }>('/products/categories')
+      console.log('📦 Categories response:', result)
       return result.data?.categories ?? []
     } catch (error) {
       console.error('Error fetching categories:', error)
@@ -147,7 +148,7 @@ export const productService = {
   async getManufacturers(): Promise<any[]> {
     try {
       const result = await api.get<{ success: boolean; data: { manufacturers: any[] } }>(
-        '/manufacturers'
+        '/products/manufacturers'  // ✅ Correct route: /api/v1/products/manufacturers
       )
       return result.data?.manufacturers ?? []
     } catch (error) {

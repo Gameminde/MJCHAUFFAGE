@@ -136,12 +136,17 @@ class MockRedisClient {
 }
 
 const redisUrl = process.env.REDIS_URL;
+const useMockRedis = process.env.USE_MOCK_REDIS === 'true';
 
 type RealRedisClient = RedisClientType<any, any, any>;
 
 let redisClient: RealRedisClient | MockRedisClient;
 
-if (redisUrl) {
+if (useMockRedis || !redisUrl) {
+  // Use Mock Redis for development
+  redisClient = new MockRedisClient();
+} else {
+  // Use Real Redis for production
   const client = createClient({
     url: redisUrl,
     socket: {
@@ -155,18 +160,14 @@ if (redisUrl) {
   });
 
   redisClient = client;
-} else {
-  redisClient = new MockRedisClient();
 }
 
 export const connectRedis = async () => {
-  if ('connect' in redisClient) {
+  if (redisClient instanceof MockRedisClient) {
     await redisClient.connect();
-    console.log(
-      redisUrl
-        ? 'Redis connected successfully'
-        : 'Redis connected successfully (Mock)',
-    );
+  } else if ('connect' in redisClient) {
+    await redisClient.connect();
+    console.log('Redis connected successfully');
   }
 };
 

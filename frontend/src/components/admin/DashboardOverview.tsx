@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react'
 
-// Simplified interface to match the backend's summary object
 interface DashboardStats {
-  totalRevenue: number;
-  totalOrders: number;
-  totalCustomers: number;
-  totalServices: number;
-  revenueGrowth: number;
-  customerGrowth: number;
+  totalRevenue: number
+  totalOrders: number
+  totalCustomers: number
+  totalServices: number
+  revenueGrowth: number
+  customerGrowth: number
 }
 
 export function DashboardOverview() {
@@ -17,19 +16,35 @@ export function DashboardOverview() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeframe, setTimeframe] = useState('30d')
+
   useEffect(() => {
     const fetchDashboardStats = async () => {
       setLoading(true)
       setError(null)
       try {
         const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-        const response = await fetch(`${API_BASE_URL}/api/analytics/dashboard?timeframe=${timeframe}`)
+        const token = localStorage.getItem('authToken')
+        
+        if (!token) {
+          throw new Error('Authentication required. Please login.')
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/v1/admin/dashboard?timeframe=${timeframe}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Session expired. Please login again.')
+          }
           throw new Error('Failed to fetch dashboard data')
         }
+        
         const data = await response.json()
-        // The actual stats are in data.data.summary
-        setStats(data.data.summary)
+        setStats(data.data?.summary || data.data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred')
         console.error('Failed to fetch dashboard stats:', err)
@@ -128,7 +143,7 @@ export function DashboardOverview() {
               </svg>
             </div>
           </div>
-           <div className="mt-4 flex items-center">
+          <div className="mt-4 flex items-center">
             <span className={`text-sm font-medium ${
               stats.customerGrowth >= 0 ? 'text-success-600' : 'text-error-600'
             }`}>
@@ -145,11 +160,11 @@ export function DashboardOverview() {
               <p className="text-2xl font-bold text-neutral-900">{stats.totalServices}</p>
             </div>
             <div className="w-12 h-12 bg-info-100 rounded-lg flex items-center justify-center">
-               <svg className="w-6 h-6 text-info-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              <svg className="w-6 h-6 text-info-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
           </div>
         </div>

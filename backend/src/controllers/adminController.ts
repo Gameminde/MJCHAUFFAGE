@@ -141,6 +141,204 @@ export class AdminController {
   }
 
   /**
+   * Get order details by ID
+   */
+  static async getOrderDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderId } = req.params;
+      const order = await AdminService.getOrderDetails(orderId);
+
+      if (!order) {
+        res.status(404).json({
+          success: false,
+          message: 'Order not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: order,
+      });
+    } catch (error) {
+      console.error('Get order details error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Create a manual order (admin only)
+   */
+  static async createOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const orderData = req.body;
+      const order = await AdminService.createOrder(orderData);
+
+      res.status(201).json({
+        success: true,
+        message: 'Order created successfully',
+        data: order,
+      });
+    } catch (error: any) {
+      console.error('Create order error:', error);
+      res.status(400).json({
+        success: false,
+        message: error.message || 'Failed to create order',
+      });
+    }
+  }
+
+  /**
+   * Update order details
+   */
+  static async updateOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderId } = req.params;
+      const updateData = req.body;
+      
+      const order = await AdminService.updateOrder(orderId, updateData);
+
+      if (!order) {
+        res.status(404).json({
+          success: false,
+          message: 'Order not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Order updated successfully',
+        data: order,
+      });
+    } catch (error) {
+      console.error('Update order error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Cancel an order
+   */
+  static async cancelOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderId } = req.params;
+      const { reason } = req.body;
+      
+      const order = await AdminService.cancelOrder(orderId, reason);
+
+      if (!order) {
+        res.status(404).json({
+          success: false,
+          message: 'Order not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Order cancelled successfully',
+        data: order,
+      });
+    } catch (error) {
+      console.error('Cancel order error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Mark order as shipped
+   */
+  static async shipOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderId } = req.params;
+      const { trackingNumber, carrier } = req.body;
+      
+      const order = await AdminService.shipOrder(orderId, trackingNumber, carrier);
+
+      if (!order) {
+        res.status(404).json({
+          success: false,
+          message: 'Order not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Order marked as shipped',
+        data: order,
+      });
+    } catch (error) {
+      console.error('Ship order error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Mark order as delivered
+   */
+  static async deliverOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderId } = req.params;
+      
+      const order = await AdminService.deliverOrder(orderId);
+
+      if (!order) {
+        res.status(404).json({
+          success: false,
+          message: 'Order not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Order marked as delivered',
+        data: order,
+      });
+    } catch (error) {
+      console.error('Deliver order error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Get order statistics
+   */
+  static async getOrderStats(_req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await AdminService.getOrderStats();
+
+      res.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      console.error('Get order stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
    * Get all customers with admin filters
    */
   static async getCustomers(req: Request, res: Response): Promise<void> {
@@ -206,6 +404,172 @@ export class AdminController {
       });
     } catch (error) {
       console.error('Get customer details error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Create a new customer (admin only)
+   */
+  static async createCustomer(req: Request, res: Response): Promise<void> {
+    try {
+      const customerData = req.body;
+      const customer = await AdminService.createCustomer(customerData);
+
+      res.status(201).json({
+        success: true,
+        message: 'Customer created successfully',
+        data: customer,
+      });
+    } catch (error: any) {
+      console.error('Create customer error:', error);
+      if (error.message?.includes('already exists')) {
+        res.status(409).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Update customer information
+   */
+  static async updateCustomer(req: Request, res: Response): Promise<void> {
+    try {
+      const { customerId } = req.params;
+      const updateData = req.body;
+      
+      const customer = await AdminService.updateCustomer(customerId, updateData);
+
+      if (!customer) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Customer updated successfully',
+        data: customer,
+      });
+    } catch (error) {
+      console.error('Update customer error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Delete a customer
+   */
+  static async deleteCustomer(req: Request, res: Response): Promise<void> {
+    try {
+      const { customerId } = req.params;
+      const result = await AdminService.deleteCustomer(customerId);
+
+      if (!result) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Customer deleted successfully',
+        data: { deleted: true },
+      });
+    } catch (error) {
+      console.error('Delete customer error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Toggle customer status (active/inactive)
+   */
+  static async toggleCustomerStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { customerId } = req.params;
+      const { status } = req.body;
+      
+      const customer = await AdminService.toggleCustomerStatus(customerId, status);
+
+      if (!customer) {
+        res.status(404).json({
+          success: false,
+          message: 'Customer not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Customer status updated successfully',
+        data: customer,
+      });
+    } catch (error) {
+      console.error('Toggle customer status error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Get customer statistics
+   */
+  static async getCustomerStats(_req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await AdminService.getCustomerStats();
+
+      res.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      console.error('Get customer stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Get customer orders
+   */
+  static async getCustomerOrders(req: Request, res: Response): Promise<void> {
+    try {
+      const { customerId } = req.params;
+      const { limit = 10 } = req.query;
+      
+      const orders = await AdminService.getCustomerOrders(customerId, parseInt(limit as string));
+
+      res.json({
+        success: true,
+        data: orders,
+      });
+    } catch (error) {
+      console.error('Get customer orders error:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error',

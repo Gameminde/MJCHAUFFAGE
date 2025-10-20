@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import authService from '@/services/authService'
 
 interface LoginFormProps {
   callbackUrl?: string
@@ -26,24 +26,13 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
     setErrors({})
 
     try {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false
-      })
-
-      if (result?.error) {
-        setErrors({ general: 'Invalid email or password' })
-        return
-      }
-
-      const session = await getSession()
-      if (session) {
-        router.push(callbackUrl)
-        router.refresh()
-      }
-    } catch (error) {
-      setErrors({ general: 'An error occurred during login' })
+      await authService.login(formData.email, formData.password)
+      
+      // Login successful
+      router.push(callbackUrl)
+      router.refresh()
+    } catch (error: any) {
+      setErrors({ general: error?.message || 'Email ou mot de passe incorrect' })
     } finally {
       setLoading(false)
     }
@@ -54,10 +43,9 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
     setErrors({})
 
     try {
-      await signIn('google', {
-        callbackUrl: callbackUrl,
-        redirect: true
-      })
+      // Google OAuth not implemented yet
+      setErrors({ general: 'Google sign-in coming soon' })
+      setGoogleLoading(false)
     } catch (error) {
       setErrors({ general: 'Google sign-in failed' })
       setGoogleLoading(false)
@@ -97,7 +85,7 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
           </svg>
         )}
         <span className="font-medium">
-          {googleLoading ? 'Signing in with Google...' : 'Continue with Google'}
+          {googleLoading ? 'Connexion avec Google...' : 'Continuer avec Google'}
         </span>
       </button>
 
@@ -106,7 +94,7 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
           <div className="w-full border-t border-neutral-300" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-neutral-500">Or continue with email</span>
+          <span className="px-2 bg-white text-neutral-500">Ou continuer avec email</span>
         </div>
       </div>
 
@@ -118,8 +106,8 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
         )}
 
         <div>
-          <label htmlFor="email" className="form-label">
-            Email address
+          <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
+            Email
           </label>
           <input
             id="email"
@@ -129,16 +117,17 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
             required
             value={formData.email}
             onChange={handleChange}
-            disabled={loading || googleLoading}
-            className={`form-input ${errors.email ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-            placeholder="Enter your email"
+            className="appearance-none block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            placeholder="votre@email.com"
           />
-          {errors.email && <p className="form-error">{errors.email}</p>}
+          {errors.email && (
+            <p className="mt-1 text-sm text-error-600">{errors.email}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="password" className="form-label">
-            Password
+          <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
+            Mot de passe
           </label>
           <input
             id="password"
@@ -148,11 +137,12 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
             required
             value={formData.password}
             onChange={handleChange}
-            disabled={loading || googleLoading}
-            className={`form-input ${errors.password ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-            placeholder="Enter your password"
+            className="appearance-none block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            placeholder="••••••••"
           />
-          {errors.password && <p className="form-error">{errors.password}</p>}
+          {errors.password && (
+            <p className="mt-1 text-sm text-error-600">{errors.password}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between">
@@ -166,43 +156,40 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
               className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
             />
             <label htmlFor="rememberMe" className="ml-2 block text-sm text-neutral-900">
-              Remember me
+              Se souvenir de moi
             </label>
           </div>
 
-          <div className="text-sm">
-            <Link href="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-              Forgot your password?
-            </Link>
-          </div>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            disabled={loading || googleLoading}
-            className="btn-primary w-full"
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-primary-600 hover:text-primary-500"
           >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="loading-spinner w-4 h-4 mr-2"></div>
-                Signing in...
-              </div>
-            ) : (
-              'Sign in'
-            )}
-          </button>
+            Mot de passe oublié?
+          </Link>
         </div>
 
-        <div className="text-center">
-          <p className="text-sm text-neutral-600">
-            Don't have an account?{' '}
-            <Link href="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">
-              Sign up here
-            </Link>
-          </p>
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            'Se connecter'
+          )}
+        </button>
       </form>
+
+      <p className="text-center text-sm text-neutral-600">
+        Pas encore de compte?{' '}
+        <Link
+          href="/auth/register"
+          className="font-medium text-primary-600 hover:text-primary-500"
+        >
+          Créer un compte
+        </Link>
+      </p>
     </div>
   )
 }

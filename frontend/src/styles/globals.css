@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import modern theme variables */
+@import './modern-theme.css';
+
 /* Import accessibility styles */
 @import './accessibility.css';
 
