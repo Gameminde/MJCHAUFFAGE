@@ -47,6 +47,7 @@ interface ProductCreateData {
   isDigital?: boolean;
   metaTitle?: string;
   metaDescription?: string;
+  images?: string[];  // Add images support
 }
 
 export class ProductService {
@@ -152,33 +153,37 @@ export class ProductService {
   }
 
   /**
-   * Get product by ID or slug
+   * Get all products without pagination (for admin/export)
    */
-  static async getProductById(identifier: string, includeRelated = false) {
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
-    
-    const where = isUUID ? { id: identifier } : { slug: identifier };
-
-    const product = await prisma.product.findUnique({
-      where,
+  static async getAllProducts() {
+    const products = await prisma.product.findMany({
       include: {
         category: true,
         manufacturer: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return transformProductList(products);
+  }
+
+  /**
+   * Get product by ID with optional related products
+   */
+  static async getProductById(id: string, includeRelated = false) {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        manufacturer: true,
+        images: {
+          orderBy: { sortOrder: 'asc' },
         },
         reviews: {
-          include: {
-            customer: {
-              include: {
-                user: {
-                  select: { firstName: true, lastName: true }
-                }
-              }
-            }
-          },
-          where: { isPublished: true },
-          orderBy: { createdAt: 'desc' }
+          select: { rating: true }
         }
       },
     });
@@ -191,8 +196,9 @@ export class ProductService {
       ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
       : 0;
 
+    // Get related products if requested
     let relatedProducts: Product[] = [];
-    if (includeRelated) {
+    if (includeRelated && product.categoryId) {
       relatedProducts = await prisma.product.findMany({
         where: {
           categoryId: product.categoryId,
@@ -214,27 +220,45 @@ export class ProductService {
 
     return {
       ...productDto,
-      averageRating: Math.round(averageRating * 10)    const product = await prisma.product.create({
+      averageRating: Math.round(averageRating * 10) / 10,
+      reviewCount: ratings.length,
+      relatedProducts: relatedDtos
+    };
+  }
+
+  /**
+   * Create new product with images
+   */
+  static async createProduct(data: ProductCreateData) {
+    console.log('📦 ProductService.createProduct appelé avec:', data);
+    
+    // Extract images from data if present
+    const { images, ...productData } = data;
+    
+    const product = await prisma.product.create({
       data: {
-        ...data,
+        ...productData,
         // features is already a string from frontend, or convert array to string
-        features: typeof data.features === 'string' ? data.features : (data.features || []).join(','),
+        features: typeof productData.features === 'string' ? productData.features : (productData.features || []).join(','),
         // specifications is already a JSON string from frontend, or convert object to string
-        specifications: typeof data.specifications === 'string' ? data.specifications : JSON.stringify(data.specifications || {}),
-        price: data.price,
-        costPrice: data.costPrice || null,
-        salePrice: data.salePrice || null,
-        weight: data.weight || null,
-      },       ...data,
-        features: JSON.stringify(data.features || []),
-        price: data.price,
-        costPrice: data.costPrice || null,
-        salePrice: data.salePrice || null,
-        weight: data.weight || null,
+        specifications: typeof productData.specifications === 'string' ? productData.specifications : JSON.stringify(productData.specifications || {}),
+        price: productData.price,
+        costPrice: productData.costPrice || null,
+        salePrice: productData.salePrice || null,
+        weight: productData.weight || null,
+        // Create images if provided
+        images: images && images.length > 0 ? {
+          create: images.map((url, index) => ({
+            url,
+            altText: productData.name,
+            sortOrder: index + 1
+          }))
+        } : undefined
       },
       include: {
         category: true,
         manufacturer: true,
+        images: true,
       },
     });
 
@@ -255,26 +279,58 @@ export class ProductService {
   }
 
   /**
-   * Update product
+   * Update product with images
    */
   static async updateProduct(id: string, data: Partial<ProductCreateData>) {
-    const updateData: any = { ...data };
+    const { images, ...updateData } = data;
     
-    if (data.price) updateData.price = data.price;
-    if (data.costPrice) updateData.costPrice = data.costPrice;
-    if (data.salePrice) updateData.salePrice = data.salePrice;
-    if (data.weight) updateData.weight = data.weight;
-    if (data.features && Array.isArray(data.features)) {
-      updateData.features = data.features;
+    // Format data properly
+    if (data.features) {
+      updateData.features = typeof data.features === 'string' ? data.features : data.features.join(',');
     }
-
+    if (data.specifications) {
+      updateData.specifications = typeof data.specifications === 'string' ? data.specifications : JSON.stringify(data.specifications);
+    }
+    
+    // Update product
     const product = await prisma.product.update({
       where: { id },
       data: updateData,
       include: {
         category: true,
         manufacturer: true,
+        images: true,
       },
+    });
+
+    // Update images if provided
+    if (images !== undefined) {
+      // Delete existing images
+      await prisma.productImage.deleteMany({
+        where: { productId: id }
+      });
+      
+      // Create new images
+      if (images.length > 0) {
+        await prisma.productImage.createMany({
+          data: images.map((url, index) => ({
+            productId: id,
+            url,
+            altText: product.name,
+            sortOrder: index + 1
+          }))
+        });
+      }
+    }
+
+    // Get updated product with images
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        manufacturer: true,
+        images: true,
+      }
     });
 
     // Invalidate cache
@@ -285,13 +341,13 @@ export class ProductService {
       type: 'product_updated',
       data: {
         productId: id,
-        product,
+        product: updatedProduct,
         changes: updateData,
       },
       timestamp: new Date(),
     });
 
-    return transformProductToDTO(product);
+    return transformProductToDTO(updatedProduct!);
   }
 
   /**
@@ -352,215 +408,80 @@ export class ProductService {
   static async getManufacturers() {
     return prisma.manufacturer.findMany({
       where: { isActive: true },
-      include: {
-        _count: { select: { products: true } }
-      },
       orderBy: { name: 'asc' },
     });
   }
 
   /**
-   * Update product inventory
+   * Update product stock
    */
-  static async updateInventory(
-    productId: string,
-    quantity: number,
-    type: string,
-    reason?: string
-  ) {
-    return prisma.$transaction(async (tx) => {
-      // Get current product
-      const product = await tx.product.findUnique({
-        where: { id: productId },
-        select: { stockQuantity: true }
-      });
-
-      if (!product) return null;
-
-      const oldQuantity = product.stockQuantity;
-      let newQuantity: number;
-
-      switch (type) {
-        case 'STOCK_IN':
-          newQuantity = oldQuantity + quantity;
-          break;
-        case 'STOCK_OUT':
-          newQuantity = Math.max(0, oldQuantity - quantity);
-          break;
-        case 'ADJUSTMENT':
-          newQuantity = quantity;
-          break;
-        default:
-          newQuantity = oldQuantity;
-      }
-
-      // Update product stock
-      const updatedProduct = await tx.product.update({
-        where: { id: productId },
-        data: { stockQuantity: newQuantity },
-      });
-
-      // Create inventory log
-      await tx.inventoryLog.create({
-        data: {
-          productId,
-          type: type as any,
-          quantity: type === 'ADJUSTMENT' ? quantity - oldQuantity : quantity,
-          reason: reason ?? null,
-          oldQuantity,
-          newQuantity,
-        },
-      });
-
-      const result = {
-        product: updatedProduct,
-        oldQuantity,
-        newQuantity,
-        change: newQuantity - oldQuantity,
-      };
-
-      // Invalidate cache (after transaction)
-      await CacheService.invalidateProductCache(productId);
-
-      // Emit realtime event
-      RealtimeService.notifyProductUpdate({
-        type: 'inventory_updated',
-        data: {
-          productId,
-          product: updatedProduct,
-          oldQuantity,
-          newQuantity,
-        },
-        timestamp: new Date(),
-      });
-
-      return result;
-    });
-  }
-
-  /**
-   * Get product reviews with pagination
-   */
-  static async getProductReviews(productId: string, pagination: Pagination) {
-    const { page, limit } = pagination;
-    const skip = (page - 1) * limit;
-
-    const [reviews, total] = await Promise.all([
-      prisma.review.findMany({
-        where: {
-          productId,
-          isPublished: true,
-        },
-        include: {
-          customer: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true }
-              }
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.review.count({
-        where: {
-          productId,
-          isPublished: true,
-        },
-      }),
-    ]);
-
-    return {
-      reviews,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1,
-      },
-    };
-  }
-
-  /**
-   * Add product review
-   */
-  static async addProductReview(
-    productId: string,
-    customerId: string,
-    rating: number,
-    title?: string,
-    comment?: string
-  ) {
-    // Check if customer already reviewed this product
-    const existingReview = await prisma.review.findUnique({
-      where: {
-        customerId_productId: {
-          customerId,
-          productId,
-        },
-      },
+  static async updateStock(id: string, quantity: number, operation: 'increase' | 'decrease' | 'set') {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: { stockQuantity: true },
     });
 
-    if (existingReview) {
-      throw new Error('Customer has already reviewed this product');
+    if (!product) {
+      throw new Error('Product not found');
     }
 
-    return prisma.review.create({
-      data: {
-        customerId,
-        productId,
-        rating,
-        title: title ?? null,
-        comment: comment ?? null,
-        isVerified: false, // Would be set to true if customer purchased the product
-      },
-      include: {
-        customer: {
-          include: {
-            user: {
-              select: { firstName: true, lastName: true }
-            }
-          }
-        }
-      },
+    let newQuantity: number;
+    switch (operation) {
+      case 'increase':
+        newQuantity = product.stockQuantity + quantity;
+        break;
+      case 'decrease':
+        newQuantity = Math.max(0, product.stockQuantity - quantity);
+        break;
+      case 'set':
+        newQuantity = Math.max(0, quantity);
+        break;
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id },
+      data: { stockQuantity: newQuantity },
     });
+
+    // Check if stock is low
+    if (updatedProduct.minStock && updatedProduct.stockQuantity <= updatedProduct.minStock) {
+      // TODO: Send low stock notification
+      console.log(`Low stock alert for product ${updatedProduct.name}: ${updatedProduct.stockQuantity} units remaining`);
+    }
+
+    // Invalidate cache
+    await CacheService.invalidateProductCache(id);
+
+    return transformProductToDTO(updatedProduct);
   }
 
   /**
-   * Get featured products
+   * Bulk update product prices
    */
-  static async getFeaturedProducts(limit = 8) {
-    return prisma.product.findMany({
-      where: {
-        isFeatured: true,
-        isActive: true,
-      },
-      include: {
-        category: {
-          select: { id: true, name: true, slug: true }
-        },
-        manufacturer: {
-          select: { id: true, name: true, slug: true }
-        },
-        images: {
-          orderBy: { sortOrder: 'asc' },
-          take: 1
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+  static async bulkUpdatePrices(updates: { id: string; price?: number; salePrice?: number }[]) {
+    const results = await Promise.all(
+      updates.map(update =>
+        prisma.product.update({
+          where: { id: update.id },
+          data: {
+            price: update.price,
+            salePrice: update.salePrice,
+          },
+        })
+      )
+    );
+
+    // Invalidate cache for all updated products
+    await Promise.all(updates.map(update => CacheService.invalidateProductCache(update.id)));
+
+    return results.map(transformProductToDTO);
   }
 
   /**
-   * Search products by text
+   * Search products
    */
   static async searchProducts(query: string, limit = 10) {
-    return prisma.product.findMany({
+    const products = await prisma.product.findMany({
       where: {
         isActive: true,
         OR: [
@@ -570,39 +491,117 @@ export class ProductService {
         ],
       },
       include: {
-        category: {
-          select: { name: true }
-        },
+        category: true,
         images: {
           orderBy: { sortOrder: 'asc' },
-          take: 1
+          take: 1,
         },
       },
       take: limit,
     });
+
+    return transformProductList(products);
   }
 
   /**
-   * Get multiple products by IDs
+   * Get featured products
    */
-  static async getBatchProducts(productIds: string[]) {
-    return prisma.product.findMany({
+  static async getFeaturedProducts(limit = 8) {
+    const products = await prisma.product.findMany({
+      where: {
+        isActive: true,
+        isFeatured: true,
+        stockQuantity: { gt: 0 },
+      },
+      include: {
+        category: true,
+        images: {
+          orderBy: { sortOrder: 'asc' },
+          take: 1,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return transformProductList(products);
+  }
+
+  /**
+   * Get products by category
+   */
+  static async getProductsByCategory(categoryId: string, limit = 20) {
+    const products = await prisma.product.findMany({
+      where: {
+        categoryId,
+        isActive: true,
+      },
+      include: {
+        category: true,
+        manufacturer: true,
+        images: {
+          orderBy: { sortOrder: 'asc' },
+          take: 1,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return transformProductList(products);
+  }
+
+  /**
+   * Get product availability
+   */
+  static async checkAvailability(productIds: string[]) {
+    const products = await prisma.product.findMany({
       where: {
         id: { in: productIds },
         isActive: true,
       },
-      include: {
-        category: {
-          select: { id: true, name: true, slug: true }
-        },
-        manufacturer: {
-          select: { id: true, name: true, slug: true }
-        },
-        images: {
-          orderBy: { sortOrder: 'asc' },
-          take: 1
-        },
+      select: {
+        id: true,
+        stockQuantity: true,
+        minStock: true,
+        maxStock: true,
       },
     });
+
+    return products.map(product => ({
+      id: product.id,
+      available: product.stockQuantity > 0,
+      stockQuantity: product.stockQuantity,
+      lowStock: product.minStock ? product.stockQuantity <= product.minStock : false,
+    }));
+  }
+
+  /**
+   * Get product stats
+   */
+  static async getProductStats() {
+    const [total, active, featured, outOfStock, lowStock] = await Promise.all([
+      prisma.product.count(),
+      prisma.product.count({ where: { isActive: true } }),
+      prisma.product.count({ where: { isFeatured: true } }),
+      prisma.product.count({ where: { stockQuantity: 0 } }),
+      prisma.product.count({
+        where: {
+          AND: [
+            { stockQuantity: { gt: 0 } },
+            { minStock: { not: null } },
+            { stockQuantity: { lte: prisma.product.fields.minStock } },
+          ],
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      active,
+      featured,
+      outOfStock,
+      lowStock,
+    };
   }
 }

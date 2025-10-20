@@ -328,18 +328,24 @@ export function ProductsManagement() {
         productData.specifications = JSON.stringify(formData.specifications)
       }
       
-      // Note: Images will be handled separately via upload endpoint
-      // Do not send empty arrays or objects
+      // Add images if they exist
+      if (uploadedImages && uploadedImages.length > 0) {
+        productData.images = uploadedImages
+      }
 
       console.log('📦 Sending product data to backend:', JSON.stringify(productData, null, 2))
 
       if (editingProduct) {
-        // Update existing product
-        const updatedProduct = await ProductService.updateProduct(editingProduct.id, productData)
+        // Update existing product with images
+        const updateData = { ...productData }
+        if (uploadedImages && uploadedImages.length > 0) {
+          updateData.images = uploadedImages
+        }
+        const updatedProduct = await ProductService.updateProduct(editingProduct.id, updateData)
         notifyProductChange('updated', editingProduct.id, updatedProduct)
         alert('Produit mis à jour avec succès!')
       } else {
-        // Create new product
+        // Create new product with images
         const newProduct = await ProductService.createProduct(productData)
         notifyProductChange('created', newProduct.id, newProduct)
         alert('Produit créé avec succès!')

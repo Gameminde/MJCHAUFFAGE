@@ -355,7 +355,7 @@ export default function ClientProductsPage({
                         className="flex-1"
                       />
                       <Link
-                        href={`/${locale}/products/details/${product.id}`}
+                        href={`/${locale}/products/${product.id}`}
                         className="px-4 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
                       >
                         <ArrowRight className="h-4 w-4" />
