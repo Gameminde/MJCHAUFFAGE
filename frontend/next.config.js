@@ -17,6 +17,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  generateBuildId: async () => 'local-dev',
   images: {
     remotePatterns: [
       {
@@ -34,18 +35,24 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: API_URL,
     API_URL_SSR: process.env.API_URL_SSR || API_URL,
+    BACKEND_API_URL: process.env.BACKEND_API_URL || `${process.env.API_URL_SSR || API_URL}/api/v1`,
   },
   compress: true,
   poweredByHeader: false,
   swcMinify: true,
   webpack: (config) => config,
   async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${API_URL}/api/:path*`,
-      },
-    ];
+    // Use afterFiles so local API routes take precedence; proxy unknown API paths to backend
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        {
+          source: '/api/:path*',
+          destination: `${API_URL}/api/:path*`,
+        },
+      ],
+      fallback: [],
+    };
   },
   async headers() {
     return [

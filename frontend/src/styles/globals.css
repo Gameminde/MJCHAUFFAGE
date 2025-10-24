@@ -368,6 +368,11 @@
     background-clip: text;
   }
   
+  /* Typography compatibility aliases */
+  .text-body { @apply text-body-md; }
+  .text-display { @apply text-display-md; }
+  .text-heading { @apply text-heading-md; }
+  
   /* Layout utilities */
   .container-modern {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;

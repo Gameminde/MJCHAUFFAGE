@@ -113,6 +113,19 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
       // Ignore parsing errors
     }
 
+    // Unified 401 handling: clear token and redirect to login
+    if (response.status === 401 && typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('authToken')
+      } catch {}
+      const path = window.location.pathname
+      const isAdmin = path.startsWith('/admin')
+      const localeMatch = path.match(/^\/(fr|en|ar)(\/|$)/)
+      const locale = localeMatch?.[1] || 'fr'
+      const redirectTo = isAdmin ? '/admin/login' : `/${locale}/auth/login`
+      window.location.href = redirectTo
+    }
+
     throw new ApiError(errorMessage, response.status, errorData)
   }
 

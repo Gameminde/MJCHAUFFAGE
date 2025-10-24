@@ -1,6 +1,4 @@
-import express, { Router, Request, Response } from 'express';
-import path from 'path';
-import fs from 'fs';
+import express from 'express';
 import compression from 'compression';
 import morgan from 'morgan';
 import session from 'express-session';
@@ -8,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import 'express-async-errors';
+import path from 'path';
 
 import { config } from '@/config/environment';
 import { logger } from '@/utils/logger';
@@ -17,6 +16,7 @@ import { applySecurity, authRateLimit, apiRateLimit, strictRateLimit, adminRateL
 import { sanitizeRequestBody } from '@/middleware/validation';
 import { connectRedis, redisClient } from '@/config/redis';
 import { prisma } from '@/lib/database';
+import { apiVersionHeader, deprecationWarning } from '@/middleware/apiVersioning';
 
 // Import routes
 import authRoutes from '@/routes/auth';
@@ -30,9 +30,11 @@ import realtimeRoutes from '@/routes/realtime';
 import cartRoutes from '@/routes/cart';
 import healthRoutes from '@/routes/health';
 import paymentRoutes from '@/routes/payments';
+import geolocationRoutes from '@/routes/geolocation';
 import uploadsRoutes from '@/routes/uploads';
 
 const app = express();
+app.set('trust proxy', 1);
 const server = createServer(app);
 
 // Define allowed origins for CORS
@@ -65,19 +67,12 @@ app.use(sanitizeRequestBody);
 // Enhanced Rate Limiting with progressive delays
 app.use('/api', progressiveDelay);
 app.use('/api', apiRateLimit);
+app.use('/api', apiVersionHeader('v1'));
+app.use('/api', deprecationWarning);
 
 // Payments routes
+app.use('/api/payments/process', strictRateLimit);
 app.use('/api/payments', paymentRoutes);
-
-// Static serving for uploaded files
-const uploadsDir = path.resolve(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-app.use('/uploads', express.static(uploadsDir));
-
-// Uploads API
-app.use('/api/uploads', uploadsRoutes);
 
 // Specific rate limits for different endpoint types
 app.use('/api/auth/login', authRateLimit);
@@ -98,55 +93,18 @@ app.use(session({
   },
 }));
 
-// ==========================================
-// API v1 Routes (Current Version)
-// ==========================================
-const v1Router = Router();
-
-// Geolocation endpoint (simple IP-based location)
-v1Router.get('/geolocation', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    
-    // For localhost, return Algeria as default
-    if (ip === '::1' || ip === '127.0.0.1' || ip?.includes('localhost')) {
-      res.json({
-        country: 'Algeria',
-        country_code: 'DZ',
-        city: 'Algiers'
-      });
-      return;
-    }
-    
-    res.json({
-      country: 'Algeria',
-      country_code: 'DZ',
-      city: 'Unknown'
-    });
-  } catch (error) {
-    logger.error('Geolocation error:', error);
-    res.status(500).json({ error: 'Failed to get location' });
+// Public files (uploaded assets)
+app.use('/files', express.static(path.resolve(__dirname, '..', 'uploads'), {
+  maxAge: '1d',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
   }
-});
+}));
 
-v1Router.use('/auth', authRoutes);
-v1Router.use('/products', productRoutes);
-v1Router.use('/customers', customerRoutes);
-v1Router.use('/orders', orderRoutes);
-v1Router.use('/services', serviceRoutes);
-v1Router.use('/analytics', analyticsRoutes);
-v1Router.use('/admin', adminRoutes);
-v1Router.use('/realtime', realtimeRoutes);
-v1Router.use('/cart', cartRoutes);
-v1Router.use('/payments', paymentRoutes);
-v1Router.use('/uploads', uploadsRoutes);
-
-app.use('/api/v1', v1Router);
-
-// ==========================================
-// Legacy API Routes (For backward compatibility)
-// ==========================================
+// API Routes
 app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/v1/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
@@ -156,6 +114,26 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/realtime', realtimeRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/geolocation', geolocationRoutes);
+app.use('/api/uploads', uploadsRoutes);
+
+// API v1 alias (legacy clients)
+app.use('/api/v1', apiVersionHeader('v1'));
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/customers', customerRoutes);
+app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/services', serviceRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/realtime', realtimeRoutes);
+app.use('/api/v1/cart', cartRoutes);
+app.use('/api/v1/geolocation', geolocationRoutes);
+// Remove duplicate legacy middleware insertion
+// (version and deprecation headers already applied earlier)
+// app.use('/api', apiVersionHeader('v1'));
+// import { deprecationWarning } from '@/middleware/apiVersioning';
+// app.use('/api', deprecationWarning);
 
 // Error Handling
 app.use(notFoundHandler);
@@ -196,8 +174,7 @@ const startServer = async () => {
     server.listen(port, () => {
       console.log(`✅ Server listening on http://localhost:${port}`);
       console.log(`🔍 Health check: http://localhost:${port}/health`);
-      console.log(`📦 Uploads served at: http://localhost:${port}/uploads`);
-      console.log(`🔐 Admin login: http://localhost:3005/login`);
+      console.log(`🔐 Admin login: http://localhost:3000/admin`);
     });
 
     // Ajouter un gestionnaire d'erreur pour server.listen

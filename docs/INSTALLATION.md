@@ -306,7 +306,7 @@ npm run start
 
 **Vérification Frontend :**
 - Site : http://localhost:3000
-- Page admin : http://localhost:3005
+- Page admin : http://localhost:3000/admin
 
 ### Étape 12 : Lancer l'Admin (Optionnel)
 ```bash
@@ -352,7 +352,7 @@ start http://localhost:3000
 # - Page d'accueil : http://localhost:3000
 # - Produits : http://localhost:3000/products
 # - Connexion : http://localhost:3000/auth/login
-# - Admin : http://localhost:3005
+# - Admin : http://localhost:3000/admin
 ```
 
 #### 3. Test Base de Données

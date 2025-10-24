@@ -27,11 +27,26 @@ export function ProductCard({
   const [imageError, setImageError] = useState(false)
   const { t, locale } = useLanguage()
   const isArabic = locale === 'ar'
+  const numberLocale = isArabic ? 'ar-DZ' : 'fr-DZ'
 
   // Calculate discount percentage
   const discountPercentage = product.salePrice 
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0
+
+  // New badge if created within last 30 days
+  const isNew = (() => {
+    try {
+      const created = new Date(product.createdAt).getTime()
+      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+      return Date.now() - created < THIRTY_DAYS
+    } catch {
+      return false
+    }
+  })()
+
+  // Sale state
+  const isOnSale = discountPercentage > 0
 
   // Get current price (sale price if available, otherwise regular price)
   const currentPrice = product.salePrice || product.price
@@ -39,7 +54,7 @@ export function ProductCard({
 
   // Format price for display
   const formatPrice = (price: number) => {
-    return `${price.toLocaleString()} ${isArabic ? 'د.ج' : 'DA'}`
+    return `${new Intl.NumberFormat(numberLocale).format(price)} ${isArabic ? 'د.ج' : 'DA'}`
   }
 
   // Handle wishlist toggle
@@ -79,10 +94,20 @@ export function ProductCard({
       <div className={`relative ${imageHeightClasses[variant]} bg-gradient-to-br from-neutral-100 to-neutral-200 overflow-hidden`}>
         {/* Modern Badges */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+          {isNew && (
+            <span className="badge badge-success px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl text-xs font-semibold shadow-sm animate-fade-in-down">
+              {isArabic ? 'جديد' : 'Nouveau'}
+            </span>
+          )}
           {product.isFeatured && (
             <span className="badge badge-primary flex items-center gap-1 px-3 py-1.5 bg-gradient-primary text-white rounded-xl text-xs font-semibold shadow-glow animate-fade-in-down backdrop-blur-sm">
               <Sparkles className="w-3 h-3" />
-              {isArabic ? 'مميز' : 'Vedette'}
+              {isArabic ? 'مميز' : 'En vedette'}
+            </span>
+          )}
+          {isOnSale && (
+            <span className="badge badge-error px-3 py-1.5 bg-gradient-to-r from-error-500 to-error-600 text-white rounded-xl text-xs font-semibold shadow-sm animate-fade-in-down">
+              {isArabic ? 'تخفيض' : 'Promo'}
             </span>
           )}
           {discountPercentage > 0 && (
@@ -136,12 +161,18 @@ export function ProductCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             quality={85}
             placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-6xl opacity-50">🔥</div>
-          </div>
+          <Image
+            src="/screenshots/desktop.png"
+            alt={productName}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            quality={75}
+            priority={variant === 'featured'}
+          />
         )}
 
         {/* Modern Overlay */}
@@ -159,14 +190,23 @@ export function ProductCard({
 
       {/* Modern Product Info */}
       <div className={`p-${variant === 'compact' ? '5' : '6'} relative z-10`}>
-        {/* Category */}
-        <div className="mb-3">
+        {/* Category and Brand */}
+        <div className="mb-3 flex items-center flex-wrap gap-2">
           <Link
             href={`/${locale}/products?category=${product.category.slug}`}
             className="text-body-xs text-primary-600 hover:text-primary-700 font-medium uppercase tracking-wider transition-colors duration-200"
           >
             {product.category.name}
           </Link>
+          {product.manufacturer && (
+            <Link
+              href={`/${locale}/products?manufacturers=${product.manufacturer.id}`}
+              className="text-body-xs bg-neutral-100 text-neutral-700 px-2 py-1 rounded-lg font-medium border border-neutral-200 hover:bg-neutral-200 hover:text-neutral-800 transition-colors"
+              aria-label={isArabic ? 'العلامة التجارية' : 'Marque'}
+            >
+              {product.manufacturer.name}
+            </Link>
+          )}
         </div>
 
         {/* Product Name */}
@@ -254,7 +294,7 @@ export function ProductCard({
           }`}>
             {product.stockQuantity > 0
               ? (isArabic ? 'متوفر' : 'En stock')
-              : (isArabic ? 'غير متوفر' : 'Rupture')
+              : (isArabic ? 'غير متوفر' : 'Rupture de stock')
             }
           </span>
         </div>

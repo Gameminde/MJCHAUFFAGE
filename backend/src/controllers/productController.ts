@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import { Prisma } from '@prisma/client';
 import { ProductService, ProductFilters } from '@/services/productService';
 
 export class ProductController {
@@ -31,6 +32,30 @@ export class ProductController {
       if (maxPrice) filters.maxPrice = parseFloat(maxPrice as string);
       if (featured !== undefined) filters.featured = featured === 'true';
       if (inStock !== undefined) filters.inStock = inStock === 'true';
+
+      // Multi-select filters support: categories[], manufacturers[]
+      const categoriesParam = req.query.categories as string | string[] | undefined;
+      const manufacturersParam = req.query.manufacturers as string | string[] | undefined;
+
+      if (categoriesParam) {
+        const cats = Array.isArray(categoriesParam)
+          ? categoriesParam
+          : (categoriesParam as string).split(',').map(s => s.trim()).filter(Boolean);
+        if (cats.length > 0) filters.categories = cats as string[];
+      } else if (Array.isArray(category)) {
+        const cats = (category as string[]).map(s => s.trim()).filter(Boolean);
+        if (cats.length > 0) filters.categories = cats;
+      }
+
+      if (manufacturersParam) {
+        const mans = Array.isArray(manufacturersParam)
+          ? manufacturersParam
+          : (manufacturersParam as string).split(',').map(s => s.trim()).filter(Boolean);
+        if (mans.length > 0) filters.manufacturers = mans as string[];
+      } else if (Array.isArray(manufacturer)) {
+        const mans = (manufacturer as string[]).map(s => s.trim()).filter(Boolean);
+        if (mans.length > 0) filters.manufacturers = mans;
+      }
 
       const pagination = {
         page: parseInt(page as string),
@@ -130,14 +155,47 @@ export class ProductController {
         console.error('Stack trace:', error.stack);
       }
       
-      if (error instanceof Error && error.message.includes('unique constraint')) {
-        console.log('🔄 Erreur de contrainte unique détectée');
+      // Gestion fine des erreurs Prisma
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // P2002: Contrainte d'unicité violée (slug, sku)
+        if (error.code === 'P2002') {
+          console.log('🔄 Erreur de contrainte unique détectée (Prisma P2002)')
+          res.status(409).json({
+            success: false,
+            message: 'Un produit avec ce SKU ou ce slug existe déjà',
+            meta: { target: (error.meta?.target as string[]) || undefined },
+          })
+          return
+        }
+        // P2003: Contrainte de clé étrangère (ex: categoryId/manufacturerId invalide)
+        if (error.code === 'P2003') {
+          res.status(400).json({
+            success: false,
+            message: 'ID de catégorie ou fabricant invalide (contrainte de clé étrangère)',
+            meta: { field: (error.meta?.field_name as string) || undefined },
+          })
+          return
+        }
+        // P2009: Erreur de validation des données
+        if (error.code === 'P2009') {
+          res.status(400).json({
+            success: false,
+            message: 'Données invalides envoyées au serveur',
+          })
+          return
+        }
+      }
+      
+      // Fallback: détecter via message texte (case-insensitive)
+      if (error instanceof Error && /unique constraint/i.test(error.message)) {
+        console.log('🔄 Erreur de contrainte unique détectée (message texte)')
         res.status(409).json({
           success: false,
-          message: 'Product with this SKU or slug already exists',
-        });
-        return;
+          message: 'Un produit avec ce SKU ou ce slug existe déjà',
+        })
+        return
       }
+
       res.status(500).json({
         success: false,
         message: 'Internal server error',

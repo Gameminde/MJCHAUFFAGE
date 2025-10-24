@@ -8,6 +8,14 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   'http://localhost:3001';
 
+const normalizeImageUrl = (img: any): string => {
+  const src = typeof img === 'string' ? img : img?.url;
+  if (!src) return '';
+  if (src.startsWith('http')) return src;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${API_URL}${path}`;
+};
+
 type ApiResponse<T> = {
   success: boolean;
   data: T;
@@ -67,7 +75,7 @@ const convertApiProduct = (product: Record<string, any>): Product => ({
   images: Array.isArray(product.images)
     ? product.images.map((img: any) => ({
         id: img?.id ?? Math.random().toString(),
-        url: typeof img === 'string' ? img : img?.url ?? '',
+        url: normalizeImageUrl(img),
         altText: typeof img === 'object' ? img?.altText ?? null : null,
       }))
     : [],
@@ -109,7 +117,7 @@ export const fetchSSR = cache(
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const url = `${API_URL}/api${endpoint}`;
+      const url = `${API_URL}/api/v1${endpoint}`;
 
       const response = await fetch(url, {
         ...init,
@@ -155,7 +163,7 @@ export async function fetchProductsSSR(
   const data = await fetchSSR<ProductsApiResponse>(
     `/products?page=${page}&limit=${limit}`,
     {
-      next: { revalidate: 3600 },
+      cache: 'no-store',
     },
   );
 
@@ -215,4 +223,102 @@ export async function fetchProductDetailSSR(id: string): Promise<Product | null>
   }
 
   return convertApiProduct(data.data.product);
+}
+// Helper: build query string from params (supports arrays)
+function buildQueryString(params: Record<string, any>): string {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return;
+    if (Array.isArray(value)) {
+      value.filter(Boolean).forEach((v) => q.append(key, String(v)));
+    } else {
+      q.append(key, String(value));
+    }
+  });
+  return q.toString();
+}
+
+export async function fetchProductsSSRWithParams(
+  params: Record<string, any> = {},
+): Promise<{
+  products: Product[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> {
+  const page = Number(params.page ?? 1) || 1;
+  const limit = Number(params.limit ?? 20) || 20;
+  const fallback = FALLBACKS.products;
+
+  const query = buildQueryString({
+    page,
+    limit,
+    search: params.search,
+    category: params.category, // single category
+    categories: params.categories, // multi categories[]
+    manufacturer: params.manufacturer, // single manufacturer
+    manufacturers: params.manufacturers, // multi manufacturers[]
+    minPrice: params.minPrice,
+    maxPrice: params.maxPrice,
+    inStock: params.inStock,
+    featured: params.featured,
+    sortBy: params.sortBy,
+    sortOrder: params.sortOrder,
+  });
+
+  const data = await fetchSSR<ProductsApiResponse>(`/products?${query}`, {
+    cache: 'no-store',
+  });
+
+  if (!data || !data.success) {
+    return fallback;
+  }
+
+  const pagination = (
+    data.data.pagination ?? {
+      page,
+      limit,
+      total: data.data.total ?? data.data.products?.length ?? 0,
+      totalPages:
+        data.data.total !== undefined
+          ? Math.ceil((data.data.total as number) / limit)
+          : data.data.products
+          ? Math.ceil((data.data.products.length as number) / limit)
+          : 0,
+    }
+  ) as { page: number; limit: number; total: number; totalPages: number };
+
+  return {
+    products: Array.isArray(data.data.products)
+      ? (data.data.products as Record<string, any>[]).map(convertApiProduct)
+      : fallback.products,
+    pagination,
+  };
+}
+export async function fetchManufacturersSSR(): Promise<{
+  manufacturers: Array<{ id: string; name: string; slug: string; productCount?: number }>
+}> {
+  type ManufacturersApiResponse = ApiResponse<{
+    manufacturers?: Array<{ id: string; name: string; slug: string; _count?: { products: number } }>
+  }>;
+
+  const data = await fetchSSR<ManufacturersApiResponse>('/products/manufacturers', {
+    next: { revalidate: 7200 },
+  });
+
+  if (!data || !data.success) {
+    return { manufacturers: [] };
+  }
+
+  const list = (data.data.manufacturers ?? []).map((m) => ({
+    id: m.id,
+    name: m.name,
+    slug: m.slug,
+    productCount: m._count?.products ?? undefined,
+  }));
+
+  return { manufacturers: list };
 }

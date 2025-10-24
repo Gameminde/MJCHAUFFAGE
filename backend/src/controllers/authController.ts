@@ -202,26 +202,10 @@ export class AuthController {
       const isPasswordValid = await AuthService.comparePassword(password, user.password);
 
       if (!isPasswordValid) {
-        // Debug logs to diagnose invalid credential path in development
-        let debugInfo: any = undefined;
-        try {
-          debugInfo = {
-            emailAttempt: email?.toLowerCase?.() || email,
-            passwordLength: typeof password === 'string' ? password.length : null,
-            hashPrefix: typeof user.password === 'string' ? user.password.slice(0, 7) : null,
-            userHasPassword: !!user.password,
-            userId: user.id,
-            isActive: user.isActive,
-            isVerified: user.isVerified,
-            isPasswordValid,
-          };
-          console.log('🔎 Login debug:', debugInfo);
-        } catch {}
         res.status(401).json({
           success: false,
           message: 'Invalid email or password',
           code: 'INVALID_CREDENTIALS',
-          ...(process.env.NODE_ENV !== 'production' && debugInfo ? { debug: debugInfo } : {}),
         });
         return;
       }

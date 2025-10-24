@@ -69,7 +69,6 @@ export const securityHeaders = helmet({
       ],
       scriptSrc: [
         "'self'",
-        "https://js.stripe.com",
         "https://maps.googleapis.com"
       ],
       imgSrc: [
@@ -87,13 +86,11 @@ export const securityHeaders = helmet({
       ],
       connectSrc: [
         "'self'",
-        "https://api.stripe.com",
         "https://maps.googleapis.com",
         config.frontend.url
       ],
       frameSrc: [
-        "'self'",
-        "https://js.stripe.com"
+        "'self'"
       ],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: config.env === 'production' ? [] : null,

@@ -60,6 +60,7 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   const isArabic = locale === 'ar';
+  const numberLocale = isArabic ? 'ar-DZ' : 'fr-DZ';
 
   return (
     <main className={`min-h-screen bg-gray-50 ${isArabic ? 'rtl' : ''}`}>
@@ -114,11 +115,13 @@ export default async function ProductDetailPage({ params }: Props) {
 
           <div className="flex items-baseline gap-4">
             <span className="text-3xl font-bold text-gray-900">
-              {product.salePrice ?? product.price} {isArabic ? 'د.ج' : 'DA'}
+-              {product.salePrice ?? product.price} {isArabic ? 'د.ج' : 'DA'}
++              {new Intl.NumberFormat(numberLocale).format(product.salePrice ?? product.price)} {isArabic ? 'د.ج' : 'DA'}
             </span>
             {product.salePrice && (
               <span className="text-sm text-gray-500 line-through">
-                {product.price.toLocaleString()} {isArabic ? 'د.ج' : 'DA'}
+-                {product.price.toLocaleString()} {isArabic ? 'د.ج' : 'DA'}
++                {product.price.toLocaleString(numberLocale)} {isArabic ? 'د.ج' : 'DA'}
               </span>
             )}
           </div>

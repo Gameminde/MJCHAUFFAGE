@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '../styles/globals.css'
 import { AnalyticsProvider } from '../components/analytics/AnalyticsProvider'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
 
 // Modern Inter Variable font with optimized settings
 const inter = Inter({ 
@@ -37,19 +39,25 @@ export const metadata: Metadata = {
 // Export viewport separately as required by Next.js 14+
 export { viewport } from './viewport'
 
-// Type pour les paramètres
+// Type pour les paramètres de locale
 type Props = {
   children: React.ReactNode;
-}
+  params: Promise<{ locale: string }>;
+};
 
-export default function RootLayout({ children }: Props) {
+export default async function RootLayout({ children, params }: Props) {
+  const { locale } = await params;
+  const messages = await getMessages();
+  
   return (
-    <html lang="fr" suppressHydrationWarning className={`h-full ${inter.variable}`}>
+    <html lang={locale} className={`h-full ${inter.variable}`}>
       <body className={`${inter.className} h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900`}>
-        <AnalyticsProvider>
-          {children}
-        </AnalyticsProvider>
-        {/* Service Worker Registration - Client-side only */}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AnalyticsProvider>
+            {children}
+          </AnalyticsProvider>
+        </NextIntlClientProvider>
+        {/* Service Worker Registration - Fixed for client-side */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

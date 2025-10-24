@@ -16,8 +16,9 @@ const inter = Inter({ subsets: ['latin'] })
 type Props = {
   children: React.ReactNode;
   params: { locale: string };
-  header: React.ReactNode;
+  // Parallel route slots required by Next.js typed layout checks
   footer: React.ReactNode;
+  header: React.ReactNode;
   modal: React.ReactNode;
   sidebar: React.ReactNode;
 };
@@ -151,8 +152,8 @@ export const metadata = {
 export default async function RootLayout({
   children,
   params: { locale },
-  header,
   footer,
+  header,
   modal,
   sidebar,
 }: Props) {

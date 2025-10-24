@@ -65,6 +65,17 @@ export interface CategoriesResponse {
   }
 }
 
+// Normalize image URLs to absolute backend URLs when needed
+const BASE_API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
+const DEFAULT_IMAGE = '/screenshots/desktop.png'
+const normalizeImageUrl = (img: any): string => {
+  const src = typeof img === 'string' ? img : img?.url
+  if (!src) return DEFAULT_IMAGE
+  if (src.startsWith('http')) return src
+  const path = src.startsWith('/') ? src : `/${src}`
+  return `${BASE_API}${path}`
+}
+
 const convertApiProduct = (apiProduct: any): Product => {
   return {
     id: apiProduct.id,
@@ -82,9 +93,9 @@ const convertApiProduct = (apiProduct: any): Product => {
     features: Array.isArray(apiProduct.features) ? apiProduct.features : [],
     images: Array.isArray(apiProduct.images)
       ? apiProduct.images.map((img: any) => ({
-          id: img.id || Math.random().toString(),
-          url: typeof img === 'string' ? img : img.url,
-          altText: typeof img === 'object' ? img.altText : null,
+          id: (typeof img === 'object' && img.id) ? img.id : Math.random().toString(),
+          url: normalizeImageUrl(img),
+          altText: typeof img === 'object' ? (img.altText ?? null) : null,
         }))
       : [],
     category: {

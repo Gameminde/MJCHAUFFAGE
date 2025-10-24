@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/hooks/useLanguage'
-import PaymentService from '@/services/paymentService'
 
 interface ShippingAddress {
   firstName: string
@@ -38,26 +37,15 @@ export function CheckoutForm() {
     street: '', city: '', postalCode: '', region: ''
   })
   const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [shippingCost, setShippingCost] = useState<number>(0)
-  const finalTotal = total + (shippingCost || 0)
+
+  const shippingCost = 500 // Flat rate shipping
+  const finalTotal = total + shippingCost
 
   useEffect(() => {
     if (items.length === 0) {
       router.push(`/${locale}/products`)
     }
   }, [items.length, router, locale])
-
-  // Fetch shipping cost from backend when region or cart total changes
-  useEffect(() => {
-    const wilaya = shippingAddress.region
-    if (!wilaya) {
-      setShippingCost(0)
-      return
-    }
-    PaymentService.getShippingCost(wilaya, total)
-      .then((cost) => setShippingCost(Number(cost) || 0))
-      .catch(() => setShippingCost(0))
-  }, [shippingAddress.region, total])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target

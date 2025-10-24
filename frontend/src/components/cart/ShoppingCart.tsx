@@ -14,7 +14,8 @@ interface ShoppingCartProps {
 
 export function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
   const { items, total, itemCount, updateQuantity, removeItem, clearCart, formatPrice } = useCart()
-  const { t, locale, dir } = useLanguage()
+  const { t, locale } = useLanguage()
+  const dir = locale === 'ar' ? 'rtl' : 'ltr'
   const [isClearing, setIsClearing] = useState(false)
 
   const handleClearCart = async () => {
@@ -66,9 +67,8 @@ export function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
                   <ShoppingBag className="h-12 w-12 text-gray-300 mb-4" />
                   <p className="text-gray-500 mb-4">{t('cart.empty')}</p>
                   <Link
-                    href="/products"
-                    className="btn-primary"
-                    onClick={onClose}
+                    href={`/${locale}/products`}
+                    className="text-blue-600 hover:text-blue-800"
                   >
                     {t('cart.startShopping')}
                   </Link>
@@ -174,9 +174,8 @@ export function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
                 {/* Action Buttons */}
                 <div className="space-y-3">
                   <Link
-                    href="/checkout"
-                    className="btn-primary w-full text-center"
-                    onClick={onClose}
+                    href={`/${locale}/checkout`}
+                    className="btn btn-primary w-full"
                   >
                     {t('cart.checkout')}
                   </Link>

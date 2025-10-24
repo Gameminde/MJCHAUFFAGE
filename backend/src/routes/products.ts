@@ -101,6 +101,20 @@ const reviewValidation = [
  *         schema:
  *           type: string
  *       - in: query
+ *         name: categories
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Array of category IDs (e.g., categories=uuid&categories=uuid) or comma-separated string
+ *       - in: query
+ *         name: manufacturers
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Array of manufacturer IDs (e.g., manufacturers=uuid&manufacturers=uuid) or comma-separated string
+ *       - in: query
  *         name: minPrice
  *         schema:
  *           type: number

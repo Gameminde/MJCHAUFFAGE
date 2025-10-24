@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { generateMetadata as generateSEOMetadata, seoConfigs } from '@/utils/seo'
 import { BreadcrumbStructuredData, ProductStructuredData } from '@/components/seo/StructuredData'
 import { AccessibilityChecker } from '@/utils/accessibility'
@@ -167,10 +168,10 @@ export default function SEOTestPage({ params }: Props) {
           
           <ul>
             <li>
-              <a href="/products">Browse our heating products</a>
+              <Link href={`/${params.locale}/products`}>Browse our heating products</Link>
             </li>
             <li>
-              <a href="/services">Learn about our services</a>
+              <Link href={`/${params.locale}/services`}>Learn about our services</Link>
             </li>
             <li>
               <a 
@@ -183,9 +184,9 @@ export default function SEOTestPage({ params }: Props) {
               </a>
             </li>
             <li>
-              <a href="/contact" aria-describedby="contact-desc">
+              <Link href={`/${params.locale}/contact`} aria-describedby="contact-desc">
                 Contact us
-              </a>
+              </Link>
               <span id="contact-desc" className="sr-only">
                 Get in touch with our expert team
               </span>

@@ -7,8 +7,8 @@ export function usePageTracking() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Track page view when pathname changes
-    analyticsService.trackPageView(pathname);
+    // Track page view when pathname changes (handle null safely)
+    analyticsService.trackPageView(pathname ?? undefined);
   }, [pathname]);
 }
 

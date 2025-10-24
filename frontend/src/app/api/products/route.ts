@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const backendUrl = `${process.env.BACKEND_API_URL}/products`;
+    const backendUrl = `${process.env.API_URL_SSR}/api/v1/products`;
     
     // Forward query parameters to backend
     const queryString = searchParams.toString();
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const backendUrl = `${process.env.BACKEND_API_URL}/products`;
+    const backendUrl = `${process.env.API_URL_SSR}/api/v1/products`;
     
     // Get authorization header from request
     const authorization = request.headers.get('authorization');

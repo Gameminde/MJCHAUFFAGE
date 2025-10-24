@@ -7,7 +7,9 @@ import { Prisma, Product } from '@prisma/client';
 export interface ProductFilters {
   search?: string;
   categoryId?: string;
+  categories?: string[];
   manufacturerId?: string;
+  manufacturers?: string[];
   minPrice?: number;
   maxPrice?: number;
   featured?: boolean;
@@ -72,10 +74,14 @@ export class ProductService {
 
     if (filters.categoryId) {
       where.categoryId = filters.categoryId;
+    } else if (filters.categories && filters.categories.length > 0) {
+      where.categoryId = { in: filters.categories };
     }
 
     if (filters.manufacturerId) {
       where.manufacturerId = filters.manufacturerId;
+    } else if (filters.manufacturers && filters.manufacturers.length > 0) {
+      where.manufacturerId = { in: filters.manufacturers };
     }
 
     if (filters.minPrice || filters.maxPrice) {
@@ -220,25 +226,54 @@ export class ProductService {
   }
 
   /**
-   * Create product
+   * Create product (transactional with images)
    */
-  static async createProduct(data: ProductCreateData) {
-    const product = await prisma.product.create({
-      data: {
-        ...data,
-        // features is already a string from frontend, or convert array to string
-        features: typeof data.features === 'string' ? data.features : (data.features || []).join(','),
-        // specifications is already a JSON string from frontend, or convert object to string
-        specifications: typeof data.specifications === 'string' ? data.specifications : JSON.stringify(data.specifications || {}),
-        price: data.price,
-        costPrice: data.costPrice || null,
-        salePrice: data.salePrice || null,
-        weight: data.weight || null,
-      },
-      include: {
-        category: true,
-        manufacturer: true,
-      },
+  static async createProduct(
+    data: ProductCreateData & { images?: Array<{ url: string; altText?: string; sortOrder?: number } | string> }
+  ) {
+    const createdProduct = await prisma.$transaction(async (tx) => {
+      const { images, ...productFields } = data as any;
+      const product = await tx.product.create({
+        data: {
+          ...productFields,
+          // features is already a string from frontend, or convert array to string
+          features: typeof data.features === 'string' ? data.features : (data.features || []).join(','),
+          // specifications is already a JSON string from frontend, or convert object to string
+          specifications: typeof data.specifications === 'string' ? data.specifications : JSON.stringify(data.specifications || {}),
+          price: data.price,
+          costPrice: data.costPrice || null,
+          salePrice: data.salePrice || null,
+          weight: data.weight || null,
+        },
+      });
+
+      // Handle images if provided
+      if (Array.isArray(images) && images.length > 0) {
+        const imagesToCreate = images.map((img, index) =>
+          typeof img === 'string'
+            ? { productId: product.id, url: img, altText: null, sortOrder: index }
+            : {
+                productId: product.id,
+                url: img.url,
+                altText: img.altText ?? null,
+                sortOrder: img.sortOrder ?? index,
+              }
+        );
+
+        await tx.productImage.createMany({ data: imagesToCreate });
+      }
+
+      // Return full product with relations and images
+      const fullProduct = await tx.product.findUnique({
+        where: { id: product.id },
+        include: {
+          category: true,
+          manufacturer: true,
+          images: { orderBy: { sortOrder: 'asc' } },
+        },
+      });
+
+      return fullProduct!;
     });
 
     // Invalidate cache
@@ -248,53 +283,92 @@ export class ProductService {
     RealtimeService.notifyProductUpdate({
       type: 'product_created',
       data: {
-        productId: product.id,
-        product,
+        productId: createdProduct.id,
+        product: createdProduct,
       },
       timestamp: new Date(),
     });
 
-    return transformProductToDTO(product);
+    return transformProductToDTO(createdProduct);
   }
 
   /**
-   * Update product
+   * Update product (transactional with images)
    */
-  static async updateProduct(id: string, data: Partial<ProductCreateData>) {
-    const updateData: any = { ...data };
-    
-    if (data.price) updateData.price = data.price;
-    if (data.costPrice) updateData.costPrice = data.costPrice;
-    if (data.salePrice) updateData.salePrice = data.salePrice;
-    if (data.weight) updateData.weight = data.weight;
-    if (data.features && Array.isArray(data.features)) {
-      updateData.features = data.features;
-    }
+  static async updateProduct(
+    id: string,
+    data: Partial<ProductCreateData> & { images?: Array<{ url: string; altText?: string; sortOrder?: number } | string> }
+  ) {
+    const updatedProduct = await prisma.$transaction(async (tx) => {
+      const { images, ...restUpdate } = data as any;
+      const updateData: any = { ...restUpdate };
 
-    const product = await prisma.product.update({
-      where: { id },
-      data: updateData,
-      include: {
-        category: true,
-        manufacturer: true,
-      },
+      // Handle type conversions safely
+      if (data.price !== undefined) updateData.price = data.price;
+      if (data.costPrice !== undefined) updateData.costPrice = data.costPrice;
+      if (data.salePrice !== undefined) updateData.salePrice = data.salePrice;
+      if (data.weight !== undefined) updateData.weight = data.weight;
+
+      if (data.features && Array.isArray(data.features)) {
+        updateData.features = (data.features as string[]).join(',');
+      }
+      if (data.specifications && typeof data.specifications !== 'string') {
+        updateData.specifications = JSON.stringify(data.specifications);
+      }
+
+      // Update product core fields
+      await tx.product.update({
+        where: { id },
+        data: updateData,
+      });
+
+      // Replace images if provided
+      if (Array.isArray(images)) {
+        await tx.productImage.deleteMany({ where: { productId: id } });
+
+        if (images.length > 0) {
+          const imagesToCreate = images.map((img, index) =>
+            typeof img === 'string'
+              ? { productId: id, url: img, altText: null, sortOrder: index }
+              : {
+                  productId: id,
+                  url: img.url,
+                  altText: img.altText ?? null,
+                  sortOrder: img.sortOrder ?? index,
+                }
+          );
+          await tx.productImage.createMany({ data: imagesToCreate });
+        }
+      }
+
+      // Return full product with relations and images
+      const fullProduct = await tx.product.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          manufacturer: true,
+          images: { orderBy: { sortOrder: 'asc' } },
+        },
+      });
+
+      return fullProduct!;
     });
 
-    // Invalidate cache
+    // Invalidate cache for this product
     await CacheService.invalidateProductCache(id);
 
     // Emit realtime event
     RealtimeService.notifyProductUpdate({
       type: 'product_updated',
       data: {
-        productId: id,
-        product,
-        changes: updateData,
+        productId: updatedProduct.id,
+        product: updatedProduct,
+        changes: data,
       },
       timestamp: new Date(),
     });
 
-    return transformProductToDTO(product);
+    return transformProductToDTO(updatedProduct);
   }
 
   /**

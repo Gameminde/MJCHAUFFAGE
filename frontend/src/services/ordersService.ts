@@ -2,7 +2,7 @@
 // 📦 Service de gestion des commandes (Admin)
 
 import { api } from '@/lib/api';
-import { paymentService } from './paymentService';
+import PaymentService from './paymentService';
 
 // Helpers
 function toQuery(params?: Record<string, any>): string {
@@ -224,7 +224,7 @@ export const ordersService = {
     if (!order.paymentIntentId) {
       throw new Error('Commande sans intention de paiement');
     }
-    const refund = await paymentService.refundPayment({
+    const refund = await PaymentService.refundPayment({
       paymentIntentId: order.paymentIntentId,
       amount,
       reason,

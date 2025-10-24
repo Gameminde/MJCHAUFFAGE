@@ -1,0 +1,36 @@
+{
+  "project_path": "c:/Users/youcefcheriet/MJCHAUFFAGE",
+  "target_branch": "feature/almost-done-complete-platform",
+  "working_tree": "dirty-allowed",
+  "tech_stack": {
+    "backend": "Node/Express + Prisma",
+    "frontend": "Next.js App Router (TypeScript)",
+    "admin_v2": "NestJS (admin-backend) + Next.js (admin-frontend)",
+    "db": "Prisma (SQLite/Postgres; schema.prisma present)",
+    "reverse_proxy": "nginx with CSP"
+  },
+  "key_paths": {
+    "backend_routes": "backend/src/routes/*",
+    "payments": [
+      "backend/src/routes/payments.ts",
+      "backend/src/services/paymentService.ts",
+      "backend/src/services/dahabiaPaymentService.ts",
+      "frontend/src/services/paymentService.ts"
+    ],
+    "checkout_frontend": [
+      "frontend/src/components/checkout/CheckoutForm.tsx",
+      "frontend/src/components/checkout/ModernCheckoutForm.tsx"
+    ],
+    "admin_frontend": "admin-v2/admin-frontend/src/app/dashboard/*",
+    "security": [
+      "backend/src/middleware/security.ts",
+      "backend/src/middleware/securityEnhanced.ts",
+      "nginx/nginx.conf"
+    ]
+  },
+  "policy_flags": {
+    "cards_disabled": true,
+    "cod_only": true,
+    "stripe_references_present": true
+  }
+}

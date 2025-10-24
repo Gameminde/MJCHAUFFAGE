@@ -60,6 +60,7 @@ class AnalyticsService {
   private isInitialized = false;
   private eventQueue: any[] = [];
   private flushInterval: NodeJS.Timeout | null = null;
+  private backoffUntil: number | null = null;
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -183,9 +184,14 @@ class AnalyticsService {
     const events = [...this.eventQueue];
     this.eventQueue = [];
 
+    // Respect backoff window if set (e.g., after 429)
+    if (this.backoffUntil && Date.now() < this.backoffUntil) {
+      this.eventQueue.unshift(...events);
+      return;
+    }
+
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/v1/analytics/events`, {
+      const response = await fetch(`/api/analytics/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -195,6 +201,10 @@ class AnalyticsService {
       });
 
       if (!response.ok) {
+        if (response.status === 429) {
+          // Back off for 60 seconds to respect rate limits
+          this.backoffUntil = Date.now() + 60_000;
+        }
         // Re-queue events if failed
         this.eventQueue.unshift(...events);
       }
@@ -416,9 +426,8 @@ class AnalyticsService {
 
   private async getLocationData(): Promise<{ country?: string; city?: string }> {
     try {
-      // Resolve via backend proxy to avoid browser CORS issues
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/v1/geolocation`, {
+      // Resolve via frontend API route to avoid browser CORS issues
+      const response = await fetch(`/api/geolocation`, {
         headers: {
           'Accept': 'application/json'
         },

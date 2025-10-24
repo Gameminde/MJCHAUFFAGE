@@ -3,8 +3,13 @@
 import { useState } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { useLanguage } from '@/hooks/useLanguage'
-import { ShoppingCart } from '@/components/cart/ShoppingCart'
+import dynamic from 'next/dynamic'
 import { ShoppingBag } from 'lucide-react'
+
+const DynamicShoppingCart = dynamic(() => import('@/components/cart/ShoppingCart').then(mod => mod.ShoppingCart), {
+  ssr: false,
+  loading: () => <div className="p-4 text-gray-500">Loading cart…</div>
+})
 
 export function CartButton() {
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -39,7 +44,7 @@ export function CartButton() {
       )}
 
       {/* Shopping Cart Sidebar */}
-      <ShoppingCart 
+      <DynamicShoppingCart 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
       />

@@ -54,7 +54,7 @@ export function AddToCartButton({
 
     try {
       // Validate stock before adding by fetching latest product data
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${product.id}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/products/${product.id}`)
       let currentStock = product.stockQuantity
       
       if (response.ok) {

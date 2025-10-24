@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import Link from 'next/link'
 import { Input } from '@/components/ui/Input'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { productsApi, Product } from '@/lib/api'
@@ -65,12 +64,10 @@ export default function ProductsPage() {
             Gérez votre catalogue de produits
           </p>
         </div>
-        <Link href="/dashboard/products/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau produit
-          </Button>
-        </Link>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Nouveau produit
+        </Button>
       </div>
 
       {error && (
@@ -128,18 +125,10 @@ export default function ProductsPage() {
                   <tr key={product.id} className="border-b">
                     <td className="h-12 px-4 align-middle">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
-                          {product.images && product.images.length > 0 ? (
-                            <img 
-                              src={product.images[0]} 
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-xs font-medium">
-                              {product.name.charAt(0).toUpperCase()}
-                            </span>
-                          )}
+                        <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center">
+                          <span className="text-xs font-medium">
+                            {product.name.charAt(0).toUpperCase()}
+                          </span>
                         </div>
                         <div>
                           <div className="font-medium">{product.name}</div>

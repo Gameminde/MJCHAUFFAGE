@@ -133,7 +133,6 @@ export const securityConfig: SecurityConfig = {
         ],
         scriptSrc: [
           "'self'",
-          "https://js.stripe.com",
           "https://maps.googleapis.com",
           "'nonce-{NONCE}'" // Dynamic nonce for inline scripts
         ],
@@ -152,13 +151,11 @@ export const securityConfig: SecurityConfig = {
         ],
         connectSrc: [
           "'self'",
-          "https://api.stripe.com",
           "https://maps.googleapis.com",
           config.frontend.url
         ],
         frameSrc: [
-          "'self'",
-          "https://js.stripe.com"
+          "'self'"
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -280,8 +277,6 @@ export const trustedDomains = [
   'fonts.googleapis.com',
   'fonts.gstatic.com',
   'cdn.jsdelivr.net',
-  'js.stripe.com',
-  'api.stripe.com',
   'maps.googleapis.com',
   'images.unsplash.com'
 ];

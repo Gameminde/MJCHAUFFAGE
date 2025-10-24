@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { config } from '@/config/environment';
 
 export const isDecimal = (value: unknown): value is Prisma.Decimal => {
   if (!value || typeof value !== 'object') {
@@ -117,7 +118,9 @@ export const transformProductToDTO = (product: any): ProductDTO => {
     manufacturerId: product.manufacturerId ?? null,
     images: (product.images ?? []).map((image: any) => ({
       id: image.id,
-      url: image.url,
+      url: /^https?:\/\//i.test(image.url)
+        ? image.url
+        : `${config.api.baseUrl}${image.url?.startsWith('/') ? image.url : `/files/${image.url}`}`,
       altText: image.altText ?? null,
       sortOrder: image.sortOrder ?? 0,
     })),

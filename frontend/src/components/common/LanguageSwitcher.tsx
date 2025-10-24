@@ -38,8 +38,8 @@ export function LanguageSwitcher() {
   const handleLanguageChange = (newLocale: 'ar' | 'fr') => {
     setIsOpen(false)
     
-    // Remove current locale from pathname
-    const pathnameWithoutLocale = pathname.replace(`/${locale}`, '') || '/'
+    // Remove current locale from pathname (handle null safely)
+    const pathnameWithoutLocale = (pathname?.replace(`/${locale}`, '') ?? '/') || '/'
     
     // Navigate to new locale
     router.push(`/${newLocale}${pathnameWithoutLocale}`)

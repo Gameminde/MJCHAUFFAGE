@@ -44,7 +44,7 @@ export function useCart(): UseCartResult {
   const isLoading = useCartStore((state) => state.isLoading);
   const error = useCartStore((state) => state.error);
 
-  const { currencyConfig } = useLanguage();
+  const { currencyConfig, locale } = useLanguage();
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -58,12 +58,12 @@ export function useCart(): UseCartResult {
 
   const formatPrice = useCallback(
     (price: number) =>
-      new Intl.NumberFormat('ar-DZ', {
+      new Intl.NumberFormat(locale === 'ar' ? 'ar-DZ' : 'fr-DZ', {
         style: 'currency',
         currency: currencyConfig.code,
         minimumFractionDigits: currencyConfig.decimalPlaces,
       }).format(price),
-    [currencyConfig],
+    [currencyConfig, locale],
   );
 
   const addItem = useCallback(
@@ -105,7 +105,7 @@ export function useCart(): UseCartResult {
   const validateStock = useCallback(
     async (productId: string, quantity: number): Promise<boolean> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+        const response = await fetch(`${API_BASE_URL}/api/v1/products/${productId}`);
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data?.product) {
@@ -132,7 +132,7 @@ export function useCart(): UseCartResult {
   const refreshItemStock = useCallback(
     async (productId: string) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+        const response = await fetch(`${API_BASE_URL}/api/v1/products/${productId}`);
         if (!response.ok) {
           return;
         }

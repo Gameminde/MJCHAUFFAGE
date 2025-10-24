@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.design-tokens.org/schema.json",
+  "meta": {
+    "source": "Figma MCP",
+    "updatedAt": "",
+    "note": "Populated by scripts/figma-mcp-tools.mjs via MCP tool calls"
+  },
+  "color": {
+    "primary": { "value": "#0ea5e9" },
+    "accent": { "value": "#f3761a" },
+    "neutral": { "value": "#6b7280" }
+  },
+  "typography": {
+    "fontFamily": { "value": "Inter Variable, Inter, ui-sans-serif, system-ui, sans-serif" },
+    "heading": { "value": "2rem" },
+    "body": { "value": "1rem" }
+  },
+  "spacing": {
+    "md": { "value": "1rem" },
+    "lg": { "value": "1.5rem" }
+  }
+}

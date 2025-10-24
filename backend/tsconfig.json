@@ -28,11 +28,11 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
     "experimentalDecorators": true,
-    "types": ["node"],
+    "types": ["node", "multer"],
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types", "../node_modules/@types"],
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
     "paths": {

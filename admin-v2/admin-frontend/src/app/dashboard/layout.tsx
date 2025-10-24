@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -14,7 +13,6 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -35,15 +33,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar collapsed={sidebarCollapsed} />
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header
-          title="Dashboard"
-          onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
-          sidebarCollapsed={sidebarCollapsed}
-        />
-        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-background via-background to-muted/30 dark:to-secondary/30">
+        <Header title="Dashboard" />
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
       </div>

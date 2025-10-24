@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import authService from '@/services/authService'
+import { useLocale } from 'next-intl'
 
 export function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -20,6 +22,7 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
+  const currentLocale = useLocale()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,28 +73,27 @@ export function RegisterForm() {
     }
 
     try {
-      // This would be replaced with actual API call
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     firstName: formData.firstName,
-      //     lastName: formData.lastName,
-      //     email: formData.email,
-      //     password: formData.password,
-      //     phone: formData.phone,
-      //     companyName: formData.companyName,
-      //     customerType: formData.customerType
-      //   })
-      // })
+      const result = await authService.register({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone
+      })
 
-      // Mock successful registration for demonstration
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Redirect to login with success message
-      router.push('/auth/login?message=Registration successful! Please check your email for verification.')
-    } catch (error) {
-      setErrors({ general: 'Registration failed. Please try again.' })
+      if (result?.success) {
+        router.push(`/${currentLocale}/auth/login?registered=1`)
+      } else {
+        setErrors({ general: result?.message || 'Registration failed. Please try again.' })
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        setErrors({ general: 'Email already exists' })
+      } else if (error?.response?.status === 400) {
+        setErrors({ general: error.response?.data?.message || 'Invalid data' })
+      } else {
+        setErrors({ general: 'Server error. Please try again later.' })
+      }
     } finally {
       setLoading(false)
     }
@@ -345,7 +347,7 @@ export function RegisterForm() {
       <div className="text-center">
         <p className="text-sm text-neutral-600">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-medium text-primary-600 hover:text-primary-500">
+          <Link href={`/${currentLocale}/auth/login`} className="font-medium text-primary-600 hover:text-primary-500">
             Sign in here
           </Link>
         </p>

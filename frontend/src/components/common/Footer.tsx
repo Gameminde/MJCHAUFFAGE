@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 export function Footer() {
   const t = useTranslations();
+  const locale = useLocale();
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -22,9 +23,21 @@ export function Footer() {
           <div>
             <h4 className="text-md font-semibold mb-4">{t('footer.products')}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/products/boilers" className="text-gray-300 hover:text-white transition-colors">{t('footer.boilers')}</Link></li>
-              <li><Link href="/products/radiators" className="text-gray-300 hover:text-white transition-colors">{t('footer.radiators')}</Link></li>
-              <li><Link href="/products/accessories" className="text-gray-300 hover:text-white transition-colors">{t('footer.accessories')}</Link></li>
+              <li>
+                <Link href={`/${locale}/products?category=boilers`} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.boilers')}
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/products?category=radiators`} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.radiators')}
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/products?category=accessories`} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.accessories')}
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -32,9 +45,9 @@ export function Footer() {
           <div>
             <h4 className="text-md font-semibold mb-4">{t('footer.services')}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/services/installation" className="text-gray-300 hover:text-white transition-colors">{t('footer.installation')}</Link></li>
-              <li><Link href="/services/maintenance" className="text-gray-300 hover:text-white transition-colors">{t('footer.maintenance')}</Link></li>
-              <li><Link href="/services/repair" className="text-gray-300 hover:text-white transition-colors">{t('footer.repair')}</Link></li>
+              <li><Link href={`/${locale}/services`} className="text-gray-300 hover:text-white transition-colors">{t('footer.installation')}</Link></li>
+              <li><Link href={`/${locale}/services`} className="text-gray-300 hover:text-white transition-colors">{t('footer.maintenance')}</Link></li>
+              <li><Link href={`/${locale}/services`} className="text-gray-300 hover:text-white transition-colors">{t('footer.repair')}</Link></li>
             </ul>
           </div>
 

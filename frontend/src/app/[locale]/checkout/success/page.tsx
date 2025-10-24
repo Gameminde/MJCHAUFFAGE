@@ -3,13 +3,15 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useLocale } from 'next-intl'
 import { CheckCircle } from 'lucide-react'
 import { Suspense } from 'react'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const orderId = searchParams.get('orderId')
+  const orderId = searchParams ? searchParams.get('orderId') : null
+  const locale = useLocale()
 
   if (!orderId) {
     // Redirect to home if orderId is missing
@@ -51,7 +53,7 @@ function SuccessContent() {
 
         <div className="space-x-4">
           <Link
-            href="/products"
+            href={`/${locale}/products`}
             className="inline-block bg-primary-600 text-white px-6 py-3 rounded-md hover:bg-primary-700 transition-colors"
           >
             متابعة التسوق / Continuer les achats
@@ -63,6 +65,7 @@ function SuccessContent() {
 }
 
 export default function CheckoutSuccessPage() {
+  const locale = useLocale()
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <SuccessContent />
