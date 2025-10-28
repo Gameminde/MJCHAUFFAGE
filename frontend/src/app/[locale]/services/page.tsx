@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import ServicesPageClient from './ServicesPageClient';
+import ModernServicesPage from './ModernServicesPage';
 
 type Props = {
   params: { locale: string };
@@ -22,8 +22,8 @@ async function getServices(): Promise<Service[]> {
   const backendUrl = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   
   try {
-    const url = `${backendUrl}/api/services`;
-    const res = await fetch(url, { 
+    const url = `${backendUrl}/api/services/types`;
+    const res = await fetch(url, {
       next: { revalidate: 3600 }, // Revalidate every hour
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export default async function ServicesPage({ params: { locale } }: Props) {
   const t = await getTranslations({ locale, namespace: 'ServicesPage' });
   const services = await getServices();
   
-  return <ServicesPageClient services={services} locale={locale} />;
+  return <ModernServicesPage services={services} locale={locale} />;
 }
 
 export async function generateMetadata({ params: { locale } }: Props) {

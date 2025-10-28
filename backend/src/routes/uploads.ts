@@ -39,9 +39,9 @@ function extFromMime(mime: string, original: string): string {
   return map[mime] || fallback || '';
 }
 
-// Build public URL for a stored file
+// Build public URL for a stored file (relative path for frontend consumption)
 function toPublicUrl(filename: string): string {
-  return `${config.api.baseUrl}/files/${encodeURIComponent(filename)}`;
+  return `/files/${encodeURIComponent(filename)}`;
 }
 
 const storage = multer.diskStorage({

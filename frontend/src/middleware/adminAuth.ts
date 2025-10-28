@@ -9,11 +9,19 @@ export async function adminAuthMiddleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Protect admin routes - SIMPLIFIED VERSION
-  // Since NextAuth is disabled, we'll use a simple session check
+  // Protect admin routes - Check for authToken cookie
   if (isAdminRoute) {
-    // For now, allow access to all admin routes without authentication
-    // This will be replaced with proper authentication once NextAuth is enabled
+    // ✅ Check for HTTP-only authToken cookie
+    const authToken = req.cookies.get('authToken')?.value
+    
+    if (!authToken) {
+      // Redirect to login if no token
+      const loginUrl = new URL('/admin/login', req.url)
+      return NextResponse.redirect(loginUrl)
+    }
+    
+    // TODO: Optionally verify token with backend
+    // For now, presence of cookie is sufficient
     return NextResponse.next()
   }
 

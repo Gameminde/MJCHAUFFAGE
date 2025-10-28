@@ -41,7 +41,8 @@ const server = createServer(app);
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3002',
-  config.frontend.url
+  config.frontend.url,
+  ...(config.env === 'development' ? ['http://localhost:*'] : [])
 ];
 
 const io = new SocketServer(server, {
@@ -93,11 +94,37 @@ app.use(session({
   },
 }));
 
-// Public files (uploaded assets)
+// Public files (uploaded assets) with proper CORS
+// allowedOrigins already defined above
+
 app.use('/files', express.static(path.resolve(__dirname, '..', 'uploads'), {
+  maxAge: '1d',
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow from any origin for images
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    // Set proper content type for images
+    if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (path.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (path.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    }
+  }
+}));
+
+// Alias for images (for compatibility with frontend requests)
+app.use('/images', express.static(path.resolve(__dirname, '..', 'uploads'), {
   maxAge: '1d',
   setHeaders: (res) => {
     res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   }
 }));
 
@@ -129,6 +156,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/realtime', realtimeRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/geolocation', geolocationRoutes);
+app.use('/api/v1/uploads', uploadsRoutes);
 // Remove duplicate legacy middleware insertion
 // (version and deprecation headers already applied earlier)
 // app.use('/api', apiVersionHeader('v1'));

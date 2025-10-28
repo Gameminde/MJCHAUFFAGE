@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import authService from '@/services/authService'
+import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from 'next-intl'
 
 export function RegisterForm() {
@@ -19,14 +19,13 @@ export function RegisterForm() {
     agreeToTerms: false,
     subscribeNewsletter: true
   })
-  const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
   const currentLocale = useLocale()
+  const { register, loading, error } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setErrors({})
 
     // Client-side validation
@@ -68,12 +67,11 @@ export function RegisterForm() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      setLoading(false)
       return
     }
 
     try {
-      const result = await authService.register({
+      const result = await register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
@@ -84,18 +82,11 @@ export function RegisterForm() {
       if (result?.success) {
         router.push(`/${currentLocale}/auth/login?registered=1`)
       } else {
-        setErrors({ general: result?.message || 'Registration failed. Please try again.' })
+        setErrors({ general: result?.message || error || 'Registration failed. Please try again.' })
       }
-    } catch (error: any) {
-      if (error?.response?.status === 409) {
-        setErrors({ general: 'Email already exists' })
-      } else if (error?.response?.status === 400) {
-        setErrors({ general: error.response?.data?.message || 'Invalid data' })
-      } else {
-        setErrors({ general: 'Server error. Please try again later.' })
-      }
-    } finally {
-      setLoading(false)
+    } catch (err) {
+      // Error is handled by AuthContext
+      setErrors({ general: error || 'Registration failed. Please try again.' })
     }
   }
 

@@ -34,20 +34,6 @@ export function ProductCard({
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0
 
-  // New badge if created within last 30 days
-  const isNew = (() => {
-    try {
-      const created = new Date(product.createdAt).getTime()
-      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
-      return Date.now() - created < THIRTY_DAYS
-    } catch {
-      return false
-    }
-  })()
-
-  // Sale state
-  const isOnSale = discountPercentage > 0
-
   // Get current price (sale price if available, otherwise regular price)
   const currentPrice = product.salePrice || product.price
   const originalPrice = product.salePrice ? product.price : null
@@ -94,20 +80,10 @@ export function ProductCard({
       <div className={`relative ${imageHeightClasses[variant]} bg-gradient-to-br from-neutral-100 to-neutral-200 overflow-hidden`}>
         {/* Modern Badges */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-          {isNew && (
-            <span className="badge badge-success px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl text-xs font-semibold shadow-sm animate-fade-in-down">
-              {isArabic ? 'جديد' : 'Nouveau'}
-            </span>
-          )}
           {product.isFeatured && (
             <span className="badge badge-primary flex items-center gap-1 px-3 py-1.5 bg-gradient-primary text-white rounded-xl text-xs font-semibold shadow-glow animate-fade-in-down backdrop-blur-sm">
               <Sparkles className="w-3 h-3" />
               {isArabic ? 'مميز' : 'En vedette'}
-            </span>
-          )}
-          {isOnSale && (
-            <span className="badge badge-error px-3 py-1.5 bg-gradient-to-r from-error-500 to-error-600 text-white rounded-xl text-xs font-semibold shadow-sm animate-fade-in-down">
-              {isArabic ? 'تخفيض' : 'Promo'}
             </span>
           )}
           {discountPercentage > 0 && (
@@ -161,7 +137,7 @@ export function ProductCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             quality={85}
             placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         ) : (
           <Image

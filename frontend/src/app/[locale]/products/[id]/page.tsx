@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { fetchProductDetailSSR, fetchProductsSSR } from '@/lib/ssr-api';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
+import { ProductImage } from '@/components/product/ProductImage';
+import { getProductImage } from '@/utils/imageUtils';
 
 type Props = {
   params: { locale: string; id: string };
@@ -81,22 +83,11 @@ export default async function ProductDetailPage({ params }: Props) {
       <section className="max-w-6xl mx-auto px-4 py-12 grid gap-10 lg:grid-cols-2">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
           <div className="bg-gray-100 h-96 flex items-center justify-center">
-            {product.images && product.images.length > 0 ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={
-                  typeof product.images[0] === 'string'
-                    ? product.images[0]
-                    : product.images[0]?.url ?? '/images/default-product.jpg'
-                }
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="text-gray-400 text-sm">
-                {isArabic ? 'لا توجد صورة للمنتج' : 'Image produit indisponible'}
-              </div>
-            )}
+            <ProductImage
+              src={getProductImage(product.images)}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
 
@@ -115,8 +106,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
           <div className="flex items-baseline gap-4">
             <span className="text-3xl font-bold text-gray-900">
--              {product.salePrice ?? product.price} {isArabic ? 'د.ج' : 'DA'}
-+              {new Intl.NumberFormat(numberLocale).format(product.salePrice ?? product.price)} {isArabic ? 'د.ج' : 'DA'}
+              {new Intl.NumberFormat(numberLocale).format(product.salePrice ?? product.price)} {isArabic ? 'د.ج' : 'DA'}
             </span>
             {product.salePrice && (
               <span className="text-sm text-gray-500 line-through">

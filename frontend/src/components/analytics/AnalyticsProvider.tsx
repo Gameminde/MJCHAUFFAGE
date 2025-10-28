@@ -31,16 +31,21 @@ export function AnalyticsProvider({ children, userId }: AnalyticsProviderProps) 
       analytics.setUserId(userId);
     }
 
-    // Initialize analytics service
+    // Initialize analytics service (non-blocking)
     if (typeof window !== 'undefined') {
-      // Analytics service is already initialized in the constructor
       console.log('Analytics provider initialized');
+      // Don't initialize analytics service immediately to avoid blocking auth
     }
 
     // Cleanup on unmount
     return () => {
       if (typeof window !== 'undefined') {
-        analyticsService.destroy();
+        try {
+          analyticsService.destroy();
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          console.debug('Analytics cleanup failed:', msg);
+        }
       }
     };
   }, [userId, analytics]);

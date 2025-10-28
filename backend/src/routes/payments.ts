@@ -3,18 +3,14 @@ import { isPaymentMethodEnabled, PAYMENT_CONFIG } from '@/config/payments';
 
 const router = Router();
 
-// Static list of Algeria payment methods used in tests
+// Static list of Algeria payment methods (only cash on delivery)
 const paymentMethods = [
   {
     id: 'CASH_ON_DELIVERY',
     nameAr: 'الدفع عند الاستلام',
     nameFr: 'Paiement à la livraison',
-  },
-  {
-    id: 'DAHABIA_CARD',
-    nameAr: 'بطاقة الذهبية',
-    nameFr: 'Carte Dahabia',
-    provider: 'Algeria Post',
+    description: 'Payez en espèces lors de la livraison',
+    isDefault: true,
   },
 ];
 
@@ -52,6 +48,24 @@ router.post('/process', (req: Request, res: Response) => {
   if (!PAYMENT_CONFIG.PROCESSING_ENABLED) {
     return res.status(503).json({ success: false, message: 'Payment processing disabled' });
   }
+
+  // In test mode, simulate successful cash on delivery payment
+  if (PAYMENT_CONFIG.TEST_MODE) {
+    const { method } = req.body;
+    if (method === 'CASH_ON_DELIVERY') {
+      const transactionId = `COD_TEST_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      return res.status(200).json({
+        success: true,
+        data: {
+          transactionId,
+          method: 'CASH_ON_DELIVERY',
+          status: 'PENDING_DELIVERY',
+          estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days
+        },
+        message: 'Commande confirmée - Paiement à la livraison'
+      });
+    }
+  }
   
   const body = req.body || {};
 
@@ -79,14 +93,63 @@ router.post('/process', (req: Request, res: Response) => {
     return res.status(400).json({ success: false, message: 'Invalid phone number' });
   }
 
-  // Handle Cash on Delivery
+  // Handle Cash on Delivery (only supported method)
   if (method === 'CASH_ON_DELIVERY') {
-    const transactionId = `COD_${Date.now()}`;
-    return res.status(200).json({ success: true, data: { transactionId } });
+    const transactionId = `COD_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+
+    // Calculate estimated delivery (3-5 business days for Algeria)
+    const estimatedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        transactionId,
+        method: 'CASH_ON_DELIVERY',
+        status: 'PENDING_DELIVERY',
+        estimatedDelivery: estimatedDelivery.toISOString(),
+        instructions: 'Le livreur vous contactera pour confirmer la livraison et le paiement en espèces.'
+      },
+      message: 'Commande confirmée - Paiement à la livraison'
+    });
   }
 
-  // Default for unsupported methods
-  return res.status(400).json({ success: false, message: 'Unsupported payment method' });
+  // Only cash on delivery is supported
+  return res.status(400).json({
+    success: false,
+    message: 'Seul le paiement à la livraison est disponible',
+    availableMethods: ['CASH_ON_DELIVERY']
+  });
+});
+
+// GET /api/payments/verify/:transactionId
+router.get('/verify/:transactionId', (req: Request, res: Response) => {
+  const { transactionId } = req.params;
+
+  if (!transactionId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Transaction ID is required'
+    });
+  }
+
+  // For COD transactions, verify format and return status
+  if (transactionId.startsWith('COD_')) {
+    return res.status(200).json({
+      success: true,
+      transaction: {
+        id: transactionId,
+        status: 'PENDING_DELIVERY',
+        method: 'CASH_ON_DELIVERY',
+        message: 'Commande en cours de livraison - Paiement à la réception'
+      }
+    });
+  }
+
+  // Transaction not found
+  return res.status(404).json({
+    success: false,
+    message: 'Transaction non trouvée'
+  });
 });
 
 export default router;

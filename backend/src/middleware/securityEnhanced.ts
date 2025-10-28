@@ -392,5 +392,5 @@ export const installSecurityDependencies = async (): Promise<void> => {
   ];
 
   console.log('Dépendances requises:', dependencies.join(', '));
-  console.log('Exécutez: npm install ' + dependencies.join(' '));
+  console.log(`Exécutez: npm install ${dependencies.join(' ')}`);
 };

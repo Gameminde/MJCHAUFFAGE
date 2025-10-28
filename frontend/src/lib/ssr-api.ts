@@ -1,17 +1,24 @@
 import { cache } from 'react';
 import type { Product } from '@/services/productService';
+import { config } from './config';
 
 const DEFAULT_TIMEOUT = 5000;
 
-const API_URL =
-  process.env.API_URL_SSR ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:3001';
+// Use centralized config for SSR API URL
+const API_URL = config.api.ssrBaseURL;
 
 const normalizeImageUrl = (img: any): string => {
   const src = typeof img === 'string' ? img : img?.url;
-  if (!src) return '';
-  if (src.startsWith('http')) return src;
+
+  // ✅ Retourner placeholder si pas d'image
+  if (!src) return '/placeholder-product.jpg';
+
+  // ✅ Si déjà une URL absolue, retourner tel quel
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    return src;
+  }
+
+  // ✅ Ajouter le base URL pour les chemins relatifs
   const path = src.startsWith('/') ? src : `/${src}`;
   return `${API_URL}${path}`;
 };
@@ -117,7 +124,8 @@ export const fetchSSR = cache(
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const url = `${API_URL}/api/v1${endpoint}`;
+      // API_URL already includes /api/v1 from config
+      const url = `${API_URL}${endpoint}`;
 
       const response = await fetch(url, {
         ...init,

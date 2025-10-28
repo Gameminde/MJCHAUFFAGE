@@ -1,5 +1,28 @@
 import { Prisma } from '@prisma/client';
-import { config } from '@/config/environment';
+
+/**
+ * Transform image URL - now that we store relative paths,
+ * just ensure URLs are properly formatted
+ */
+export const transformImageUrl = (image: any): string => {
+  // If already an absolute URL (external), return as-is
+  if (/^https?:\/\//i.test(image.url)) {
+    return image.url;
+  }
+
+  // If already starts with /files/ or /images/, return as-is
+  if (image.url.startsWith('/files/') || image.url.startsWith('/images/')) {
+    return image.url;
+  }
+
+  // If starts with /, return as-is (avoid adding extra prefixes)
+  if (image.url.startsWith('/')) {
+    return image.url;
+  }
+
+  // For filenames without path, prepend with /files/
+  return `/files/${image.url}`;
+};
 
 export const isDecimal = (value: unknown): value is Prisma.Decimal => {
   if (!value || typeof value !== 'object') {
@@ -118,9 +141,7 @@ export const transformProductToDTO = (product: any): ProductDTO => {
     manufacturerId: product.manufacturerId ?? null,
     images: (product.images ?? []).map((image: any) => ({
       id: image.id,
-      url: /^https?:\/\//i.test(image.url)
-        ? image.url
-        : `${config.api.baseUrl}${image.url?.startsWith('/') ? image.url : `/files/${image.url}`}`,
+      url: transformImageUrl(image),
       altText: image.altText ?? null,
       sortOrder: image.sortOrder ?? 0,
     })),
@@ -205,7 +226,7 @@ export const transformOrderItemToDTO = (item: any): OrderItemDTO => ({
   quantity: item.quantity,
   unitPrice: decimalToNumber(item.unitPrice),
   totalPrice: decimalToNumber(item.totalPrice),
-  image: item.product?.images?.[0]?.url ?? null,
+  image: item.product?.images?.[0] ? transformImageUrl(item.product.images[0]) : null,
 });
 
 export const transformOrderToDTO = (order: any): OrderDTO => ({

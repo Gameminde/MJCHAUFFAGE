@@ -12,7 +12,7 @@ const nextConfig = {
   reactStrictMode: true,
   staticPageGenerationTimeout: 60,
   experimental: {
-    optimizeCss: false,
+    optimizeCss: true,
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -49,6 +49,11 @@ const nextConfig = {
         {
           source: '/api/:path*',
           destination: `${API_URL}/api/:path*`,
+        },
+        // Proxy /files directly to backend (for images)
+        {
+          source: '/files/:path*',
+          destination: `${API_URL}/files/:path*`,
         },
       ],
       fallback: [],

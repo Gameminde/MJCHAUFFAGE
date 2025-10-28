@@ -39,20 +39,13 @@ export const metadata: Metadata = {
 // Export viewport separately as required by Next.js 14+
 export { viewport } from './viewport'
 
-// Type pour les paramètres de locale
-type Props = {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-};
-
-export default async function RootLayout({ children, params }: Props) {
-  const { locale } = await params;
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
-  
+
   return (
-    <html lang={locale} className={`h-full ${inter.variable}`}>
+    <html lang="fr" className={`h-full ${inter.variable}`}>
       <body className={`${inter.className} h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale="fr" messages={messages}>
           <AnalyticsProvider>
             {children}
           </AnalyticsProvider>

@@ -9,13 +9,19 @@ export default function AdminLoginPage() {
     email: '',
     password: ''
   })
-  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
-  const { login, isLoading } = useAdminAuth()
+  const { login, loading, error, user } = useAdminAuth()
+
+  // Redirect if already authenticated as admin
+  if (user && ['ADMIN', 'SUPER_ADMIN'].includes(user.role) && !loading) {
+    router.push('/admin/dashboard')
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setIsSubmitting(true)
 
     try {
       await login(formData.email, formData.password)
@@ -23,7 +29,9 @@ export default function AdminLoginPage() {
       router.push('/admin/dashboard')
     } catch (err: any) {
       console.error('Login error:', err)
-      setError(err.message || 'Email ou mot de passe incorrect')
+      // Error is handled by AdminAuthContext and displayed below
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -89,10 +97,10 @@ export default function AdminLoginPage() {
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isSubmitting}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Connexion...' : 'Se connecter'}
+                {isSubmitting ? 'Connexion...' : 'Se connecter'}
               </button>
             </div>
           </form>

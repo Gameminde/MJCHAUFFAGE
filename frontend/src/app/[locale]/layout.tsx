@@ -10,6 +10,7 @@ import { FloatingComparisonBar } from '@/components/comparison/FloatingCompariso
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider'
 import { AccessibilityToolbar } from '@/components/accessibility/AccessibilityToolbar'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/seo/StructuredData'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,7 +21,7 @@ type Props = {
   footer: React.ReactNode;
   header: React.ReactNode;
   modal: React.ReactNode;
-  sidebar: React.ReactNode;
+  // sidebar: React.ReactNode; // Removed - not currently used
 };
 
 export function generateStaticParams() {
@@ -144,7 +145,7 @@ export const metadata = {
   },
   
   other: {
-    'msapplication-TileColor': '#0ea5e9',
+    'msapplication-TileColor': '#f3761a',
     'msapplication-config': '/browserconfig.xml',
   },
 }
@@ -155,7 +156,7 @@ export default async function RootLayout({
   footer,
   header,
   modal,
-  sidebar,
+  // sidebar, // Removed - not currently used
 }: Props) {
   console.log('[locale] layout render', locale);
   setRequestLocale(locale);
@@ -182,13 +183,15 @@ export default async function RootLayout({
       <NextIntlClientProvider locale={locale} messages={messages}>
         <AccessibilityProvider>
           <Providers locale={locale}>
-            <Header locale={locale} />
-            <main id="main-content" className="flex-1" role="main">
-              {children}
-            </main>
-            <Footer />
-            <FloatingComparisonBar locale={locale} />
-            <AccessibilityToolbar />
+            <ErrorBoundary>
+              <Header locale={locale} />
+              <main id="main-content" className="flex-1 pt-20" role="main">
+                {children}
+              </main>
+              <Footer />
+              <FloatingComparisonBar locale={locale} />
+              <AccessibilityToolbar />
+            </ErrorBoundary>
           </Providers>
         </AccessibilityProvider>
       </NextIntlClientProvider>

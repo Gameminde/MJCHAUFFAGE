@@ -131,7 +131,6 @@ export class AnalyticsTrackingService {
           categoryId: data.categoryId || null,
           value: data.value ? parseFloat(data.value.toString()) : null,
           currency: data.currency || 'DZD',
-          quantity: data.quantity || null,
           metadata: data.metadata || null
         }
       });
@@ -174,7 +173,7 @@ export class AnalyticsTrackingService {
   static async trackSessionStart(data: SessionData, metadata: RequestMetadata) {
     try {
       const session = await prisma.analyticsSession.upsert({
-        where: { sessionId: data.sessionId },
+        where: { id: data.sessionId },
         update: {
           userId: data.userId || null,
           ipAddress: data.ipAddress || metadata.clientIP || null,

@@ -2,13 +2,14 @@
 // Inspiré du client Axios de l'admin mais adapté pour fetch() natif
 
 import React from 'react'
+import { config } from './config'
 // Note: Not using next-auth, using custom auth with localStorage
 
 /**
  * Configuration du client API
  */
 const API_CONFIG = {
-  baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api/v1',
+  baseURL: config.api.baseURL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

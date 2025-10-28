@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import authService from '@/services/authService'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface LoginFormProps {
   callbackUrl?: string
@@ -15,26 +15,23 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
     password: '',
     rememberMe: false
   })
-  const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
+  const { login, loading, error } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setErrors({})
 
     try {
-      await authService.login(formData.email, formData.password)
-      
-      // Login successful
+      await login(formData.email, formData.password)
+      // Login successful - AuthContext will update and redirect will happen
       router.push(callbackUrl)
       router.refresh()
-    } catch (error: any) {
-      setErrors({ general: error?.message || 'Email ou mot de passe incorrect' })
-    } finally {
-      setLoading(false)
+    } catch (err) {
+      // Error is handled by AuthContext
+      setErrors({ general: error || 'Email ou mot de passe incorrect' })
     }
   }
 

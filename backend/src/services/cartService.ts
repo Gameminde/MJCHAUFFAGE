@@ -151,14 +151,20 @@ export class CartService {
         where: { customerId: customer.id }
       });
 
-      // Validate and add new items
+      // Validate and add new items (skip invalid ones instead of failing completely)
       const validation = await this.validateCartItems(items);
-      if (!validation.valid) {
-        throw new Error(`Cart validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
+      const validItems = items.filter(item => {
+        const itemErrors = validation.errors.filter(error => error.productId === item.productId);
+        return itemErrors.length === 0;
+      });
+
+      // Log warnings for invalid items but don't fail the sync
+      if (validation.errors.length > 0) {
+        console.warn('Cart sync: Some items were skipped due to validation errors:', validation.errors);
       }
 
-      // Add new cart items
-      for (const item of items) {
+      // Add only valid cart items
+      for (const item of validItems) {
         await tx.cartItem.create({
           data: {
             customerId: customer.id,
@@ -234,12 +240,10 @@ export class CartService {
       }
 
       // Check existing cart item
-      const existingItem = await tx.cartItem.findUnique({
+      const existingItem = await tx.cartItem.findFirst({
         where: {
-          customerId_productId: {
-            customerId: customer.id,
-            productId
-          }
+          customerId: customer.id,
+          productId
         }
       });
 

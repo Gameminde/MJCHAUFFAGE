@@ -140,6 +140,15 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
+    // Set HTTP-only cookie for middleware authentication
+    res.cookie('authToken', tokens.accessToken, {
+      httpOnly: true, // Protection XSS
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours
+      path: '/admin',
+    });
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -235,6 +244,11 @@ export const adminLogout = async (req: Request, res: Response): Promise<void> =>
       const decoded = AuthService.verifyToken(token);
       await AuthService.revokeRefreshToken(decoded.userId);
     }
+
+    // Clear authToken cookie
+    res.clearCookie('authToken', {
+      path: '/admin',
+    });
 
     res.status(200).json({
       success: true,

@@ -5,6 +5,9 @@ import { useRouter, usePathname } from 'next/navigation'
 import AdminAuthGuard from '@/components/admin/AdminAuthGuard'
 import { AdminAuthProvider, useAdminAuth } from '@/contexts/AdminAuthContext'
 
+// ✅ Import admin styles to prevent theme loss
+import '@/styles/admin.css'
+
 interface AdminLayoutProps {
   children: React.ReactNode
 }
@@ -15,8 +18,9 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const { logout, user } = useAdminAuth()
 
-  const handleLogout = () => {
-    logout() // Will redirect to /admin/login automatically
+  const handleLogout = async () => {
+    await logout()
+    router.push('/admin/login')
   }
 
   // Don't apply layout to login page

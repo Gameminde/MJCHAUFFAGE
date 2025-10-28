@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { config } from '@/lib/config'
 
 interface DashboardStats {
   totalRevenue: number
@@ -22,14 +23,14 @@ export function DashboardOverview() {
       setLoading(true)
       setError(null)
       try {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
         const token = localStorage.getItem('authToken')
         
         if (!token) {
           throw new Error('Authentication required. Please login.')
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/v1/admin/dashboard?timeframe=${timeframe}`, {
+        // config.api.baseURL already includes /api/v1
+        const response = await fetch(`${config.api.baseURL}/admin/dashboard?timeframe=${timeframe}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

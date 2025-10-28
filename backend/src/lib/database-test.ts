@@ -81,7 +81,7 @@ export const testAnalyticsOperations = async (): Promise<boolean> => {
     // Create a test page analytics entry
     await prisma.pageAnalytics.create({
       data: {
-        sessionId: testSession.sessionId,
+        sessionId: testSession.id,
         pagePath: '/test',
         pageTitle: 'Test Page',
         durationSeconds: 30,
@@ -91,7 +91,7 @@ export const testAnalyticsOperations = async (): Promise<boolean> => {
     // Create a test e-commerce event
     await prisma.ecommerceEvent.create({
       data: {
-        sessionId: testSession.sessionId,
+        sessionId: testSession.id,
         eventType: 'page_view',
         value: 0,
         currency: 'DZD',
@@ -100,11 +100,11 @@ export const testAnalyticsOperations = async (): Promise<boolean> => {
 
     // Clean up test data
     await prisma.pageAnalytics.deleteMany({
-      where: { sessionId: testSession.sessionId },
+      where: { id: testSession.id },
     });
     
     await prisma.ecommerceEvent.deleteMany({
-      where: { sessionId: testSession.sessionId },
+      where: { id: testSession.id },
     });
     
     await prisma.analyticsSession.delete({

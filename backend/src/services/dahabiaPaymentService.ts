@@ -130,10 +130,9 @@ export class DahabiaPaymentService {
         return false
       }
 
-      const { payment_id: _payment_id, status: _status, reference: _reference } = payload
-
       // Update order payment status in database
       // This would be implemented in the order service
+      // payload contains payment_id, status, reference
 
       return true
 

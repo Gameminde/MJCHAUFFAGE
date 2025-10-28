@@ -1,3 +1,5 @@
+const { spacing, typography, layout } = require('./src/lib/design-system');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -8,28 +10,85 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      // ✅ SPACING basé sur Golden Ratio
+      spacing: {
+        'golden-xs': `${spacing.xs}px`,
+        'golden-sm': `${spacing.sm}px`,
+        'golden-md': `${spacing.md}px`,
+        'golden-lg': `${spacing.lg}px`,
+        'golden-xl': `${spacing.xl}px`,
+        'golden-2xl': `${spacing['2xl']}px`,
+        'golden-3xl': `${spacing['3xl']}px`,
+        'golden-4xl': `${spacing['4xl']}px`,
+      },
+
+      // ✅ FONT SIZES basés sur Golden Ratio
+      fontSize: {
+        'golden-xs': [`${typography.xs}px`, { lineHeight: '1.5' }],
+        'golden-sm': [`${typography.sm}px`, { lineHeight: '1.5' }],
+        'golden-base': [`${typography.base}px`, { lineHeight: '1.618' }], // Golden Ratio!
+        'golden-md': [`${typography.md}px`, { lineHeight: '1.618' }],
+        'golden-lg': [`${typography.lg}px`, { lineHeight: '1.618' }],
+        'golden-xl': [`${typography.xl}px`, { lineHeight: '1.4' }],
+        'golden-2xl': [`${typography['2xl']}px`, { lineHeight: '1.3' }],
+        'golden-3xl': [`${typography['3xl']}px`, { lineHeight: '1.2' }],
+        'golden-4xl': [`${typography['4xl']}px`, { lineHeight: '1.1' }],
+      },
+
+      // ✅ MAX WIDTH basé sur Golden Ratio
+      maxWidth: {
+        'golden-sm': `${layout.containerSm}px`,
+        'golden-md': `${layout.containerMd}px`,
+        'golden-lg': `${layout.containerLg}px`,
+        'golden-xl': `${layout.containerXl}px`,
+      },
+
+      // ✅ ASPECT RATIOS pour images
+      aspectRatio: {
+        'golden': '1.618 / 1',      // Format portrait golden
+        'golden-wide': '1 / 1.618', // Format paysage golden
+      },
+
+      // ✅ COULEURS: Progression basée sur Golden Ratio
       colors: {
         // 2025 Modern Color System - Enhanced MJ CHAUFFAGE Brand
+        // PRIMARY = ORANGE (Main brand color)
         primary: {
+          50: '#fef7ee',
+          100: '#fdedd6',
+          200: '#fbd7ac',
+          300: '#f8bb77',
+          400: '#f59440',
+          500: '#f3761a', // MAIN BRAND COLOR - Orange
+          600: '#e45a10',
+          700: '#bd440f',
+          800: '#973714',
+          900: '#7c2f14',
+          950: '#431507',
+          gradient: 'linear-gradient(135deg, #f3761a 0%, #e45a10 100%)',
+        },
+        // SECONDARY = BLUE (Accents, links)
+        secondary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
           200: '#bae6fd',
           300: '#7dd3fc',
           400: '#38bdf8',
-          500: '#0ea5e9', // Main brand blue
+          500: '#0ea5e9', // Secondary blue for accents
           600: '#0284c7',
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
           950: '#082f49',
         },
+        // Keep 'accent' as alias for backwards compatibility
         accent: {
           50: '#fef7ee',
           100: '#fdedd6',
           200: '#fbd7ac',
           300: '#f8bb77',
           400: '#f59440',
-          500: '#f3761a', // Modern orange with better contrast
+          500: '#f3761a',
           600: '#e45a10',
           700: '#bd440f',
           800: '#973714',
@@ -123,8 +182,8 @@ module.exports = {
         'elevated-lg': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         
         // Glow effects
-        'glow': '0 0 20px rgba(14, 165, 233, 0.3)',
-        'glow-accent': '0 0 20px rgba(243, 118, 26, 0.3)',
+        'glow': '0 0 20px rgba(243, 118, 26, 0.3)',
+        'glow-secondary': '0 0 20px rgba(14, 165, 233, 0.3)',
         
         // Inner shadows
         'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
@@ -154,6 +213,12 @@ module.exports = {
         // Loading animations
         'spin-slow': 'spin 3s linear infinite',
         'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+
+        // ✅ Golden Ratio animations
+        'golden-fade-in': 'fadeIn 0.618s ease-in-out',
+        'golden-fade-out': 'fadeOut 0.618s ease-in-out',
+        'golden-slide-up': 'slideUp 0.618s ease-out',
+        'golden-scale-in': 'scaleIn 0.382s ease-out', // 0.618 / 1.618
         
         // Hover effects
         'float': 'float 3s ease-in-out infinite',
@@ -205,6 +270,20 @@ module.exports = {
           '50%': { transform: 'rotate(3deg)' },
         },
       },
+      // ✅ TRANSITIONS basées sur Golden Ratio
+      transitionDuration: {
+        'golden-fast': '247ms',    // 400 / 1.618
+        'golden-base': '400ms',
+        'golden-slow': '647ms',    // 400 × 1.618
+        'golden-2x': '1047ms',     // 647 × 1.618
+      },
+
+      // ✅ GRID: 12 colonnes avec gaps Golden Ratio
+      gridTemplateColumns: {
+        'golden-2': `${layout.sidebarWidth} ${layout.contentWidth}`,
+        'golden-3': 'repeat(3, minmax(0, 1fr))',
+      },
+
       // Enhanced responsive breakpoints
       screens: {
         'xs': '475px',
@@ -285,6 +364,9 @@ module.exports = {
       // Modern gradient utilities
       const gradientUtilities = {
         '.gradient-primary': {
+          background: 'linear-gradient(135deg, #f3761a 0%, #e45a10 100%)',
+        },
+        '.gradient-secondary': {
           background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
         },
         '.gradient-accent': {
@@ -321,7 +403,7 @@ module.exports = {
           transition: 'all 0.3s ease-in-out',
           cursor: 'pointer',
           '&:hover': {
-            boxShadow: '0 0 20px rgba(14, 165, 233, 0.3)',
+            boxShadow: '0 0 20px rgba(243, 118, 26, 0.3)',
           },
         },
       }
@@ -336,7 +418,7 @@ module.exports = {
       // Modern component classes
       const modernComponents = {
         '.btn-primary': {
-          background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+          background: 'linear-gradient(135deg, #f3761a 0%, #e45a10 100%)',
           color: 'white',
           padding: '0.75rem 1.5rem',
           borderRadius: '0.75rem',
@@ -361,17 +443,17 @@ module.exports = {
         },
         '.btn-secondary': {
           background: 'white',
-          color: '#0ea5e9',
+          color: '#f3761a',
           padding: '0.75rem 1.5rem',
           borderRadius: '0.75rem',
           fontWeight: '600',
           fontSize: '0.875rem',
           lineHeight: '1.25rem',
           transition: 'all 0.2s ease-in-out',
-          border: '2px solid #0ea5e9',
+          border: '2px solid #f3761a',
           cursor: 'pointer',
           '&:hover': {
-            background: '#0ea5e9',
+            background: '#f3761a',
             color: 'white',
             transform: 'translateY(-2px)',
           },
@@ -397,8 +479,8 @@ module.exports = {
           transition: 'all 0.2s ease-in-out',
           '&:focus': {
             outline: 'none',
-            borderColor: '#0ea5e9',
-            boxShadow: '0 0 0 3px rgba(14, 165, 233, 0.1)',
+            borderColor: '#f3761a',
+            boxShadow: '0 0 0 3px rgba(243, 118, 26, 0.1)',
           },
           '&::placeholder': {
             color: '#9ca3af',

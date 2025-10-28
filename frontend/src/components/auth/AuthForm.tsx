@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react'
-import { authService } from '@/services/authService'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface AuthFormProps {
   mode: 'login' | 'register'
@@ -14,9 +14,9 @@ interface AuthFormProps {
 export function AuthForm({ mode, locale }: AuthFormProps) {
   const t = useTranslations('auth')
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const { login, register, loading, error } = useAuth()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -29,26 +29,23 @@ export function AuthForm({ mode, locale }: AuthFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setErrors({})
 
     try {
       if (mode === 'login') {
-        const response = await authService.login(formData.email, formData.password)
-        
-        if (response) {
+        await login(formData.email, formData.password)
+        // AuthContext will handle success/failure
+        if (!error) {
           router.push(`/${locale}/dashboard`)
-        } else {
-          setErrors({ general: t('loginError') })
         }
       } else {
         // Registration validation
         if (formData.password !== formData.confirmPassword) {
-          setErrors({ confirmPassword: t('passwordMismatch') })
+          setErrors({ confirmPassword: t('passwordsDoNotMatch') })
           return
         }
 
-        const response = await authService.register({
+        const result = await register({
           email: formData.email,
           password: formData.password,
           firstName: formData.firstName,
@@ -56,16 +53,15 @@ export function AuthForm({ mode, locale }: AuthFormProps) {
           phone: formData.phone,
         })
 
-        if (response.success) {
+        if (result?.success) {
           router.push(`/${locale}/auth/login?message=registered`)
         } else {
-          setErrors({ general: t('registerError') })
+          setErrors({ general: result?.message || error || t('registerError') })
         }
       }
-    } catch (error) {
-      setErrors({ general: t('networkError') })
-    } finally {
-      setIsLoading(false)
+    } catch (err) {
+      // Error is handled by AuthContext
+      setErrors({ general: error || t('networkError') })
     }
   }
 
@@ -288,10 +284,10 @@ export function AuthForm({ mode, locale }: AuthFormProps) {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
               ) : (
                 mode === 'login' ? t('signIn') : t('createAccount')

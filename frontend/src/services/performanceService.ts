@@ -1,5 +1,10 @@
 'use client';
 
+// API URL configuration
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:3001';
+
 // Extend Window interface for gtag
 declare global {
   interface Window {
@@ -150,7 +155,7 @@ class PerformanceService {
 
   private async sendToAnalytics(metric: string, value: number) {
     try {
-      await fetch('/api/analytics/performance', {
+      await fetch(`${API_URL}/api/analytics/performance`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +169,8 @@ class PerformanceService {
         }),
       });
     } catch (error) {
-      console.warn('Failed to send performance metric:', error);
+      // Silently fail - endpoint may not exist yet
+      console.debug('Performance metrics endpoint not available');
     }
   }
 

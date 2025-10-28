@@ -162,5 +162,79 @@
     "email": "Email",
     "address": "Adresse",
     "rights": "Tous droits réservés"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié",
+    "rememberMe": "Se souvenir de moi",
+    "noAccount": "Pas de compte?",
+    "hasAccount": "Déjà un compte?",
+    "haveAccount": "Vous avez déjà un compte?",
+    "createAccount": "Créer un compte",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "signInLink": "Connectez-vous ici",
+    "signUpLink": "Créez votre compte ici",
+    "welcome": "Bienvenue",
+    "welcomeBack": "Bienvenue de retour",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "phone": "Téléphone",
+    "emailPlaceholder": "Entrez votre email",
+    "phonePlaceholder": "Entrez votre numéro de téléphone"
+  },
+  "ServicesPage": {
+    "metadata": {
+      "title": "Services - MJ CHAUFFAGE",
+      "description": "Découvrez nos services professionnels en matière de chauffage, installation, maintenance et réparation en Algérie."
+    },
+    "hero": {
+      "title": "Services de chauffage professionnels",
+      "description": "Installation, maintenance et réparation de vos équipements de chauffage par des experts qualifiés.",
+      "cta": "Contactez-nous"
+    },
+    "services": {
+      "title": "Nos services",
+      "hours": "heures"
+    },
+    "process": {
+      "title": "Notre processus",
+      "step1": {
+        "title": "Consultation",
+        "description": "Évaluation gratuite de vos besoins en chauffage"
+      },
+      "step2": {
+        "title": "Devis",
+        "description": "Devis détaillé et personnalisé"
+      },
+      "step3": {
+        "title": "Réalisation",
+        "description": "Service rapide et professionnel"
+      },
+      "step4": {
+        "title": "Suivi",
+        "description": "Support après-service et garantie"
+      }
+    },
+    "whyChoose": {
+      "title": "Pourquoi nous choisir",
+      "quality": {
+        "title": "Qualité supérieure",
+        "description": "Équipements et matériaux de qualité supérieure"
+      },
+      "warranty": {
+        "title": "Garantie",
+        "description": "Garantie sur tous nos services"
+      },
+      "expertise": {
+        "title": "Expertise",
+        "description": "Techniciens certifiés et expérimentés"
+      }
+    }
   }
 }

@@ -233,9 +233,34 @@ export class ProductService {
   ) {
     const createdProduct = await prisma.$transaction(async (tx) => {
       const { images, ...productFields } = data as any;
+
+      // Handle manufacturerId - if it's not a UUID, treat it as a manufacturer name
+      let manufacturerId = productFields.manufacturerId;
+      if (manufacturerId && typeof manufacturerId === 'string' && !manufacturerId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        // It's a manufacturer name, not a UUID - find or create the manufacturer
+        const manufacturerName = manufacturerId.trim();
+        let manufacturer = await tx.manufacturer.findUnique({
+          where: { name: manufacturerName }
+        });
+
+        if (!manufacturer) {
+          // Create new manufacturer
+          manufacturer = await tx.manufacturer.create({
+            data: {
+              name: manufacturerName,
+              slug: manufacturerName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+              isActive: true
+            }
+          });
+        }
+
+        manufacturerId = manufacturer.id;
+      }
+
       const product = await tx.product.create({
         data: {
           ...productFields,
+          manufacturerId: manufacturerId || null,
           // features is already a string from frontend, or convert array to string
           features: typeof data.features === 'string' ? data.features : (data.features || []).join(','),
           // specifications is already a JSON string from frontend, or convert object to string
@@ -492,8 +517,7 @@ export class ProductService {
       const result = {
         product: updatedProduct,
         oldQuantity,
-        newQuantity,
-        change: newQuantity - oldQuantity,
+          newQuantity,
       };
 
       // Invalidate cache (after transaction)
@@ -573,12 +597,10 @@ export class ProductService {
     comment?: string
   ) {
     // Check if customer already reviewed this product
-    const existingReview = await prisma.review.findUnique({
+    const existingReview = await prisma.review.findFirst({
       where: {
-        customerId_productId: {
-          customerId,
-          productId,
-        },
+        customerId,
+        productId,
       },
     });
 

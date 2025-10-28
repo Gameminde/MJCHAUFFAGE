@@ -14,10 +14,11 @@
 
 /* CSS Custom Properties for 2025 Design System */
 :root {
-  /* Colors */
-  --color-primary-50: #f0f9ff;
-  --color-primary-500: #0ea5e9;
-  --color-primary-900: #0c4a6e;
+  /* Colors - ORANGE IS PRIMARY BRAND */
+  --color-primary-50: #fef7ee;
+  --color-primary-500: #f3761a;
+  --color-primary-900: #7c2f14;
+  --color-secondary-500: #0ea5e9;
   --color-accent-500: #f3761a;
   --color-neutral-50: #fafbfc;
   --color-neutral-100: #f4f6f8;
@@ -320,7 +321,7 @@
   
   /* Modern gradients */
   .gradient-primary {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    background: linear-gradient(135deg, #f3761a 0%, #e45a10 100%);
   }
   
   .gradient-accent {
@@ -329,8 +330,8 @@
   
   .gradient-mesh {
     background: 
-      radial-gradient(at 40% 20%, #0ea5e9 0px, transparent 50%),
-      radial-gradient(at 80% 0%, #f3761a 0px, transparent 50%),
+      radial-gradient(at 40% 20%, #f3761a 0px, transparent 50%),
+      radial-gradient(at 80% 0%, #0ea5e9 0px, transparent 50%),
       radial-gradient(at 0% 50%, #22c55e 0px, transparent 50%);
   }
   
@@ -350,12 +351,12 @@
   }
   
   .interactive-glow:hover {
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 20px rgba(243, 118, 26, 0.3);
   }
   
   /* Text utilities */
   .text-gradient-primary {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    background: linear-gradient(135deg, #f3761a 0%, #e45a10 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -458,10 +459,10 @@
 
 @keyframes glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(14, 165, 233, 0.2);
+    box-shadow: 0 0 5px rgba(243, 118, 26, 0.2);
   }
   50% {
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    box-shadow: 0 0 20px rgba(243, 118, 26, 0.4);
   }
 }
 

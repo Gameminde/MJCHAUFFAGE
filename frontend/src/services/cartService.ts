@@ -61,10 +61,11 @@ export const cartService = {
 
   /**
    * Met à jour la quantité d'un article
+   * Uses PUT for complete resource replacement (REST best practice)
    */
   async updateCartItem(data: UpdateCartItemRequest): Promise<Cart> {
     const { itemId, ...payload } = data;
-    const result = await api.patch<{ success: boolean; data: Cart }>(
+    const result = await api.put<{ success: boolean; data: Cart }>(
       `/cart/items/${itemId}`,
       payload
     );
@@ -100,6 +101,22 @@ export const cartService = {
       }
     );
     return result.data as Cart;
+  },
+
+  /**
+   * Validate guest cart items (public endpoint)
+   * Check if products are available and in stock
+   */
+  async validateCart(items: Array<{ productId: string; quantity: number }>): Promise<{
+    success: boolean;
+    unavailableItems?: string[];
+  }> {
+    const result = await api.post<{ success: boolean; unavailableItems?: string[] }>(
+      '/cart/validate',
+      { items },
+      { skipAuth: true } // Public endpoint
+    );
+    return result;
   },
 
   /**

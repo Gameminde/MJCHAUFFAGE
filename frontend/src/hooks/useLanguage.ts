@@ -7,17 +7,8 @@ export interface CurrencyConfig {
 }
 
 export function useLanguage() {
-  let locale = 'fr'; // Default fallback
-  
-  try {
-    locale = useLocale();
-  } catch (error) {
-    // Fallback when no intl context is available
-    // Only show warning in development mode
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('No intl context found, using fallback locale:', locale);
-    }
-  }
+  // Call the hook unconditionally - React will handle errors internally
+  const locale = useLocale() || 'fr';
   
   const currencyConfig: CurrencyConfig = {
     code: 'DZD',

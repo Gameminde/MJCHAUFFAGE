@@ -2,7 +2,7 @@
 
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { ComparisonProvider } from '@/contexts/ComparisonContext';
-import { AuthProvider } from './AuthProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 interface ProvidersProps {
   children: React.ReactNode;

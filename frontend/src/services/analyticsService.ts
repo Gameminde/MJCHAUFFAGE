@@ -1,4 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
+import { config } from '@/lib/config';
+
+// API URL configuration
+const API_URL = config.api.baseURL;
 
 // Types for analytics events
 export interface PageViewEvent {
@@ -68,25 +72,34 @@ class AnalyticsService {
     this.pageStartTime = new Date();
     
     if (typeof window !== 'undefined') {
-      this.init();
+      // Initialize asynchronously to avoid blocking auth
+      this.init().catch(error => {
+        console.debug('Analytics init failed:', error instanceof Error ? error.message : String(error));
+      });
     }
   }
 
-  private init() {
+  private async init() {
     if (this.isInitialized) return;
-    
-    // Initialize session tracking
-    this.initializeSession();
-    
+
+    try {
+      // Initialize session tracking (non-blocking)
+      this.initializeSession().catch(error => {
+        console.debug('Analytics session initialization failed (backend not available):', error instanceof Error ? error.message : String(error));
+      });
+    } catch (error) {
+      console.debug('Analytics initialization error:', error instanceof Error ? error.message : String(error));
+    }
+
     // Track page visibility changes
     this.setupVisibilityTracking();
-    
+
     // Track page unload
     this.setupUnloadTracking();
-    
+
     // Start periodic event flushing
     this.startEventFlushing();
-    
+
     this.isInitialized = true;
   }
 
@@ -112,16 +125,15 @@ class AnalyticsService {
       startedAt: this.sessionStartTime
     };
 
-    // Get location data (optional)
-    try {
-      const locationData = await this.getLocationData();
+    // Get location data (optional, non-blocking)
+    this.getLocationData().then(locationData => {
       sessionData.country = locationData.country;
       sessionData.city = locationData.city;
-    } catch (error) {
-      console.warn('Failed to get location data:', error);
-    }
-
-    this.queueEvent('session_start', sessionData);
+      this.queueEvent('session_start', sessionData);
+    }).catch(error => {
+      console.debug('Location data unavailable:', error instanceof Error ? error.message : String(error));
+      this.queueEvent('session_start', sessionData);
+    });
   }
 
   private setupVisibilityTracking() {
@@ -191,7 +203,7 @@ class AnalyticsService {
     }
 
     try {
-      const response = await fetch(`/api/analytics/events`, {
+      const response = await fetch(`${API_URL}/analytics/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

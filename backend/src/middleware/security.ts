@@ -169,8 +169,8 @@ export const authRateLimit = createAdvancedRateLimit({
 });
 
 export const apiRateLimit = createAdvancedRateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
+  windowMs: config.env === 'production' ? 15 * 60 * 1000 : 60 * 60 * 1000, // 15 min prod, 1 hour dev
+  max: config.env === 'production' ? 100 : 500, // 100 prod, 500 dev
   message: 'Too many API requests, please try again later'
 });
 

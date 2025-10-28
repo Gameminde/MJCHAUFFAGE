@@ -24,16 +24,20 @@ interface Product {
 
 // Import the real product service
 import ProductService from '@/services/productService'
+import { getImageUrl } from '@/lib/images'
 
 // Convert the backend Product interface to match frontend needs
 interface FrontendProduct {
   id: string
   name: string
+  sku?: string
   description: string | null
   price: number
   originalPrice?: number
   category: string
+  categoryId?: string // Add category ID
   brand: string
+  manufacturerId?: string // Add manufacturer ID
   images: string[]
   inStock: boolean
   stockQuantity: number
@@ -47,12 +51,15 @@ interface FrontendProduct {
 // Convert backend product to frontend product
 const convertProduct = (product: any): FrontendProduct => ({
   id: product.id,
+  sku: product.sku,
   name: product.name,
   description: product.description,
   price: product.price,
   originalPrice: product.salePrice || undefined,
   category: product.category?.name || '',
+  categoryId: product.category?.id || '', // Store actual category ID
   brand: product.manufacturer?.name || '',
+  manufacturerId: product.manufacturer?.id || '', // Store actual manufacturer ID
   images: product.images?.map((img: any) => img.url) || [],
   inStock: product.stockQuantity > 0,
   stockQuantity: product.stockQuantity,
@@ -82,6 +89,7 @@ export function ProductsManagement() {
     salePrice: '',
     categoryId: '',
     manufacturerId: '',
+    sku: '', // Add SKU field
     stockQuantity: '',
     features: [''],
     specifications: {} as Record<string, string>,
@@ -111,7 +119,9 @@ export function ProductsManagement() {
       try {
         // Fetch products
         const backendProducts = await ProductService.getProducts()
-        const frontendProducts = backendProducts.map(convertProduct)
+        const frontendProducts = backendProducts
+          .filter(product => product && product.id) // Filter out undefined/null products
+          .map(convertProduct)
         setProducts(frontendProducts)
         
         // Fetch categories
@@ -164,17 +174,13 @@ export function ProductsManagement() {
     return cleanup
   }, [onProductCreated, onProductUpdated, onProductDeleted, cleanup])
 
-  // Fallback categories if API fails
-  const fallbackCategories = [
-    { id: 'boilers', name: 'Chaudières', value: 'boilers', label: 'Chaudières' },
-    { id: 'radiators', name: 'Radiateurs', value: 'radiators', label: 'Radiateurs' },
-    { id: 'thermostats', name: 'Thermostats', value: 'thermostats', label: 'Thermostats' },
-    { id: 'accessories', name: 'Accessoires', value: 'accessories', label: 'Accessoires' }
-  ]
-  
-  const categories = realCategories.length > 0 
-    ? realCategories.map(cat => ({ id: cat.id, name: cat.name, value: cat.id, label: cat.name }))
-    : fallbackCategories
+  // ✅ NO MOCK DATA: Force utilisation des vraies données API
+  const categories = realCategories.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    value: cat.id,
+    label: cat.name
+  }))
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -183,18 +189,48 @@ export function ProductsManagement() {
     return matchesSearch && matchesCategory
   })
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            setUploadedImages(prev => [...prev, e.target!.result as string])
+      for (const file of Array.from(files)) {
+        try {
+          // Upload file to backend
+          const formData = new FormData()
+          formData.append('image', file)
+
+          // ✅ FIX: Get auth token from localStorage and include in headers
+          const token = localStorage.getItem('authToken')
+          if (!token) {
+            alert('Vous devez être connecté pour uploader des images')
+            return
           }
+
+          const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
+          const uploadResponse = await fetch(`${API_BASE_URL}/uploads`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+            credentials: 'include'
+          })
+
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json()
+            if (uploadData.success && uploadData.files && uploadData.files.length > 0) {
+              // Use the URL from the first uploaded file
+              setUploadedImages(prev => [...prev, uploadData.files[0].url])
+            }
+          } else {
+            const errorData = await uploadResponse.json().catch(() => ({ message: 'Unknown error' }))
+            console.error('Failed to upload image:', errorData)
+            alert(`Erreur lors du téléchargement de l\'image: ${errorData.message || 'Unknown error'}`)
+          }
+        } catch (error) {
+          console.error('Error uploading image:', error)
+          alert('Erreur lors du téléchargement de l\'image')
         }
-        reader.readAsDataURL(file)
-      })
+      }
     }
   }
 
@@ -241,6 +277,51 @@ export function ProductsManagement() {
     })
   }
 
+  // ✅ FIX 6: Ajouter validation dans ProductsManagement.tsx
+  const validateProductForm = (): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // ✅ Validation nom
+    if (!formData.name || formData.name.trim().length < 3) {
+      errors.push('Le nom du produit doit contenir au moins 3 caractères');
+    }
+
+    // ✅ Validation prix
+    const price = parseFloat(formData.price);
+    if (isNaN(price) || price <= 0) {
+      errors.push('Le prix doit être un nombre positif');
+    }
+
+    // ✅ Validation prix de vente
+    if (formData.salePrice) {
+      const salePrice = parseFloat(formData.salePrice);
+      if (isNaN(salePrice) || salePrice <= 0) {
+        errors.push('Le prix de vente doit être un nombre positif');
+      }
+      if (salePrice >= price) {
+        errors.push('Le prix de vente doit être inférieur au prix normal');
+      }
+    }
+
+    // ✅ Validation stock
+    const stock = parseInt(formData.stockQuantity);
+    if (isNaN(stock) || stock < 0) {
+      errors.push('La quantité en stock doit être un nombre positif ou zéro');
+    }
+
+    // ✅ Validation catégorie
+    if (!formData.categoryId) {
+      errors.push('Veuillez sélectionner une catégorie');
+    }
+
+    // ✅ Validation SKU
+    if (!formData.sku || formData.sku.trim().length < 3) {
+      errors.push('La référence (SKU) doit contenir au moins 3 caractères');
+    }
+
+    return { valid: errors.length === 0, errors };
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -249,6 +330,7 @@ export function ProductsManagement() {
       salePrice: '',
       categoryId: '',
       manufacturerId: '',
+      sku: '', // Reset SKU field
       stockQuantity: '',
       features: [''],
       specifications: {} as Record<string, string>,
@@ -270,26 +352,36 @@ export function ProductsManagement() {
 
   // Helper function to generate SKU
   const generateSKU = (name: string, categoryId: string): string => {
+    if (!name || !categoryId) return ''
     const namePrefix = name.substring(0, 3).toUpperCase()
     const categoryPrefix = categoryId.substring(0, 3).toUpperCase()
     const timestamp = Date.now().toString().slice(-4)
     return `${namePrefix}-${categoryPrefix}-${timestamp}`
   }
 
+  // Auto-generate SKU when name or category changes
+  useEffect(() => {
+    if (formData.name && formData.categoryId && !editingProduct) {
+      const autoSKU = generateSKU(formData.name, formData.categoryId)
+      if (autoSKU && autoSKU !== formData.sku) {
+        setFormData(prev => ({ ...prev, sku: autoSKU }))
+      }
+    }
+  }, [formData.name, formData.categoryId, editingProduct])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-
-      
-      // Validate required fields
-      if (!formData.name || !formData.categoryId || !formData.price || !formData.stockQuantity) {
-        alert('Veuillez remplir tous les champs requis')
-        return
+      // ✅ Valider avant de soumettre
+      const validation = validateProductForm();
+      if (!validation.valid) {
+        alert('Erreurs de validation:\n' + validation.errors.join('\n'));
+        return;
       }
 
-      // Generate slug and SKU
+      // Generate slug and use SKU from form (auto-generated if empty)
       const slug = generateSlug(formData.name)
-      const sku = generateSKU(formData.name, formData.categoryId)
+      const sku = formData.sku || generateSKU(formData.name, formData.categoryId)
 
       // Prepare data for API (match backend expectations exactly)
       const productData: any = {
@@ -312,11 +404,13 @@ export function ProductsManagement() {
         productData.salePrice = parseFloat(formData.salePrice)
       }
       
-      // Only send manufacturerId if it looks like a UUID (not a name)
-      if (formData.manufacturerId && formData.manufacturerId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      // Send manufacturerId only if it's a valid UUID (not empty string)
+      if (formData.manufacturerId && formData.manufacturerId.trim() !== '') {
         productData.manufacturerId = formData.manufacturerId
+      } else {
+        // Explicitly set to null if no manufacturer is selected
+        productData.manufacturerId = null
       }
-      // If it's a name like "chappee", don't send it (will be null in database)
       
       if (formData.features && formData.features.length > 0) {
         // Convert array to comma-separated string for SQLite
@@ -327,9 +421,15 @@ export function ProductsManagement() {
         // Convert object to JSON string for SQLite
         productData.specifications = JSON.stringify(formData.specifications)
       }
-      
-      // Note: Images will be handled separately via upload endpoint
-      // Do not send empty arrays or objects
+
+      // Add uploaded images
+      if (uploadedImages.length > 0) {
+        productData.images = uploadedImages.map((url, index) => ({
+          url: url,
+          altText: formData.name,
+          sortOrder: index
+        }))
+      }
 
       console.log('📦 Sending product data to backend:', JSON.stringify(productData, null, 2))
 
@@ -349,7 +449,9 @@ export function ProductsManagement() {
       
       // Refresh products list
       const backendProducts = await ProductService.getProducts()
-      const frontendProducts = backendProducts.map(convertProduct)
+      const frontendProducts = backendProducts
+        .filter(product => product && product.id) // Filter out undefined/null products
+        .map(convertProduct)
       setProducts(frontendProducts)
     } catch (err) {
       console.error('Error saving product:', err)
@@ -366,15 +468,16 @@ export function ProductsManagement() {
     }
   }
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: FrontendProduct) => {
     setEditingProduct(product)
     setFormData({
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
       salePrice: product.originalPrice?.toString() || '',
-      categoryId: product.category, // This will need to be mapped to actual category ID
-      manufacturerId: product.brand, // This will need to be mapped to actual manufacturer ID
+      categoryId: product.categoryId || '', // Use actual category ID
+      manufacturerId: product.manufacturerId || '', // Use actual manufacturer ID
+      sku: product.sku || '',
       stockQuantity: product.stockQuantity.toString(),
       features: product.features,
       specifications: product.specifications,
@@ -394,7 +497,9 @@ export function ProductsManagement() {
         
         // Refresh products list
         const backendProducts = await ProductService.getProducts()
-        const frontendProducts = backendProducts.map(convertProduct)
+        const frontendProducts = backendProducts
+        .filter(product => product && product.id) // Filter out undefined/null products
+        .map(convertProduct)
         setProducts(frontendProducts)
       } catch (err) {
         console.error('Error deleting product:', err)
@@ -419,7 +524,9 @@ export function ProductsManagement() {
       
       // Refresh products list
       const backendProducts = await ProductService.getProducts()
-      const frontendProducts = backendProducts.map(convertProduct)
+      const frontendProducts = backendProducts
+        .filter(product => product && product.id) // Filter out undefined/null products
+        .map(convertProduct)
       setProducts(frontendProducts)
     } catch (err) {
       console.error('Error updating product status:', err)
@@ -493,16 +600,36 @@ export function ProductsManagement() {
                   />
                 </div>
                 <div>
-                  <label className="form-label">Fabricant *</label>
+                  <label className="form-label">Référence (SKU)</label>
                   <input
                     type="text"
+                    value={formData.sku}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
+                    className="form-input"
+                    placeholder="Auto-généré ou personnalisé"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Laissez vide pour auto-génération</p>
+                </div>
+                <div>
+                  <label className="form-label">Fabricant (optionnel)</label>
+                  <select
                     value={formData.manufacturerId}
                     onChange={(e) => setFormData(prev => ({ ...prev, manufacturerId: e.target.value }))}
                     className="form-input"
-                    placeholder="Ex: Viessmann, Bosch, Vaillant..."
-                    required
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Tapez le nom du fabricant librement</p>
+                  >
+                    <option value="">Aucun fabricant</option>
+                    {manufacturers && manufacturers.length > 0 ? (
+                      manufacturers.map(man => (
+                        <option key={man.id} value={man.id}>{man.name}</option>
+                      ))
+                    ) : (
+                      !loadingManufacturers && <option value="" disabled>Aucun fabricant disponible</option>
+                    )}
+                  </select>
+                  {loadingManufacturers && <p className="text-sm text-gray-500 mt-1">Chargement des fabricants...</p>}
+                  {!loadingManufacturers && manufacturers.length === 0 && (
+                    <p className="text-sm text-amber-600 mt-1">⚠ Aucun fabricant dans la base. Contactez l'admin pour en ajouter.</p>
+                  )}
                 </div>
               </div>
 
@@ -631,7 +758,7 @@ export function ProductsManagement() {
                       {uploadedImages.map((image, index) => (
                         <div key={index} className="relative group">
                           <img
-                            src={image}
+                            src={getImageUrl(image)}
                             alt={`Preview ${index + 1}`}
                             className="w-full h-24 object-cover rounded-lg"
                           />
@@ -812,7 +939,18 @@ export function ProductsManagement() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-12 w-12">
-                            <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                            {product.images && product.images.length > 0 ? (
+                              <img
+                                src={getImageUrl(product.images[0])}
+                                alt={product.name}
+                                className="h-12 w-12 rounded-lg object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                                }}
+                              />
+                            ) : null}
+                            <div className={`h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center ${product.images && product.images.length > 0 ? 'hidden' : ''}`}>
                               <Image className="h-6 w-6 text-gray-400" />
                             </div>
                           </div>

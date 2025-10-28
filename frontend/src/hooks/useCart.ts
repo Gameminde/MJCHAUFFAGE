@@ -1,10 +1,12 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import {
   useCartStore,
   type AddItemInput,
   type CartItem,
 } from '@/store/cartStore';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 export type { AddItemInput } from '@/store/cartStore';
 
@@ -45,6 +47,35 @@ export function useCart(): UseCartResult {
   const error = useCartStore((state) => state.error);
 
   const { currencyConfig, locale } = useLanguage();
+
+  // Use consolidated AuthContext
+  const { user, loading: authLoading } = useAuth();
+
+  const isAuthenticated = !!user && !authLoading;
+  const userId = user?.id;
+
+  // Sync cart with backend when user logs in/out
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Load cart from backend when user logs in
+      syncCartFromBackend();
+    } else if (!isAuthenticated) {
+      // Keep local cart when user logs out
+      // The cart store already persists to localStorage
+    }
+  }, [isAuthenticated, user]);
+
+  // Sync cart changes to backend for authenticated users with debouncing
+  useEffect(() => {
+    if (isAuthenticated && items.length > 0) {
+      // Debounce cart sync to avoid too many requests
+      const timeoutId = setTimeout(() => {
+        syncCartToBackend();
+      }, 1500); // Wait 1.5 seconds after last change
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [items, isAuthenticated]);
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -156,6 +187,56 @@ export function useCart(): UseCartResult {
       }
     },
     [setItems, setError],
+  );
+
+  const syncCartToBackend = useCallback(
+    async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const cartItems = items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }));
+
+        await api.post('/cart/sync', { items: cartItems });
+      } catch (error) {
+        console.error('Error syncing cart to backend:', error);
+        // Don't show error to user for background sync
+      }
+    },
+    [items, isAuthenticated],
+  );
+
+  const syncCartFromBackend = useCallback(
+    async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const result = await api.get('/cart') as { success: boolean; data?: { items?: any[] } };
+        if (result.success && result.data?.items) {
+          // Merge backend cart with local cart
+          const backendItems = result.data.items;
+          const localItems = useCartStore.getState().items;
+
+          // Simple merge: prefer backend items, add any local items not in backend
+          const mergedItems = [...backendItems];
+
+          localItems.forEach(localItem => {
+            const existsInBackend = mergedItems.some(item => item.productId === localItem.productId);
+            if (!existsInBackend) {
+              mergedItems.push(localItem);
+            }
+          });
+
+          setItems(mergedItems);
+        }
+      } catch (error) {
+        console.error('Error syncing cart from backend:', error);
+        // Don't show error to user for background sync
+      }
+    },
+    [isAuthenticated, setItems],
   );
 
   return {

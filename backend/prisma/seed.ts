@@ -152,12 +152,14 @@ async function main() {
 
   console.log('✅ Products created:', products.length)
 
-  // Create product images
+  // Create product images (using the actual uploaded file)
+  const imageFileName = 'e30364e261ba3fde336e690736491cac-1760736869492.jpg';
+
   await Promise.all([
     prisma.productImage.create({
       data: {
         productId: products[0].id,
-        url: '/images/chaudiere-bosch.jpg',
+        url: `/files/${imageFileName}`,
         altText: 'Chaudière Bosch',
         sortOrder: 1,
       },
@@ -165,7 +167,7 @@ async function main() {
     prisma.productImage.create({
       data: {
         productId: products[1].id,
-        url: '/images/radiateur-aluminium.jpg',
+        url: `/files/${imageFileName}`,
         altText: 'Radiateur Aluminium',
         sortOrder: 1,
       },

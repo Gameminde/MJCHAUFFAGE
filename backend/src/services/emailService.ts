@@ -322,7 +322,7 @@ export class EmailService {
     const currency = data.currency || 'DZD';
     const formatPrice = (price: number) => `${price.toFixed(2)} ${currency}`;
 
-    let text = `
+    const text = `
 MJ CHAUFFAGE - Confirmation de commande
 
 Bonjour ${data.customerName},

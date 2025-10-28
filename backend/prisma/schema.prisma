@@ -155,42 +155,77 @@ model Category {
 
 model Product {
   id            String      @id @default(uuid())
+
+  // ✅ IDENTIFICATION PIÈCE
   name          String
   slug          String      @unique
-  sku           String      @unique
+  sku           String      @unique  // Référence fabricant UNIQUE
+  internalRef   String?     @map("internal_ref")  // Référence interne magasin
+  ean           String?     @unique  // Code-barres EAN13
+
+  // ✅ DESCRIPTIONS
   description   String?
   shortDescription String?  @map("short_description")
+  technicalSheet String?    @map("technical_sheet")  // URL PDF fiche technique
+
+  // ✅ CATÉGORISATION
   categoryId    String      @map("category_id")
   manufacturerId String?    @map("manufacturer_id")
-  
-  // Pricing
-  price         Decimal
-  costPrice     Decimal?    @map("cost_price")
-  salePrice     Decimal?    @map("sale_price")
-  
-  // Inventory
+  partType      String?     @map("part_type")  // "Brûleur", "Vanne", "Circulateur", "Électrode"
+
+  // ✅ COMPATIBILITÉ (critique pour pièces détachées)
+  compatibleModels String?  @map("compatible_models")  // CSV: "Vitodens 100-W, Vitodens 200-W"
+  compatibleBrands String?  @map("compatible_brands")  // CSV: "Viessmann, Bosch"
+  originalPart     Boolean  @default(true) @map("original_part")  // Pièce d'origine ou compatible
+
+  // ✅ PRICING (TTC et HT pour B2B)
+  price         Decimal     // Prix TTC consommateur
+  priceHT       Decimal?    @map("price_ht")  // Prix HT pour professionnels
+  costPrice     Decimal?    @map("cost_price")  // Prix d'achat (privé)
+  salePrice     Decimal?    @map("sale_price")  // Prix promo TTC
+  taxRate       Decimal     @default(19) @map("tax_rate")  // TVA en %
+
+  // ✅ STOCK & DISPONIBILITÉ
   stockQuantity Int         @default(0) @map("stock_quantity")
-  minStock      Int         @default(0) @map("min_stock")
+  minStock      Int         @default(5) @map("min_stock")
   maxStock      Int?        @map("max_stock")
-  
-  // Product Details (simplified for SQLite)
-  weight        Decimal?
-  dimensions    String?     // JSON string: "{length, width, height}"
-  specifications String?    // JSON string: Technical specifications
-  features      String?     // Comma-separated string instead of array
-  
-  // Media
+  reorderPoint  Int?        @map("reorder_point")  // Seuil de réapprovisionnement
+  deliveryDelay Int?        @map("delivery_delay")  // Jours si rupture stock
+  supplier      String?     // Fournisseur principal
+
+  // ✅ CARACTÉRISTIQUES PHYSIQUES
+  weight        Decimal?    // Poids en kg
+  dimensions    String?     // JSON: {length, width, height} en mm
+  volume        Decimal?    // Volume en m³ (pour calcul transport)
+
+  // ✅ SPÉCIFICATIONS TECHNIQUES
+  specifications String?    // JSON: {"Puissance": "24kW", "Tension": "230V"}
+  features      String?     // CSV: "Haute efficacité,Silencieux,Compact"
+
+  // ✅ GARANTIE & CONDITION
+  warranty      Int?        // Mois de garantie
+  condition     String      @default("NEW")  // "NEW", "REFURBISHED", "USED"
+
+  // ✅ MEDIA
   images        ProductImage[]
-  
-  // Status
+
+  // ✅ STATUTS
   isActive      Boolean     @default(true) @map("is_active")
   isFeatured    Boolean     @default(false) @map("is_featured")
   isDigital     Boolean     @default(false) @map("is_digital")
-  
-  // SEO
+  isOnSale      Boolean     @default(false) @map("is_on_sale")  // ✅ Nouveau
+
+  // ✅ SEO
   metaTitle     String?     @map("meta_title")
   metaDescription String?   @map("meta_description")
-  
+  metaKeywords  String?     @map("meta_keywords")  // ✅ Nouveau
+
+  // ✅ STATS (dénormalisé pour performance)
+  viewCount     Int         @default(0) @map("view_count")
+  salesCount    Int         @default(0) @map("sales_count")
+  averageRating Decimal?    @default(0) @map("average_rating")
+  reviewCount   Int         @default(0) @map("review_count")
+
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
@@ -200,10 +235,29 @@ model Product {
   orderItems    OrderItem[]
   reviews       Review[]
   inventoryLogs InventoryLog[]
-  
+
   // Analytics relationships
   ecommerceEvents EcommerceEvent[]
   cartItems       CartItem[]
+
+  // ✅ INDEXES OPTIMISÉS POUR E-COMMERCE PIÈCES DÉTACHÉES
+  @@index([sku])
+  @@index([categoryId])
+  @@index([manufacturerId])
+  @@index([partType])
+  @@index([price])
+  @@index([stockQuantity])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([isOnSale])
+  @@index([createdAt])
+  @@index([averageRating])
+  @@index([salesCount])
+
+  // Index composites pour filtres courants
+  @@index([categoryId, isActive, stockQuantity])
+  @@index([manufacturerId, isActive, price])
+  @@index([isActive, isFeatured, stockQuantity])
 
   @@map("products")
 }
@@ -427,6 +481,8 @@ model CartItem {
   product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([customerId, productId])
+  @@index([customerId])
+  @@index([productId])
   @@map("cart_items")
 }
 

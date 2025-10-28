@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 
 export type FilterValues = {
   search?: string;
@@ -9,8 +9,8 @@ export type FilterValues = {
   minPrice?: number;
   maxPrice?: number;
   inStock?: boolean;
-  featured?: boolean; // new: allow toggling featured products
-  limit?: number; // new: items per page
+  featured?: boolean;
+  limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 };
@@ -39,27 +39,6 @@ export default function FilterSidebar({
   onChange,
 }: Props) {
   const isArabic = locale === "ar";
-  const PRICE_MIN = 0;
-  const PRICE_MAX = 500000;
-  const [localMin, setLocalMin] = useState<number | undefined>(value.minPrice);
-  const [localMax, setLocalMax] = useState<number | undefined>(value.maxPrice);
-  const debounceRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setLocalMin(value.minPrice);
-    setLocalMax(value.maxPrice);
-  }, [value.minPrice, value.maxPrice]);
-
-  const handleDebouncedPriceChange = (nextMin?: number, nextMax?: number) => {
-    setLocalMin(nextMin);
-    setLocalMax(nextMax);
-    if (debounceRef.current) {
-      window.clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = window.setTimeout(() => {
-      update({ minPrice: nextMin, maxPrice: nextMax });
-    }, 300);
-  };
 
   const update = useCallback(
     (partial: Partial<FilterValues>) => {
@@ -155,38 +134,22 @@ export default function FilterSidebar({
           </span>
         </label>
       </div>
-      {/* Featured */}
-      <div className="mb-6">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            className="rounded border-gray-300"
-            checked={Boolean(value.featured)}
-            onChange={(e) => update({ featured: e.target.checked })}
-          />
-          <span className="text-gray-700">
-            {isArabic ? "مميز" : "Mis en avant"}
-          </span>
-        </label>
-      </div>
 
       {/* Price range */}
       <div className="mb-6">
         <h4 className="text-sm font-medium text-gray-700 mb-2">
           {isArabic ? "نطاق السعر" : "Prix"}
         </h4>
-        {/* Numeric inputs */}
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3">
           <input
             type="number"
             inputMode="numeric"
             placeholder={isArabic ? "د.ج الحد الأدنى" : "DA min"}
             className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-            value={localMin ?? ''}
+            value={value.minPrice ?? ''}
             onChange={(e) => {
               const val = e.target.value;
-              const num = val === '' ? undefined : Number(val);
-              handleDebouncedPriceChange(num, localMax);
+              update({ minPrice: val === '' ? undefined : Number(val) });
             }}
           />
           <span className="text-gray-400">—</span>
@@ -195,63 +158,13 @@ export default function FilterSidebar({
             inputMode="numeric"
             placeholder={isArabic ? "د.ج الحد الأقصى" : "DA max"}
             className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-            value={localMax ?? ''}
+            value={value.maxPrice ?? ''}
             onChange={(e) => {
               const val = e.target.value;
-              const num = val === '' ? undefined : Number(val);
-              handleDebouncedPriceChange(localMin, num);
+              update({ maxPrice: val === '' ? undefined : Number(val) });
             }}
           />
         </div>
-        {/* Range sliders with debounce */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min={PRICE_MIN}
-              max={PRICE_MAX}
-              step={1000}
-              className="flex-1"
-              value={localMin ?? PRICE_MIN}
-              onChange={(e) => {
-                const next = Number(e.target.value);
-                handleDebouncedPriceChange(next, localMax);
-              }}
-            />
-            <span className="text-xs text-gray-500">{localMin ?? PRICE_MIN} DA</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min={PRICE_MIN}
-              max={PRICE_MAX}
-              step={1000}
-              className="flex-1"
-              value={localMax ?? PRICE_MAX}
-              onChange={(e) => {
-                const next = Number(e.target.value);
-                handleDebouncedPriceChange(localMin, next);
-              }}
-            />
-            <span className="text-xs text-gray-500">{localMax ?? PRICE_MAX} DA</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Limit per page */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">
-          {isArabic ? "عدد العناصر لكل صفحة" : "Éléments par page"}
-        </h4>
-        <select
-          className="w-36 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-          value={value.limit ?? 12}
-          onChange={(e) => update({ limit: Number(e.target.value) })}
-        >
-          <option value={12}>12</option>
-          <option value={24}>24</option>
-          <option value={48}>48</option>
-        </select>
       </div>
       {/* Actions */}
       <div className="flex items-center gap-3">
