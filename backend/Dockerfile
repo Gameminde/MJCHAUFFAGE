@@ -4,11 +4,11 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
-COPY src ./src/
-COPY tsconfig.json ./
+# Copy package files from backend directory
+COPY backend/package*.json ./
+COPY backend/prisma ./prisma/
+COPY backend/src ./src/
+COPY backend/tsconfig.json ./
 
 # Install dependencies (including dev dependencies for build)
 RUN npm ci
