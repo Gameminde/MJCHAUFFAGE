@@ -1,9 +1,10 @@
 {
   "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "./backend/Dockerfile"
+    "builder": "NIXPACKS",
+    "buildCommand": "cd backend && npm run build"
   },
   "deploy": {
+    "startCommand": "cd backend && npm run start:compiled",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
