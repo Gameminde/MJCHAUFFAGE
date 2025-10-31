@@ -5,7 +5,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "npm run build && npm run start:compiled",
-    "build": "tsc && tsc-alias",
+    "build": "npx prisma generate && tsc && tsc-alias",
+    "postinstall": "npx prisma generate",
     "start": "ts-node -r tsconfig-paths/register src/server.ts",
     "start:compiled": "node dist/server.js",
     "test": "jest",
