@@ -4,7 +4,7 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files from backend directory
+# Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 COPY src ./src/
