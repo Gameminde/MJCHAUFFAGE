@@ -1,6 +1,15 @@
 export async function GET() {
   try {
-    const response = await fetch('https://ipapi.co/json/');
+    // Abort external call if it takes too long (common cause of dev "aborted" errors)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+
+    const response = await fetch('https://ipapi.co/json/', {
+      // Let Next.js cache this on the server side and revalidate periodically
+      next: { revalidate: 3600 },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       return Response.json(

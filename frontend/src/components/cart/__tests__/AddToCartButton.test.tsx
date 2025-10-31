@@ -1,3 +1,4 @@
+import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { AddToCartButton } from '../AddToCartButton';
@@ -70,7 +71,7 @@ describe('AddToCartButton', () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${mockProduct.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/products/${mockProduct.id}`,
     );
   });
 

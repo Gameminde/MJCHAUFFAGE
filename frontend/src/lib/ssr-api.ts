@@ -11,16 +11,46 @@ const normalizeImageUrl = (img: any): string => {
   const src = typeof img === 'string' ? img : img?.url;
 
   // ✅ Retourner placeholder si pas d'image
-  if (!src) return '/placeholder-product.jpg';
+  if (!src) return '/placeholder-product.svg';
 
   // ✅ Si déjà une URL absolue, retourner tel quel
   if (src.startsWith('http://') || src.startsWith('https://')) {
     return src;
   }
 
-  // ✅ Ajouter le base URL pour les chemins relatifs
-  const path = src.startsWith('/') ? src : `/${src}`;
-  return `${API_URL}${path}`;
+  // ✅ Décoder les entités HTML
+  let decodedSrc = src;
+  if (src.includes('&#x')) {
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = src;
+      decodedSrc = textarea.value;
+    } else {
+      // Server-side decode for common entities
+      decodedSrc = src
+        .replace(/&#x2F;/g, '/')  // &#x2F; -> /
+        .replace(/&amp;/g, '&')  // &amp; -> &
+        .replace(/&lt;/g, '<')   // &lt; -> <
+        .replace(/&gt;/g, '>')   // &gt; -> >
+        .replace(/&quot;/g, '"') // &quot; -> "
+        .replace(/&#39;/g, "'"); // &#39; -> '
+    }
+  }
+
+  // ✅ Nettoyer les doubles /files/
+  let cleanSrc = decodedSrc;
+  if (cleanSrc.includes('/files//files/')) {
+    cleanSrc = cleanSrc.replace('/files//files/', '/files/');
+  }
+
+  // ✅ Si déjà un chemin /files/, retourner tel quel
+  if (cleanSrc.startsWith('/files/')) {
+    return cleanSrc;
+  }
+
+  // ✅ Pour les autres chemins, ajouter /files/ si nécessaire
+  const path = cleanSrc.startsWith('/') ? cleanSrc : `/${cleanSrc}`;
+  return path.startsWith('/files/') ? path : `/files${path}`;
 };
 
 type ApiResponse<T> = {
@@ -56,6 +86,19 @@ type CategoriesApiResponse = ApiResponse<{
   }>;
 }>;
 
+const toNumber = (v: any): number => {
+  if (v === null || v === undefined) return 0;
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') return parseFloat(v);
+  // Prisma Decimal or other objects
+  if (typeof v === 'object' && 'toString' in v) {
+    const s = (v as any).toString();
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+  return Number(v) || 0;
+};
+
 const convertApiProduct = (product: Record<string, any>): Product => ({
   id: product.id,
   name: product.name,
@@ -66,15 +109,15 @@ const convertApiProduct = (product: Record<string, any>): Product => ({
   sku: product.sku ?? `SKU-${product.id}`,
   description: product.description ?? null,
   shortDescription: product.shortDescription ?? null,
-  price: Number(product.price ?? 0),
+  price: toNumber(product.price),
   salePrice:
     product.salePrice !== undefined && product.salePrice !== null
-      ? Number(product.salePrice)
+      ? toNumber(product.salePrice)
       : null,
-  stockQuantity: Number(product.stockQuantity ?? 0),
+  stockQuantity: toNumber(product.stockQuantity),
   weight:
     product.weight !== undefined && product.weight !== null
-      ? Number(product.weight)
+      ? toNumber(product.weight)
       : null,
   dimensions: product.dimensions ?? null,
   specifications: product.specifications ?? {},

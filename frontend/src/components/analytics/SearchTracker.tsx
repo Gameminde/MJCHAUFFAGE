@@ -18,7 +18,9 @@ export function SearchTracker({ searchTerm, resultsCount }: SearchTrackerProps) 
       
       // Optional: Log for debugging
       if (process.env.NODE_ENV === 'development') {
-        console.log('Search tracked:', { searchTerm, resultsCount });
+        if (process.env.NODE_ENV === 'development') {
+        console.debug('Search tracked:', { searchTerm, resultsCount });
+      }
       }
     }
   }, [searchTerm, resultsCount, trackSearch]);

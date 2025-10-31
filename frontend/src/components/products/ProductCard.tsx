@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { Product } from '@/services/productService'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { useLanguage } from '@/hooks/useLanguage'
+import { getImageUrl } from '@/lib/images'
 
 interface ProductCardProps {
   product: Product
@@ -127,7 +128,7 @@ export function ProductCard({
         {/* Product Image */}
         {mainImage && !imageError ? (
           <Image
-            src={mainImage.url}
+            src={getImageUrl(mainImage.url)}
             alt={mainImage.altText || productName}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"

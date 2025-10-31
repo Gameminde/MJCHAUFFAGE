@@ -48,7 +48,8 @@
     "signUpDescription": "Create a new account to get started",
     "emailPlaceholder": "Enter your email",
     "passwordPlaceholder": "Enter your password",
-    "phonePlaceholder": "Enter your phone number"
+    "phonePlaceholder": "Enter your phone number",
+    "networkError": "Network error. Please check your internet connection."
   },
   "home": {
     "hero": {

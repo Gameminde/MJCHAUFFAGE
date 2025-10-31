@@ -16,7 +16,7 @@ export function AuthForm({ mode, locale }: AuthFormProps) {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const { login, register, loading, error } = useAuth()
+  const { login, register, loading, error, user } = useAuth()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,10 +33,16 @@ export function AuthForm({ mode, locale }: AuthFormProps) {
 
     try {
       if (mode === 'login') {
-        await login(formData.email, formData.password)
+        const userData = await login(formData.email, formData.password)
         // AuthContext will handle success/failure
         if (!error) {
-          router.push(`/${locale}/dashboard`)
+          // Check user role and redirect accordingly
+          if (userData?.role === 'ADMIN') {
+            router.push('/admin/dashboard')
+          } else {
+            // Regular customers go to homepage
+            router.push(`/${locale}`)
+          }
         }
       } else {
         // Registration validation

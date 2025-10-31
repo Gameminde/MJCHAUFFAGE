@@ -2,7 +2,7 @@
 // Dedicated authentication context for admin panel
 // Uses localStorage for token persistence across refreshes
 
-import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback } from 'react';
 import { config } from '@/lib/config';
 
 interface AdminUser {
@@ -30,8 +30,10 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [error, setError] = useState<string | null>(null);
 
   // Fetch current admin user using token from localStorage
-  const fetchAdminUser = async () => {
-    console.log('🔍 AdminAuth: Fetching admin user...');
+  const fetchAdminUser = useCallback(async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('🔍 AdminAuth: Fetching admin user...');
+    }
     
     try {
       setLoading(true);
@@ -41,13 +43,17 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       const token = localStorage.getItem('authToken');
       
       if (!token) {
-        console.log('❌ AdminAuth: No token found in localStorage');
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('❌ AdminAuth: No token found in localStorage');
+        }
         setUser(null);
         setLoading(false);
         return;
       }
 
-      console.log('✅ AdminAuth: Token found, calling /admin/me');
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('✅ AdminAuth: Token found, calling /admin/me');
+      }
       
       // Call backend /admin/me endpoint
       const response = await fetch(`${config.api.baseURL}/admin/me`, {
@@ -60,7 +66,9 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       });
 
       if (!response.ok) {
-        console.log('❌ AdminAuth: /admin/me returned', response.status);
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('❌ AdminAuth: /admin/me returned', response.status);
+        }
         // Token invalid or expired
         localStorage.removeItem('authToken');
         setUser(null);
@@ -69,7 +77,9 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       }
 
       const data = await response.json();
-      console.log('✅ AdminAuth: User fetched successfully', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('✅ AdminAuth: User fetched successfully', data);
+      }
       
       // Backend returns { success: true, data: { user: {...} } }
       const adminUser = data.data?.user || data.user;
@@ -77,7 +87,9 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       if (adminUser && ['ADMIN', 'SUPER_ADMIN'].includes(adminUser.role)) {
         setUser(adminUser);
       } else {
-        console.log('❌ AdminAuth: User is not admin', adminUser);
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('❌ AdminAuth: User is not admin', adminUser);
+        }
         localStorage.removeItem('authToken');
         setUser(null);
       }
@@ -89,17 +101,19 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Admin login
   const login = async (email: string, password: string) => {
-    console.log('🔐 AdminAuth: Logging in...');
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('🔐 AdminAuth: Logging in...');
+    }
     
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${config.api.baseURL}/admin/auth/login`, {
+      const response = await fetch(`${config.api.baseURL}/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +128,9 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       }
 
       const data = await response.json();
-      console.log('✅ AdminAuth: Login successful', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('✅ AdminAuth: Login successful', data);
+      }
 
       // Store token in localStorage
       if (data.token) {
@@ -135,7 +151,9 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // Admin logout
   const logout = async () => {
-    console.log('🚪 AdminAuth: Logging out...');
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('🚪 AdminAuth: Logging out...');
+    }
     
     try {
       setLoading(true);
@@ -144,7 +162,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       
       // Call backend logout endpoint
       if (token) {
-        await fetch(`${config.api.baseURL}/admin/auth/logout`, {
+        await fetch(`${config.api.baseURL}/admin/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -164,9 +182,12 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // Fetch user on mount
   useEffect(() => {
-    console.log('🚀 AdminAuth: Provider mounted, fetching user...');
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('🚀 AdminAuth: Provider mounted, fetching user...');
+    }
+    // Run once on mount
     fetchAdminUser();
-  }, []);
+  }, [fetchAdminUser]);
 
   return (
     <AdminAuthContext.Provider value={{ user, loading, error, login, logout }}>

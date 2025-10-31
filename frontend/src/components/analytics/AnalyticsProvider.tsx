@@ -32,14 +32,15 @@ export function AnalyticsProvider({ children, userId }: AnalyticsProviderProps) 
     }
 
     // Initialize analytics service (non-blocking)
-    if (typeof window !== 'undefined') {
-      console.log('Analytics provider initialized');
+    // Avoid noisy logs in production; keep debug info only in development
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      console.debug('Analytics provider initialized');
       // Don't initialize analytics service immediately to avoid blocking auth
     }
 
     // Cleanup on unmount
     return () => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && analyticsService) {
         try {
           analyticsService.destroy();
         } catch (error) {

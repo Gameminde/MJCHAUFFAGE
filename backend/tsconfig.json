@@ -55,7 +55,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "tests",
     "node_modules/@aws-sdk/**/*"
   ],
   "ts-node": {

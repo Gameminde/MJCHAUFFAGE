@@ -1,10 +1,22 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ModernHomePage from '@/app/[locale]/ModernHomePage';
 
-// Mock next-intl
-jest.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+import { vi } from 'vitest';
+
+// Mock jest with vi
+global.jest = vi;
+
+// Mock next-intl with defaultValue support
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string, params?: Record<string, any>) => {
+    // If component passes a defaultValue, return it to simulate translation
+    if (params && typeof params.defaultValue === 'string') {
+      return params.defaultValue;
+    }
+    return key;
+  },
 }));
 
 describe('ModernHomePage', () => {

@@ -170,7 +170,7 @@ export default function FilterSidebar({
       <div className="flex items-center gap-3">
         <button
           type="button"
-          className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-3 py-2 text-sm bg-[#3EC4D0] text-[#051937] rounded-lg hover:bg-[#35b4bf]"
           onClick={() => {
             // noop: filters already apply on each change, this can serve as explicit action hook later
             onChange({ ...value });

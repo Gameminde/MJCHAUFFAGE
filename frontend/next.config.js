@@ -5,7 +5,14 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL_RAW = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Ensure we always proxy to the backend origin (strip any path like /api/v1)
+let BACKEND_ORIGIN;
+try {
+  BACKEND_ORIGIN = new URL(API_URL_RAW).origin;
+} catch {
+  BACKEND_ORIGIN = 'http://localhost:3001';
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -33,9 +40,9 @@ const nextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
   env: {
-    NEXT_PUBLIC_API_URL: API_URL,
-    API_URL_SSR: process.env.API_URL_SSR || API_URL,
-    BACKEND_API_URL: process.env.BACKEND_API_URL || `${process.env.API_URL_SSR || API_URL}/api/v1`,
+    NEXT_PUBLIC_API_URL: API_URL_RAW,
+    API_URL_SSR: process.env.API_URL_SSR || API_URL_RAW,
+    BACKEND_API_URL: process.env.BACKEND_API_URL || `${process.env.API_URL_SSR || API_URL_RAW}/api/v1`,
   },
   compress: true,
   poweredByHeader: false,
@@ -48,12 +55,17 @@ const nextConfig = {
       afterFiles: [
         {
           source: '/api/:path*',
-          destination: `${API_URL}/api/:path*`,
+          destination: `${BACKEND_ORIGIN}/api/v1/:path*`,
         },
         // Proxy /files directly to backend (for images)
         {
           source: '/files/:path*',
-          destination: `${API_URL}/files/:path*`,
+          destination: `${BACKEND_ORIGIN}/files/:path*`,
+        },
+        // Proxy /images alias to backend uploads as well
+        {
+          source: '/images/:path*',
+          destination: `${BACKEND_ORIGIN}/images/:path*`,
         },
       ],
       fallback: [],

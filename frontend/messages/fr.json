@@ -43,7 +43,7 @@
       "cta": "Acheter maintenant",
       "ctaSecondary": "En savoir plus",
       "titleLine1": "Pièces détachées pour",
-      "titleLine2": "chaudières professionnelles",
+      "titleLine2": "chaudières",
       "description": "Trouvez des pièces originales et de qualité pour tous vos besoins de chauffage professionnel.",
       "catalogButton": "Voir le catalogue",
       "contactButton": "Nous contacter"
@@ -186,7 +186,8 @@
     "lastName": "Nom",
     "phone": "Téléphone",
     "emailPlaceholder": "Entrez votre email",
-    "phonePlaceholder": "Entrez votre numéro de téléphone"
+    "phonePlaceholder": "Entrez votre numéro de téléphone",
+    "networkError": "Erreur de réseau. Vérifiez votre connexion internet."
   },
   "ServicesPage": {
     "metadata": {

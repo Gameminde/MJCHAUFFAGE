@@ -70,3 +70,7 @@ async function cleanImageUrls() {
 cleanImageUrls()
   .catch(console.error)
   .finally(() => prisma.$disconnect());
+
+
+
+

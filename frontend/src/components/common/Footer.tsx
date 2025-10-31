@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 export function Footer() {
   const t = useTranslations();
   const locale = useLocale();
+  // Avoid hydration mismatches from time-dependent values
+  const [year, setYear] = useState<string>("");
+
+  useEffect(() => {
+    // Compute on client after hydration
+    setYear(String(new Date().getFullYear()));
+  }, []);
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -63,7 +71,8 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} MJ CHAUFFAGE. {t('footer.rights')}</p>
+          {/* Render year on client to prevent hydration mismatch; server renders empty year */}
+          <p suppressHydrationWarning>&copy; {year} MJ CHAUFFAGE. {t('footer.rights')}</p>
         </div>
       </div>
     </footer>

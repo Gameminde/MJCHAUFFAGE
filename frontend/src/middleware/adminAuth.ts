@@ -9,10 +9,10 @@ export async function adminAuthMiddleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Protect admin routes - Check for authToken cookie
+  // Protect admin routes - Check for accessToken cookie
   if (isAdminRoute) {
-    // ✅ Check for HTTP-only authToken cookie
-    const authToken = req.cookies.get('authToken')?.value
+    // ✅ Check for HTTP-only accessToken cookie
+    const authToken = req.cookies.get('accessToken')?.value
     
     if (!authToken) {
       // Redirect to login if no token

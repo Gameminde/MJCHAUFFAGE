@@ -14,7 +14,9 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
   const router = useRouter()
 
   useEffect(() => {
-    console.log('🛡️ AdminAuthGuard: loading=', loading, 'user=', user)
+    if (process.env.NODE_ENV === 'development') {
+    console.debug('🛡️ AdminAuthGuard: loading=', loading, 'user=', user);
+  }
     
     // Wait for loading to complete
     if (loading) {
@@ -23,12 +25,16 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
 
     // Redirect if not authenticated
     if (!isAuthenticated) {
-      console.log('❌ AdminAuthGuard: Not authenticated, redirecting to login')
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('❌ AdminAuthGuard: Not authenticated, redirecting to login');
+      }
       router.replace('/admin/login')
       return
     }
 
-    console.log('✅ AdminAuthGuard: Admin access granted!')
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('✅ AdminAuthGuard: Admin access granted!');
+    }
   }, [isAuthenticated, loading, router, user])
 
   // Show loading spinner while checking authentication

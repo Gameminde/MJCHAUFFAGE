@@ -9,14 +9,10 @@ export class ContactController {
       return;
     }
 
-    const { firstName, lastName, email, phone, serviceType, message, wilaya } = req.body;
+    // Destructure contact form data (for future use when saving to database)
+    // const { firstName, lastName, email, phone, serviceType, message, wilaya } = req.body;
 
-    // Log the contact form submission (in production, save to database or send email)
-    console.log('Contact form submission:', {
-      firstName, lastName, email, phone, serviceType, message, wilaya
-    });
-    
-    // In a real implementation, we would send an email here
+    // In a real implementation, we would save to database and send email
     // For now, we'll just return a success response
     res.status(200).json({ 
       success: true, 

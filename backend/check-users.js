@@ -55,3 +55,7 @@ async function checkUsers() {
 checkUsers()
   .catch(console.error)
   .finally(() => prisma.$disconnect());
+
+
+
+

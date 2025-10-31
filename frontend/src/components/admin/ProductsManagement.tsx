@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Upload, Image, X, Plus, Edit, Trash2, Search, Filter, Eye } from 'lucide-react'
+import { Upload, Image as ImageIcon, X, Plus, Edit, Trash2, Search, Filter, Eye } from 'lucide-react'
+import NextImage from 'next/image'
 import { useProductRealtime } from '@/hooks/useRealtime'
 
 interface Product {
@@ -431,7 +432,9 @@ export function ProductsManagement() {
         }))
       }
 
-      console.log('📦 Sending product data to backend:', JSON.stringify(productData, null, 2))
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('📦 Sending product data to backend:', JSON.stringify(productData, null, 2));
+      }
 
       if (editingProduct) {
         // Update existing product
@@ -728,7 +731,7 @@ export function ProductsManagement() {
                 <label className="form-label">Images du produit</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                   <div className="text-center">
-                    <Image className="mx-auto h-12 w-12 text-gray-400" />
+                    <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="mt-4">
                       <button
                         type="button"
@@ -756,11 +759,14 @@ export function ProductsManagement() {
                   {uploadedImages.length > 0 && (
                     <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                       {uploadedImages.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <img
+                        <div key={index} className="relative group h-24">
+                          <NextImage
                             src={getImageUrl(image)}
                             alt={`Preview ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg"
+                            fill
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 200px"
+                            className="object-cover rounded-lg"
+                            priority={false}
                           />
                           <button
                             type="button"
@@ -940,18 +946,30 @@ export function ProductsManagement() {
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-12 w-12">
                             {product.images && product.images.length > 0 ? (
-                              <img
-                                src={getImageUrl(product.images[0])}
-                                alt={product.name}
-                                className="h-12 w-12 rounded-lg object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none'
-                                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
-                                }}
-                              />
+                              <>
+                                <NextImage
+                                  src={getImageUrl(product.images[0])}
+                                  alt={product.name}
+                                  width={48}
+                                  height={48}
+                                  className="rounded-lg object-cover"
+                                  onError={(e) => {
+                                    const wrapper = (e.currentTarget.parentElement as HTMLElement | null)
+                                    if (wrapper) {
+                                      wrapper.style.display = 'none'
+                                      const fallback = wrapper.nextElementSibling as HTMLElement | null
+                                      fallback?.classList.remove('hidden')
+                                    }
+                                  }}
+                                  priority={false}
+                                />
+                                <div className="hidden h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
+                                  <ImageIcon className="h-6 w-6 text-gray-400" />
+                                </div>
+                              </>
                             ) : null}
                             <div className={`h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center ${product.images && product.images.length > 0 ? 'hidden' : ''}`}>
-                              <Image className="h-6 w-6 text-gray-400" />
+                              <ImageIcon className="h-6 w-6 text-gray-400" />
                             </div>
                           </div>
                           <div className="ml-4">

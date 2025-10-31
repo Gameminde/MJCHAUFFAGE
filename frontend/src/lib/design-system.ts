@@ -79,3 +79,7 @@ export function goldenInverse(base: number): number {
 // goldenScale(16, 1) → 26px (16 × 1.618)
 // goldenScale(16, 2) → 42px (16 × 1.618²)
 // goldenInverse(100) → 62px (100 / 1.618)
+
+
+
+

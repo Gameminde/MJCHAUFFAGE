@@ -1,4 +1,106 @@
 import { body } from 'express-validator';
+import validator from 'validator';
+
+// Types for validation results
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+// Product data validation
+export function validateProductData(data: any): ValidationResult {
+  const errors: string[] = [];
+
+  // Validate name
+  if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+    errors.push('Le nom du produit est requis');
+  }
+
+  // Validate price
+  if (typeof data.price !== 'number' || data.price <= 0) {
+    errors.push('Le prix doit être positif');
+  }
+
+  // Validate categoryId
+  if (!data.categoryId || typeof data.categoryId !== 'string') {
+    errors.push('La catégorie est requise');
+  }
+
+  // Validate manufacturerId
+  if (!data.manufacturerId || typeof data.manufacturerId !== 'string') {
+    errors.push('Le fabricant est requis');
+  }
+
+  // Validate SKU format
+  if (data.sku && !/^[a-zA-Z0-9\-]+$/.test(data.sku)) {
+    errors.push('Le SKU doit contenir uniquement des lettres, chiffres et tirets');
+  }
+
+  // Validate stock quantity
+  if (typeof data.stockQuantity === 'number' && data.stockQuantity < 0) {
+    errors.push('La quantité en stock ne peut pas être négative');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+// User data validation
+export function validateUserData(data: any): ValidationResult {
+  const errors: string[] = [];
+
+  // Validate email
+  if (!data.email || !validator.isEmail(data.email)) {
+    errors.push('Adresse email invalide');
+  }
+
+  // Validate firstName
+  if (!data.firstName || typeof data.firstName !== 'string' || data.firstName.trim().length === 0) {
+    errors.push('Le prénom est requis');
+  }
+
+  // Validate lastName
+  if (!data.lastName || typeof data.lastName !== 'string' || data.lastName.trim().length === 0) {
+    errors.push('Le nom de famille est requis');
+  }
+
+  // Validate password
+  if (!data.password || typeof data.password !== 'string') {
+    errors.push('Le mot de passe est requis');
+  } else {
+    if (data.password.length < 8) {
+      errors.push('Le mot de passe doit contenir au moins 8 caractères');
+    }
+    // Note: In a real app, you'd want more complex password validation
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+// Input sanitization
+export function sanitizeInput(input: string | null | undefined): string {
+  if (input === null || input === undefined) {
+    return '';
+  }
+
+  let sanitized = input.toString();
+
+  // Remove HTML tags
+  sanitized = sanitized.replace(/<[^>]*>/g, '');
+
+  // Trim whitespace
+  sanitized = sanitized.trim();
+
+  // Basic SQL injection protection (remove common attack patterns)
+  sanitized = sanitized.replace(/['"`;\\]/g, '');
+
+  return sanitized;
+}
 
 export const registerValidation = [
   body('email')

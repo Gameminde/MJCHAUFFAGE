@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { CheckCircle, Truck, Shield, Wrench, ShoppingCart, Phone } from 'lucide-react';
+import { AnnouncementMarquee } from '@/components/common/AnnouncementMarquee';
+import { TestimonialsCarousel } from '@/components/home/TestimonialsCarousel';
 
 type Props = {
   params: { locale: string };
@@ -25,7 +27,10 @@ export default function LocalizedHomePageClient({ params }: Props) {
           once: true
         });
       } catch (error) {
-        console.warn('AOS animation library failed to load:', error);
+        // Only warn during development to avoid noisy logs in production
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('AOS animation library failed to load:', error);
+        }
       }
     };
     
@@ -34,6 +39,9 @@ export default function LocalizedHomePageClient({ params }: Props) {
   
   return (
     <>
+      {/* Announcement Marquee */}
+      <AnnouncementMarquee />
+
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
@@ -278,78 +286,8 @@ export default function LocalizedHomePageClient({ params }: Props) {
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Testimonial 1 */}
-            <div 
-              className="bg-gray-50 p-6 rounded-lg" 
-              data-aos="fade-up" 
-              data-aos-delay="200"
-            >
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold">
-                    JD
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-sm font-bold text-gray-900">{t('home.testimonials.jean.name')}</h4>
-                  <p className="text-sm text-gray-500">{t('home.testimonials.jean.role')}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-gray-600 italic">
-                  {t('home.testimonials.jean.quote')}
-                </p>
-              </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div 
-              className="bg-gray-50 p-6 rounded-lg" 
-              data-aos="fade-up" 
-              data-aos-delay="300"
-            >
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-600 flex items-center justify-center text-white font-bold">
-                    ML
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-sm font-bold text-gray-900">{t('home.testimonials.marie.name')}</h4>
-                  <p className="text-sm text-gray-500">{t('home.testimonials.marie.role')}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-gray-600 italic">
-                  {t('home.testimonials.marie.quote')}
-                </p>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div 
-              className="bg-gray-50 p-6 rounded-lg" 
-              data-aos="fade-up" 
-              data-aos-delay="400"
-            >
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold">
-                    TL
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-sm font-bold text-gray-900">{t('home.testimonials.thomas.name')}</h4>
-                  <p className="text-sm text-gray-500">{t('home.testimonials.thomas.role')}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-gray-600 italic">
-                  {t('home.testimonials.thomas.quote')}
-                </p>
-              </div>
-            </div>
+          <div className="mt-10">
+            <TestimonialsCarousel />
           </div>
         </div>
       </div>

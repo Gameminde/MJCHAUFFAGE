@@ -18,16 +18,20 @@ export function LoginForm({ callbackUrl = '/' }: LoginFormProps) {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
-  const { login, loading, error } = useAuth()
+  const { login, loading, error, user } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
 
     try {
-      await login(formData.email, formData.password)
-      // Login successful - AuthContext will update and redirect will happen
-      router.push(callbackUrl)
+      const userData = await login(formData.email, formData.password)
+      // Login successful - check user role and redirect accordingly
+      if (userData?.role === 'ADMIN') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push(callbackUrl)
+      }
       router.refresh()
     } catch (err) {
       // Error is handled by AuthContext

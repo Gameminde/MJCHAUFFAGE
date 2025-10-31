@@ -96,7 +96,7 @@ export default function ModernProductsPage({
   return (
     <div className={`min-h-screen bg-white ${isArabic ? 'rtl' : 'ltr'}`}>
       {/* Reduced Header Section */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-500 text-white">
+      <div className="bg-gradient-to-r from-[#051937] to-[#0b2e59] text-white">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -122,7 +122,7 @@ export default function ModernProductsPage({
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-600 hover:text-primary-600 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[#3EC4D0] hover:opacity-90 transition-colors"
                 >
                   <Search className="w-4 h-4" />
                 </button>
@@ -182,7 +182,7 @@ export default function ModernProductsPage({
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white shadow-sm text-orange-600'
+                    ? 'bg-white shadow-sm text-[#3EC4D0]'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 aria-label="Vue grille"
@@ -193,7 +193,7 @@ export default function ModernProductsPage({
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-md transition-colors ${
                   viewMode === 'list'
-                    ? 'bg-white shadow-sm text-orange-600'
+                    ? 'bg-white shadow-sm text-[#3EC4D0]'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 aria-label="Vue liste"
@@ -265,7 +265,7 @@ export default function ModernProductsPage({
               <div
                 className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch'
                     : 'space-y-4'
                 }
               >
@@ -290,7 +290,7 @@ export default function ModernProductsPage({
                         }}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           page === initialPagination.page
-                            ? 'bg-orange-600 text-white shadow-lg'
+                            ? 'bg-[#051937] text-white shadow-lg'
                             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >

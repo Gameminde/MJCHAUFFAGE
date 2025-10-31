@@ -134,6 +134,7 @@ export const createAdvancedRateLimit = (options: {
   skipSuccessfulRequests?: boolean;
   skipFailedRequests?: boolean;
   keyGenerator?: (req: Request) => string;
+  skip?: (req: Request) => boolean;
 }) => {
   return rateLimit({
     windowMs: options.windowMs,
@@ -148,6 +149,7 @@ export const createAdvancedRateLimit = (options: {
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     skipFailedRequests: options.skipFailedRequests || false,
     keyGenerator: options.keyGenerator || ((req: Request) => req.ip || 'unknown'),
+    skip: (req) => (options.skip ? options.skip(req) : false),
     handler: (req, res) => {
       logger.warn(`Rate limit exceeded for IP: ${req.ip || 'unknown'}, URL: ${req.url}`);
       res.status(429).json({
@@ -170,8 +172,15 @@ export const authRateLimit = createAdvancedRateLimit({
 
 export const apiRateLimit = createAdvancedRateLimit({
   windowMs: config.env === 'production' ? 15 * 60 * 1000 : 60 * 60 * 1000, // 15 min prod, 1 hour dev
-  max: config.env === 'production' ? 100 : 500, // 100 prod, 500 dev
-  message: 'Too many API requests, please try again later'
+  max: config.env === 'production' ? 100 : 5000, // Higher limit in development
+  message: 'Too many API requests, please try again later',
+  // Skip analytics endpoints in development to avoid interfering with local testing
+  skip: (req: Request) => (
+    config.env !== 'production' && (
+      req.path.includes('/analytics/events') ||
+      req.path.includes('/analytics/track')
+    )
+  )
 });
 
 export const strictRateLimit = createAdvancedRateLimit({

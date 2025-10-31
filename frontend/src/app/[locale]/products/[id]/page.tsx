@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { fetchProductDetailSSR, fetchProductsSSR } from '@/lib/ssr-api';
-import { AddToCartButton } from '@/components/cart/AddToCartButton';
-import { ProductImage } from '@/components/product/ProductImage';
-import { getProductImage } from '@/utils/imageUtils';
+import { ProductImageGallery } from '@/components/products/ProductImageGallery';
+import { ProductActions } from '@/components/products/ProductActions';
+import { getImageUrl } from '@/lib/images';
 
 type Props = {
   params: { locale: string; id: string };
@@ -64,6 +64,11 @@ export default async function ProductDetailPage({ params }: Props) {
   const isArabic = locale === 'ar';
   const numberLocale = isArabic ? 'ar-DZ' : 'fr-DZ';
 
+  // Process all product images
+  const productImages: string[] = Array.isArray(product.images) && product.images.length > 0
+    ? product.images.map(img => typeof img === 'string' ? img : img.url)
+    : [];
+
   return (
     <main className={`min-h-screen bg-gray-50 ${isArabic ? 'rtl' : ''}`}>
       <div className="bg-white shadow-sm">
@@ -81,15 +86,10 @@ export default async function ProductDetailPage({ params }: Props) {
       </div>
 
       <section className="max-w-6xl mx-auto px-4 py-12 grid gap-10 lg:grid-cols-2">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-          <div className="bg-gray-100 h-96 flex items-center justify-center">
-            <ProductImage
-              src={getProductImage(product.images)}
-              alt={product.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        </div>
+        <ProductImageGallery
+          images={productImages}
+          productName={product.name}
+        />
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 space-y-6">
           <div>
@@ -139,23 +139,16 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           </div>
 
-          <AddToCartButton
+          <ProductActions
             product={{
               id: product.id,
               name: product.name,
-              price: product.salePrice ?? product.price,
-              sku: product.id,
+              price: product.price,
+              salePrice: product.salePrice,
+              sku: product.sku,
               stockQuantity: product.stockQuantity,
-              images:
-                product.images && product.images.length > 0
-                  ? product.images.map((img) =>
-                      typeof img === 'string' ? { url: img } : { url: img.url },
-                    )
-                  : [],
+              images: productImages.map(img => ({ url: img })),
             }}
-            variant="primary"
-            size="lg"
-            className="w-full"
           />
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">

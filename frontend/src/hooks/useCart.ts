@@ -51,31 +51,29 @@ export function useCart(): UseCartResult {
   // Use consolidated AuthContext
   const { user, loading: authLoading } = useAuth();
 
-  const isAuthenticated = !!user && !authLoading;
+  // Memoize authentication state to prevent unnecessary re-computations
+  const isAuthenticated = useMemo(() => !!user && !authLoading, [user, authLoading]);
   const userId = user?.id;
 
-  // Sync cart with backend when user logs in/out
+  // Sync cart with backend when user logs in (only once)
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Load cart from backend when user logs in
+    if (isAuthenticated && user && !isLoading) {
+      // Only sync once when user first logs in
       syncCartFromBackend();
-    } else if (!isAuthenticated) {
-      // Keep local cart when user logs out
-      // The cart store already persists to localStorage
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id]); // Only depend on user ID, not entire user object
 
-  // Sync cart changes to backend for authenticated users with debouncing
+  // Reduce backend sync frequency - only sync when cart changes significantly
   useEffect(() => {
-    if (isAuthenticated && items.length > 0) {
-      // Debounce cart sync to avoid too many requests
+    if (isAuthenticated && items.length > 0 && !isLoading) {
+      // Debounce cart sync and only sync if there are actual changes
       const timeoutId = setTimeout(() => {
         syncCartToBackend();
-      }, 1500); // Wait 1.5 seconds after last change
+      }, 3000); // Increased to 3 seconds
 
       return () => clearTimeout(timeoutId);
     }
-  }, [items, isAuthenticated]);
+  }, [items.length, isAuthenticated]); // Only depend on length to reduce frequency
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -191,7 +189,7 @@ export function useCart(): UseCartResult {
 
   const syncCartToBackend = useCallback(
     async () => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated || items.length === 0) return;
 
       try {
         const cartItems = items.map(item => ({
@@ -200,9 +198,15 @@ export function useCart(): UseCartResult {
         }));
 
         await api.post('/cart/sync', { items: cartItems });
+        // Only log success in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Cart synced to backend successfully');
+        }
       } catch (error) {
-        console.error('Error syncing cart to backend:', error);
-        // Don't show error to user for background sync
+        // Silent fail for background sync - don't spam console
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Cart sync to backend failed (background):', error);
+        }
       }
     },
     [items, isAuthenticated],
@@ -215,25 +219,32 @@ export function useCart(): UseCartResult {
       try {
         const result = await api.get('/cart') as { success: boolean; data?: { items?: any[] } };
         if (result.success && result.data?.items) {
-          // Merge backend cart with local cart
+          // Only merge if there are actual backend items
           const backendItems = result.data.items;
-          const localItems = useCartStore.getState().items;
+          if (backendItems.length > 0) {
+            const localItems = useCartStore.getState().items;
 
-          // Simple merge: prefer backend items, add any local items not in backend
-          const mergedItems = [...backendItems];
+            // Simple merge: prefer backend items, add any local items not in backend
+            const mergedItems = [...backendItems];
 
-          localItems.forEach(localItem => {
-            const existsInBackend = mergedItems.some(item => item.productId === localItem.productId);
-            if (!existsInBackend) {
-              mergedItems.push(localItem);
+            localItems.forEach(localItem => {
+              const existsInBackend = mergedItems.some(item => item.productId === localItem.productId);
+              if (!existsInBackend) {
+                mergedItems.push(localItem);
+              }
+            });
+
+            setItems(mergedItems);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Cart synced from backend:', mergedItems.length, 'items');
             }
-          });
-
-          setItems(mergedItems);
+          }
         }
       } catch (error) {
-        console.error('Error syncing cart from backend:', error);
-        // Don't show error to user for background sync
+        // Silent fail for background sync
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Cart sync from backend failed (background):', error);
+        }
       }
     },
     [isAuthenticated, setItems],

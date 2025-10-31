@@ -1,5 +1,6 @@
 // frontend/src/utils/imageUtils.ts
-// Utility functions for handling product images
+// DEPRECATED: Use '@/lib/images' (getImageUrl, getProductImageUrl, getProductImageUrls)
+// This file remains for backward compatibility but should not be used in new code.
 
 import { config } from '@/lib/config';
 

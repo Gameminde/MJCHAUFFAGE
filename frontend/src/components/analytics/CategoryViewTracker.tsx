@@ -17,7 +17,9 @@ export function CategoryViewTracker({ categoryId, categoryName }: CategoryViewTr
     
     // Optional: Log for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log('Category view tracked:', { categoryId, categoryName });
+      if (process.env.NODE_ENV === 'development') {
+          console.debug('Category view tracked:', { categoryId, categoryName });
+        }
     }
   }, [categoryId, categoryName, trackCategoryView]);
 

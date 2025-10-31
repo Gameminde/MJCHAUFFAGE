@@ -230,7 +230,9 @@ export const productService = {
   async getCategories(): Promise<Category[]> {
     try {
       const result = await api.get<{ success: boolean; data: { categories: Category[] } }>('/products/categories')
-      console.log('📦 Categories response:', result)
+      if (process.env.NODE_ENV === 'development') {
+      console.debug('📦 Categories response:', result);
+    }
       return result.data?.categories ?? []
     } catch (error) {
       console.error('Error fetching categories:', error)

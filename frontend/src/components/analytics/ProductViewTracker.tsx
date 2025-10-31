@@ -24,7 +24,9 @@ export function ProductViewTracker({
     
     // Optional: Log for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log('Product view tracked:', { productId, productName, categoryId, value });
+      if (process.env.NODE_ENV === 'development') {
+          console.debug('Product view tracked:', { productId, productName, categoryId, value });
+        }
     }
   }, [productId, categoryId, value, trackProductView, productName]);
 

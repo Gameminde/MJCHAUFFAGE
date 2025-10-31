@@ -65,6 +65,7 @@ class AnalyticsService {
   private eventQueue: any[] = [];
   private flushInterval: NodeJS.Timeout | null = null;
   private backoffUntil: number | null = null;
+  private disabled: boolean = process.env.NODE_ENV !== 'production';
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -81,6 +82,12 @@ class AnalyticsService {
 
   private async init() {
     if (this.isInitialized) return;
+
+    if (this.disabled) {
+      // Do not initialize analytics network calls in development
+      this.isInitialized = true;
+      return;
+    }
 
     try {
       // Initialize session tracking (non-blocking)
@@ -115,6 +122,8 @@ class AnalyticsService {
   }
 
   private async initializeSession() {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
+    
     const sessionData: SessionData = {
       sessionId: this.sessionId,
       userId: this.userId,
@@ -137,6 +146,8 @@ class AnalyticsService {
   }
 
   private setupVisibilityTracking() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         this.trackPageEnd();
@@ -147,6 +158,8 @@ class AnalyticsService {
   }
 
   private setupUnloadTracking() {
+    if (typeof window === 'undefined') return;
+    
     window.addEventListener('beforeunload', () => {
       this.trackPageEnd();
       this.flushEvents(true); // Synchronous flush on unload
@@ -159,10 +172,11 @@ class AnalyticsService {
   }
 
   private startEventFlushing() {
-    // Flush events every 10 seconds
+    if (this.disabled) return;
+    // Flush events every 30 seconds in production
     this.flushInterval = setInterval(() => {
       this.flushEvents();
-    }, 10000);
+    }, 30000);
   }
 
   private trackPageEnd() {
@@ -192,6 +206,9 @@ class AnalyticsService {
 
   private async flushEvents(synchronous = false) {
     if (this.eventQueue.length === 0) return;
+    
+    // Skip if running on server (SSR) or disabled (development)
+    if (typeof window === 'undefined' || this.disabled) return;
 
     const events = [...this.eventQueue];
     this.eventQueue = [];
@@ -401,6 +418,8 @@ class AnalyticsService {
   }
 
   private getDeviceType(): string {
+    if (typeof navigator === 'undefined') return 'unknown';
+    
     const userAgent = navigator.userAgent;
     
     if (/tablet|ipad|playbook|silk/i.test(userAgent)) {
@@ -413,6 +432,8 @@ class AnalyticsService {
   }
 
   private getBrowser(): string {
+    if (typeof navigator === 'undefined') return 'unknown';
+    
     const userAgent = navigator.userAgent;
     
     if (userAgent.includes('Chrome')) return 'Chrome';
@@ -425,6 +446,8 @@ class AnalyticsService {
   }
 
   private getOS(): string {
+    if (typeof navigator === 'undefined') return 'unknown';
+    
     const userAgent = navigator.userAgent;
     
     if (userAgent.includes('Windows')) return 'Windows';
@@ -437,6 +460,8 @@ class AnalyticsService {
   }
 
   private async getLocationData(): Promise<{ country?: string; city?: string }> {
+    if (typeof window === 'undefined') return {};
+    
     try {
       // Resolve via frontend API route to avoid browser CORS issues
       const response = await fetch(`/api/geolocation`, {
@@ -468,8 +493,8 @@ class AnalyticsService {
   }
 }
 
-// Create singleton instance
-export const analyticsService = new AnalyticsService();
+// Create singleton instance - only on client side
+export const analyticsService = typeof window !== 'undefined' ? new AnalyticsService() : null;
 
 // Export for use in components
 export default analyticsService;

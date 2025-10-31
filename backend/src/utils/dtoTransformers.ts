@@ -1,27 +1,60 @@
 import { Prisma } from '@prisma/client';
+import { config } from '@/config/environment';
 
 /**
  * Transform image URL - now that we store relative paths,
  * just ensure URLs are properly formatted
  */
 export const transformImageUrl = (image: any): string => {
-  // If already an absolute URL (external), return as-is
-  if (/^https?:\/\//i.test(image.url)) {
-    return image.url;
+  let url = image?.url ?? '';
+  if (!url || typeof url !== 'string') return '';
+
+  // Repair malformed absolute URLs like http:/ or https:/
+  if (/^https?:\/(?!\/)/i.test(url)) {
+    url = url.replace(/^http:\/(?!\/)/i, 'http://').replace(/^https:\/(?!\/)/i, 'https://');
   }
 
-  // If already starts with /files/ or /images/, return as-is
-  if (image.url.startsWith('/files/') || image.url.startsWith('/images/')) {
-    return image.url;
+  // Normalize any accidental double /files prefixes
+  const normalizeFilesPath = (p: string) => p
+    .replace(/\/files\/+/g, '/files/')
+    .replace(/\/files\/(?:files\/)+/g, '/files/')
+    .replace(/\/files\/+/g, '/files/');
+
+  // If URL is absolute and points to our backend, return relative /files path
+  try {
+    if (/^https?:\/\//i.test(url)) {
+      const u = new URL(url);
+      const backendOrigin = new URL(config.api.baseUrl).origin;
+      if (u.origin === backendOrigin) {
+        let rel = u.pathname;
+        // strip API prefix if present
+        if (rel.startsWith('/api/v1/')) rel = rel.replace('/api/v1', '');
+        rel = normalizeFilesPath(rel);
+        if (rel.startsWith('/files/')) return rel;
+        // if it's a plain filename path
+        if (!rel.startsWith('/')) return `/files/${rel}`;
+        return rel;
+      }
+      // External absolute URL
+      return url;
+    }
+  } catch (_) {
+    // fall through to relative handling
   }
 
-  // If starts with /, return as-is (avoid adding extra prefixes)
-  if (image.url.startsWith('/')) {
-    return image.url;
+  // Already proper relative paths
+  if (url.startsWith('/files/') || url.startsWith('/images/')) {
+    return normalizeFilesPath(url);
+  }
+  if (url.startsWith('/api/v1/files/')) {
+    return normalizeFilesPath(url.replace('/api/v1', ''));
+  }
+  if (url.startsWith('/')) {
+    return url;
   }
 
-  // For filenames without path, prepend with /files/
-  return `/files/${image.url}`;
+  // For bare filenames, prefix with /files/
+  return `/files/${url}`;
 };
 
 export const isDecimal = (value: unknown): value is Prisma.Decimal => {

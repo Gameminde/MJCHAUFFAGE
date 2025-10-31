@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminAuth } from '@/contexts/AdminAuthContext'
 
@@ -13,11 +13,12 @@ export default function AdminLoginPage() {
   const router = useRouter()
   const { login, loading, error, user } = useAdminAuth()
 
-  // Redirect if already authenticated as admin
-  if (user && ['ADMIN', 'SUPER_ADMIN'].includes(user.role) && !loading) {
-    router.push('/admin/dashboard')
-    return null
-  }
+  // Redirect if already authenticated as admin (avoid pushing during render)
+  useEffect(() => {
+    if (!loading && user && ['ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+      router.replace('/admin/dashboard')
+    }
+  }, [loading, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,7 +119,7 @@ export default function AdminLoginPage() {
             <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
               <p className="font-medium">Compte admin :</p>
               <p>Email: admin@mjchauffage.com</p>
-              <p>Mot de passe: admin123</p>
+              <p>Mot de passe: Admin123!</p>
             </div>
           </div>
         </div>

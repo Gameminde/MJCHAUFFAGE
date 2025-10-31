@@ -138,10 +138,11 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
     await AuthService.updateLastLogin(user.id);
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _pw, ...userWithoutPassword } = user;
 
     // Set HTTP-only cookie for middleware authentication
-    res.cookie('authToken', tokens.accessToken, {
+    res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true, // Protection XSS
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

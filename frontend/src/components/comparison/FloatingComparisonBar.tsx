@@ -1,8 +1,10 @@
 'use client'
 
-import { useComparison } from '@/contexts/ComparisonContext'
-import { useRouter } from 'next/navigation'
-import { X, Layers } from 'lucide-react'
+ import { useComparison } from '@/contexts/ComparisonContext'
+ import { useRouter } from 'next/navigation'
+ import { X, Layers } from 'lucide-react'
+ import Image from 'next/image'
+ import { getImageUrl } from '@/lib/images'
 
 interface FloatingComparisonBarProps {
   locale?: string
@@ -77,10 +79,13 @@ export function FloatingComparisonBar({ locale = 'fr' }: FloatingComparisonBarPr
                   className="relative"
                   style={{ zIndex: items.length - index }}
                 >
-                  <img
-                    src={item.image || '/placeholder-product.jpg'}
+                  <Image
+                    src={getImageUrl(item.image || '/placeholder-product.jpg')}
                     alt={item.name}
-                    className="w-8 h-8 rounded-md object-cover border-2 border-white"
+                    width={32}
+                    height={32}
+                    className="rounded-md object-cover border-2 border-white"
+                    sizes="32px"
                   />
                 </div>
               ))}

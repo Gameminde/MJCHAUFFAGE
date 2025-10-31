@@ -8,38 +8,54 @@ export function usePageTracking() {
 
   useEffect(() => {
     // Track page view when pathname changes (handle null safely)
-    analyticsService.trackPageView(pathname ?? undefined);
+    if (analyticsService) {
+      analyticsService.trackPageView(pathname ?? undefined);
+    }
   }, [pathname]);
 }
 
 // Hook for ecommerce tracking
 export function useEcommerceTracking() {
   const trackProductView = useCallback((productId: string, categoryId?: string, value?: number) => {
-    analyticsService.trackProductView(productId, categoryId, value);
+    if (analyticsService) {
+      analyticsService.trackProductView(productId, categoryId, value);
+    }
   }, []);
 
   const trackAddToCart = useCallback((productId: string, quantity: number, value: number, categoryId?: string) => {
-    analyticsService.trackAddToCart(productId, quantity, value, categoryId);
+    if (analyticsService) {
+      analyticsService.trackAddToCart(productId, quantity, value, categoryId);
+    }
   }, []);
 
   const trackRemoveFromCart = useCallback((productId: string, quantity: number, value: number) => {
-    analyticsService.trackRemoveFromCart(productId, quantity, value);
+    if (analyticsService) {
+      analyticsService.trackRemoveFromCart(productId, quantity, value);
+    }
   }, []);
 
   const trackBeginCheckout = useCallback((value: number, items: Array<{productId: string, quantity: number, value: number}>) => {
-    analyticsService.trackBeginCheckout(value, items);
+    if (analyticsService) {
+      analyticsService.trackBeginCheckout(value, items);
+    }
   }, []);
 
   const trackPurchase = useCallback((orderId: string, value: number, items: Array<{productId: string, quantity: number, value: number}>) => {
-    analyticsService.trackPurchase(orderId, value, items);
+    if (analyticsService) {
+      analyticsService.trackPurchase(orderId, value, items);
+    }
   }, []);
 
   const trackCategoryView = useCallback((categoryId: string, categoryName?: string) => {
-    analyticsService.trackCategoryView(categoryId, categoryName);
+    if (analyticsService) {
+      analyticsService.trackCategoryView(categoryId, categoryName);
+    }
   }, []);
 
   const trackSearch = useCallback((searchTerm: string, resultsCount?: number) => {
-    analyticsService.trackSearch(searchTerm, resultsCount);
+    if (analyticsService) {
+      analyticsService.trackSearch(searchTerm, resultsCount);
+    }
   }, []);
 
   return {
@@ -56,7 +72,9 @@ export function useEcommerceTracking() {
 // Hook for user identification
 export function useUserTracking() {
   const setUserId = useCallback((userId: string) => {
-    analyticsService.setUserId(userId);
+    if (analyticsService) {
+      analyticsService.setUserId(userId);
+    }
   }, []);
 
   return { setUserId };
@@ -74,16 +92,18 @@ export function usePerformanceTracking() {
           const loadTime = navigation.loadEventEnd - navigation.fetchStart;
           
           // Send performance data to analytics (using custom event type)
-          analyticsService.trackEcommerceEvent({
-            eventType: 'view_item', // Use existing event type for now
-            metadata: {
-              type: 'performance_metric',
-              loadTime,
-              domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
-              firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
-              firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0
-            }
-          });
+          if (analyticsService) {
+            analyticsService.trackEcommerceEvent({
+              eventType: 'view_item', // Use existing event type for now
+              metadata: {
+                type: 'performance_metric',
+                loadTime,
+                domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
+                firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
+                firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0
+              }
+            });
+          }
         }
       });
 
@@ -94,14 +114,16 @@ export function usePerformanceTracking() {
             const entries = list.getEntries();
             const lastEntry = entries[entries.length - 1];
             
-            analyticsService.trackEcommerceEvent({
-              eventType: 'view_item', // Use existing event type for now
-              value: lastEntry.startTime,
-              metadata: {
-                type: 'lcp_metric',
-                element: (lastEntry as any).element?.tagName || 'unknown'
-              }
-            });
+            if (analyticsService) {
+              analyticsService.trackEcommerceEvent({
+                eventType: 'view_item', // Use existing event type for now
+                value: lastEntry.startTime,
+                metadata: {
+                  type: 'lcp_metric',
+                  element: (lastEntry as any).element?.tagName || 'unknown'
+                }
+              });
+            }
           });
           
           observer.observe({ entryTypes: ['largest-contentful-paint'] });

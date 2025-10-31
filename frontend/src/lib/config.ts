@@ -7,9 +7,9 @@
  */
 export const config = {
   api: {
-    // Client-side API URL (exposed to browser)
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
-    
+    // Client-side API URL (exposed to browser) - uses rewrites to proxy to backend
+    baseURL: '/api',
+
     // Server-side API URL (SSR, API routes)
     ssrBaseURL: process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   },

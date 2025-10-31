@@ -8,19 +8,19 @@ import { logger } from '@/utils/logger';
 // Enhanced input sanitization helper
 export const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return '';
-  
+
   // Remove HTML tags and potentially dangerous characters
-  let sanitized = DOMPurify.sanitize(input, { 
-    ALLOWED_TAGS: [], 
-    ALLOWED_ATTR: [] 
+  let sanitized = DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: []
   });
-  
+
   // Escape HTML entities
   sanitized = validator.escape(sanitized);
-  
+
   // Remove null bytes and control characters
   sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
-  
+
   // Additional sanitization for various injection attacks
   sanitized = sanitized
     .replace(/[<>'"]/g, '') // Remove dangerous characters
@@ -30,7 +30,7 @@ export const sanitizeInput = (input: string): string => {
     .replace(/on\w+\s*=/gi, '') // Remove event handlers
     .trim()
     .substring(0, 1000); // Limit length
-  
+
   return sanitized;
 };
 
@@ -81,7 +81,10 @@ export const sanitizeUrl = (url: string): string => {
 // Enhanced sanitize request body middleware
 export const sanitizeRequestBody = (req: Request, res: Response, next: NextFunction): void => {
   if (req.body && typeof req.body === 'object') {
-    const sanitizeObject = (obj: any, depth = 0): any => {
+    // Fields that should not be sanitized (passwords, etc.)
+    const skipSanitizationFields = ['password', 'currentPassword', 'newPassword', 'confirmPassword'];
+
+    const sanitizeObject = (obj: any, depth = 0, parentKey = ''): any => {
       // Prevent deep nesting attacks
       if (depth > 10) {
         logger.warn(`Deep nesting attack detected from ${req.ip}`, { depth, url: req.url });
@@ -94,6 +97,10 @@ export const sanitizeRequestBody = (req: Request, res: Response, next: NextFunct
       }
 
       if (typeof obj === 'string') {
+        // Skip sanitization for password fields
+        if (skipSanitizationFields.includes(parentKey.toLowerCase())) {
+          return obj;
+        }
         return sanitizeInput(obj);
       } else if (Array.isArray(obj)) {
         // Limit array size to prevent DoS
@@ -106,7 +113,7 @@ export const sanitizeRequestBody = (req: Request, res: Response, next: NextFunct
           });
           return;
         }
-        return obj.map(item => sanitizeObject(item, depth + 1));
+        return obj.map(item => sanitizeObject(item, depth + 1, parentKey));
       } else if (obj && typeof obj === 'object') {
         // Limit object properties to prevent DoS
         const keys = Object.keys(obj);
@@ -125,7 +132,7 @@ export const sanitizeRequestBody = (req: Request, res: Response, next: NextFunct
           // Sanitize property names too
           const sanitizedKey = sanitizeInput(key);
           if (sanitizedKey) {
-            sanitized[sanitizedKey] = sanitizeObject(value, depth + 1);
+            sanitized[sanitizedKey] = sanitizeObject(value, depth + 1, key);
           }
         }
         return sanitized;
@@ -213,16 +220,16 @@ export const authValidation = {
       .withMessage('Password must be 8+ characters with uppercase, lowercase, and number'),
     body('firstName')
       .isLength({ min: 1, max: 50 })
-      .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-      .withMessage('First name must be 1-50 characters, letters only'),
+      .matches(/^[a-zA-ZÀ-ÿ\s\-']+$/)
+      .withMessage('First name must be 1-50 characters, letters, spaces, hyphens, and apostrophes only'),
     body('lastName')
       .isLength({ min: 1, max: 50 })
-      .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-      .withMessage('Last name must be 1-50 characters, letters only'),
+      .matches(/^[a-zA-ZÀ-ÿ\s\-']+$/)
+      .withMessage('Last name must be 1-50 characters, letters, spaces, hyphens, and apostrophes only'),
     body('phone')
       .optional()
-      .matches(/^(\+213|0)[5-7][0-9]{8}$/)
-      .withMessage('Invalid Algerian phone number format'),
+      .isLength({ min: 8, max: 15 })
+      .withMessage('Phone number must be 8-15 characters'),
   ],
 
   login: [

@@ -21,7 +21,7 @@ type Props = {
   footer: React.ReactNode;
   header: React.ReactNode;
   modal: React.ReactNode;
-  // sidebar: React.ReactNode; // Removed - not currently used
+  sidebar: React.ReactNode;
 };
 
 export function generateStaticParams() {
@@ -158,10 +158,9 @@ export default async function RootLayout({
   modal,
   // sidebar, // Removed - not currently used
 }: Props) {
-  console.log('[locale] layout render', locale);
   setRequestLocale(locale);
   const messages = await getMessages();
-  console.log('[locale] messages loaded', locale, Array.isArray(messages) ? 'array' : typeof messages);
+  // Debug logs removed to reduce noise in console
   
   // Set document direction based on locale
   const dir = locale === 'ar' ? 'rtl' : 'ltr';

@@ -86,10 +86,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const data = await response.json();
         setUser(data.data?.user || data.user || null);
       } else {
-        // Regular user authentication - call backend API directly
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/auth/me`, {
+        // Regular user authentication - call Next.js API route to avoid cross-origin noise
+        const response = await fetch('/api/auth/me', {
           method: 'GET',
           credentials: 'include',
+          cache: 'no-store',
         });
         
         if (!response.ok) {
@@ -115,10 +116,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoading(true);
       setError(null);
-      
+
       // Check if we're on admin route
       const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-      
+
+      let userData = null;
+
       if (isAdminRoute) {
         // Admin login
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/admin/auth/login`, {
@@ -127,20 +130,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           body: JSON.stringify({ email, password }),
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Login failed');
         }
-        
+
         const data = await response.json();
-        
+
         // Store token in localStorage for admin
         if (data.token && typeof window !== 'undefined') {
           localStorage.setItem('authToken', data.token);
         }
-        
-        setUser(data.user || data.data?.user || null);
+
+        userData = data.user || data.data?.user || null;
+        setUser(userData);
       } else {
         // Regular user login - call backend API directly
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/auth/login`, {
@@ -149,15 +153,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           body: JSON.stringify({ email, password }),
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Login failed');
         }
-        
+
         const data = await response.json();
-        setUser(data.data?.user || data.user || null);
+        userData = data.data?.user || data.user || null;
+        setUser(userData);
       }
+
+      return userData; // Return user data for redirection logic
     } catch (err) {
       setError((err as Error).message);
       throw err; // Re-throw so login page can handle it
@@ -178,6 +185,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(true);
       setError(null);
       // Call backend API directly
+      console.log('Sending registration data:', data);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

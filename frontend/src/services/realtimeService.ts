@@ -161,4 +161,8 @@ class RealtimeService {
 // Create singleton instance
 const realtimeService = new RealtimeService()
 
+if (process.env.NODE_ENV === 'development') {
+  console.debug('🔄 Realtime service initialized');
+}
+
 export default realtimeService

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AdminController } from '@/controllers/adminController';
-import { adminLogin, adminMe } from '@/controllers/adminAuthController';
+import { adminLogin, adminMe, adminLogout } from '@/controllers/adminAuthController';
 import { authenticateToken, requireAdmin, requireSuperAdmin } from '@/middleware/auth';
 import { body, param } from 'express-validator';
 
@@ -40,6 +40,7 @@ const router = Router();
  *         description: Not an admin user
  */
 router.post('/login', adminLogin);
+router.post('/logout', authenticateToken, requireAdmin, adminLogout);
 
 // ============================================
 // PROTECTED ADMIN ROUTES (AUTH REQUIRED)

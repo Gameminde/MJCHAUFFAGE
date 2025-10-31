@@ -1,6 +1,7 @@
 'use client'
 
-import Link from 'next/link'
+ import Link from 'next/link'
+ import Image from 'next/image'
 import { generateMetadata as generateSEOMetadata, seoConfigs } from '@/utils/seo'
 import { BreadcrumbStructuredData, ProductStructuredData } from '@/components/seo/StructuredData'
 import { AccessibilityChecker } from '@/utils/accessibility'
@@ -69,22 +70,27 @@ export default function SEOTestPage({ params }: Props) {
           <p>Examples of properly implemented images:</p>
           
           <figure>
-            <img 
-              src="/products/boiler-example.jpg" 
+            <Image
+              src="/products/boiler-example.jpg"
               alt="Modern gas boiler installation in a residential basement showing proper ventilation and safety features"
               width={400}
               height={300}
+              priority
+              sizes="(max-width: 768px) 100vw, 400px"
             />
             <figcaption>
               Example of a professional boiler installation with proper alt text
             </figcaption>
           </figure>
-          
-          <img 
-            src="/decorative-pattern.svg" 
+
+          <Image
+            src="/decorative-pattern.svg"
             alt=""
             role="presentation"
             aria-hidden="true"
+            width={200}
+            height={200}
+            sizes="(max-width: 768px) 100vw, 200px"
           />
           <p>Decorative image above uses empty alt text and aria-hidden.</p>
         </section>
