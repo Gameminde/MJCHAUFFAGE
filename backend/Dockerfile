@@ -9,7 +9,8 @@ COPY package*.json ./
 COPY prisma ./prisma/
 COPY src ./src/
 COPY tsconfig.json ./
-COPY tsconfig.build.json ./
+COPY jest.config.js ./
+COPY healthcheck.js ./
 
 # Install dependencies (including dev dependencies for build)
 RUN npm ci
