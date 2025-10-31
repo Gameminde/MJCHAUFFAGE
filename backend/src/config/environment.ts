@@ -64,16 +64,17 @@ interface Config {
   };
 }
 
-const requiredEnvVars = 
+const requiredEnvVars =
   process.env.NODE_ENV === 'production'
     ? [
         'DATABASE_URL',
         'JWT_SECRET',
         'JWT_REFRESH_SECRET',
         'SESSION_SECRET',
-        'EMAIL_HOST',
-        'EMAIL_USER',
-        'EMAIL_PASSWORD',
+        // Email variables are optional for now
+        // 'EMAIL_HOST',
+        // 'EMAIL_USER',
+        // 'EMAIL_PASSWORD',
       ]
     : [
         // En développement, ne valider que l'essentiel
@@ -128,10 +129,10 @@ export const config: Config = {
   },
   
   email: {
-    host: process.env.EMAIL_HOST!,
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT || '587', 10),
-    user: process.env.EMAIL_USER!,
-    password: process.env.EMAIL_PASSWORD!,
+    user: process.env.EMAIL_USER || '',
+    password: process.env.EMAIL_PASSWORD || '',
     from: process.env.EMAIL_FROM || 'MJ CHAUFFAGE <noreply@mjchauffage.com>',
   },
   
