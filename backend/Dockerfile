@@ -9,8 +9,6 @@ COPY package*.json ./
 COPY prisma ./prisma/
 COPY src ./src/
 COPY tsconfig.json ./
-COPY jest.config.js ./
-COPY healthcheck.js ./
 
 # Install dependencies (including dev dependencies for build)
 RUN npm ci
@@ -31,10 +29,6 @@ USER nextjs
 
 # Expose port
 EXPOSE 3001
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js
 
 # Start the application
 CMD ["npm", "run", "start:compiled"]
