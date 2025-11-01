@@ -2,7 +2,7 @@
   "build": {
     "builder": "NIXPACKS",
     "buildCommand": "cd backend && npm run build",
-    "postBuildCommand": "cd backend && npx prisma migrate deploy && npx prisma db seed"
+    "postBuildCommand": "cd backend && npx prisma migrate deploy --schema=./prisma/schema.prisma && npx prisma db seed --schema=./prisma/schema.prisma"
   },
   "deploy": {
     "startCommand": "cd backend && npm run start:compiled",
