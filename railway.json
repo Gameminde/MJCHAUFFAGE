@@ -5,7 +5,7 @@
     "postBuildCommand": "cd backend && npx prisma migrate deploy --schema=./prisma/schema.prisma && npx prisma db seed --schema=./prisma/schema.prisma"
   },
   "deploy": {
-    "startCommand": "cd backend && npm run start:compiled",
+    "startCommand": "cd backend && npx prisma migrate deploy --schema=./prisma/schema.prisma && npx prisma db seed --schema=./prisma/schema.prisma && npm run start:compiled",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
