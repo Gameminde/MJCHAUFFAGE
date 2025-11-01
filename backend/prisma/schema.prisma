@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:/app/dev.db"
+  url      = "file:./dev.db"
 }
 
 // User Management
