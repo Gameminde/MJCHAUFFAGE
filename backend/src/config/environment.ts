@@ -99,8 +99,8 @@ export const config: Config = {
   env: process.env.NODE_ENV || 'development',
   
   api: {
-    port: parseInt(process.env.API_PORT || '3001', 10),
-    baseUrl: process.env.API_BASE_URL || 'http://localhost:3001',
+    port: parseInt(process.env.PORT || process.env.API_PORT || '3001', 10),
+    baseUrl: process.env.API_BASE_URL || `http://localhost:${process.env.PORT || process.env.API_PORT || '3001'}`,
   },
   
   frontend: {
