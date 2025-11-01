@@ -7,13 +7,15 @@
  */
 export const config = {
   api: {
-    // Client-side API URL (exposed to browser) - uses rewrites to proxy to backend
+    // Client-side API URL (exposed to browser) - direct connection in production
     baseURL: process.env.NODE_ENV === 'production'
       ? 'https://pretty-stillness-production.up.railway.app/api'
       : '/api',
 
-    // Server-side API URL (SSR, API routes)
-    ssrBaseURL: process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+    // Server-side API URL (SSR, API routes) - also direct in production
+    ssrBaseURL: process.env.NODE_ENV === 'production'
+      ? 'https://pretty-stillness-production.up.railway.app/api'
+      : (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'),
   },
   
   app: {
