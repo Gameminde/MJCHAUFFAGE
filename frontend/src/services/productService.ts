@@ -1,6 +1,7 @@
 import { api, ApiError } from '@/lib/api'
 import React from 'react'
 import { productCache } from './cacheService'
+import { config } from '@/lib/config'
 
 export interface Product {
   id: string
