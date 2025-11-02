@@ -22,7 +22,9 @@ export function getFullImageUrl(imageUrl: string | undefined | null): string {
 
   // Backend serves files at /files/, /images/ (NOT under /api/v1/)
   // So we need to use the base server URL without /api/v1
-  const backendServerUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'; // Base server, not API endpoint
+  const backendServerUrl = process.env.NODE_ENV === 'production'
+    ? 'https://pretty-stillness-production.up.railway.app'
+    : (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'); // Base server, not API endpoint
 
   // For relative paths like '/files/image.jpg' or '/images/image.jpg'
   if (imageUrl.startsWith('/files/') || imageUrl.startsWith('/images/')) {

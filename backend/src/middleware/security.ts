@@ -25,7 +25,13 @@ export const corsOptions = {
       'http://localhost:3001',
       'https://mjchauffage.com',
       'https://www.mjchauffage.com',
-      'https://admin.mjchauffage.com'
+      'https://admin.mjchauffage.com',
+      // Vercel deployment URLs - allow all Vercel domains
+      /^https:\/\/frontend-[a-zA-Z0-9-]+-youcefs-projects-b3c48b29\.vercel\.app$/,
+      /^https:\/\/frontend-[a-zA-Z0-9-]+\.vercel\.app$/,
+      // Current production URL
+      'https://frontend-eight-ruddy-86.vercel.app',
+      'https://frontend-kcx09sr6k-youcefs-projects-b3c48b29.vercel.app'
     ];
 
     if (config.env === 'development') {
@@ -35,9 +41,20 @@ export const corsOptions = {
       }
     }
 
-    if (allowedOrigins.includes(origin)) {
+    // Check if origin is allowed (handle both strings and regex patterns)
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+
+    if (isAllowed) {
       callback(null, true);
     } else {
+      console.warn(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'), false);
     }
   },
