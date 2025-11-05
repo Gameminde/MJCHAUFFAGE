@@ -108,12 +108,12 @@ export function OrdersManagement() {
   const exportOrders = () => {
     const csvContent = [
       ['Order Number', 'Customer', 'Status', 'Total', 'Date'].join(','),
-      ...filteredOrders.map(order => [
-        order.orderNumber,
-        order.customerName,
-        order.status,
-        order.total,
-        new Date(order.createdAt).toLocaleDateString()
+      ...filteredOrders.filter(order => order).map(order => [
+        order.orderNumber || 'N/A',
+        order.customerName || 'N/A',
+        order.status || 'N/A',
+        order.total || 'N/A',
+        order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'
       ].join(','))
     ].join('\n')
 
@@ -127,16 +127,19 @@ export function OrdersManagement() {
   }
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!order) return false
+    const matchesSearch = (order.orderNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                         (order.customerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                         (order.customerEmail?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     const matchesStatus = !selectedStatus || order.status === selectedStatus
     return matchesSearch && matchesStatus
   })
 
   const viewOrderDetails = (order: Order) => {
-    setSelectedOrder(order)
-    setShowOrderDetails(true)
+    if (order) {
+      setSelectedOrder(order)
+      setShowOrderDetails(true)
+    }
   }
 
   return (
@@ -233,50 +236,50 @@ export function OrdersManagement() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.map((order) => {
-                    const StatusIcon = statusIcons[order.status]
+                  {filteredOrders.filter(order => order).map((order) => {
+                    const StatusIcon = statusIcons[order?.status] || Package
                     return (
-                      <tr key={order.id} className="hover:bg-gray-50">
+                      <tr key={order?.id || Math.random()} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {order.orderNumber}
+                            {order?.orderNumber || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                            {order?.items?.length || 0} item{(order?.items?.length || 0) !== 1 ? 's' : ''}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {order.customerName}
+                            {order?.customerName || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {order.customerEmail}
+                            {order?.customerEmail || 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order?.status] || statusColors.pending}`}>
                             <StatusIcon className="w-3 h-3 mr-1" />
-                            {order.status}
+                            {order?.status || 'pending'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {order.total.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
+                          {order?.total && typeof order.total === 'number' ? order.total.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' }) : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                          {order && order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
                             <button
-                              onClick={() => viewOrderDetails(order)}
+                              onClick={() => order && viewOrderDetails(order)}
                               className="text-blue-600 hover:text-blue-900"
                               title="View Details"
                             >
                               <Eye className="h-4 w-4" />
                             </button>
                             <select
-                              value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                              value={order?.status || 'pending'}
+                              onChange={(e) => order?.id && updateOrderStatus(order.id, e.target.value as Order['status'])}
                               className="text-xs border rounded px-2 py-1"
                             >
                               <option value="pending">Pending</option>
@@ -311,7 +314,7 @@ export function OrdersManagement() {
           <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Order Details - {selectedOrder.orderNumber}</h3>
+                <h3 className="text-lg font-semibold">Order Details - {selectedOrder?.orderNumber || 'N/A'}</h3>
                 <button
                   onClick={() => setShowOrderDetails(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -325,8 +328,8 @@ export function OrdersManagement() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Customer Information</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p><strong>Name:</strong> {selectedOrder.customerName}</p>
-                    <p><strong>Email:</strong> {selectedOrder.customerEmail}</p>
+                    <p><strong>Name:</strong> {selectedOrder?.customerName || 'N/A'}</p>
+                    <p><strong>Email:</strong> {selectedOrder?.customerEmail || 'N/A'}</p>
                   </div>
                 </div>
 
@@ -334,9 +337,9 @@ export function OrdersManagement() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Shipping Address</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p>{selectedOrder.shippingAddress.street}</p>
-                    <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</p>
-                    <p>{selectedOrder.shippingAddress.country}</p>
+                    <p>{selectedOrder?.shippingAddress?.street || 'N/A'}</p>
+                    <p>{selectedOrder?.shippingAddress?.city || 'N/A'}, {selectedOrder?.shippingAddress?.postalCode || 'N/A'}</p>
+                    <p>{selectedOrder?.shippingAddress?.country || 'N/A'}</p>
                   </div>
                 </div>
 
@@ -344,21 +347,21 @@ export function OrdersManagement() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Order Items</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    {selectedOrder.items.map((item, index) => (
+                    {selectedOrder?.items?.map((item, index) => (
                       <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
                         <div>
-                          <p className="font-medium">{item.productName}</p>
-                          <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                          <p className="font-medium">{item?.productName || 'N/A'}</p>
+                          <p className="text-sm text-gray-500">Quantity: {item?.quantity || 0}</p>
                         </div>
                         <p className="font-medium">
-                          {(item.price * item.quantity).toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
+                          {item && typeof item.price === 'number' && typeof item.quantity === 'number' ? (item.price * item.quantity).toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' }) : 'N/A'}
                         </p>
                       </div>
                     ))}
                     <div className="pt-4 border-t border-gray-300 mt-4">
                       <div className="flex justify-between items-center font-bold">
                         <span>Total:</span>
-                        <span>{selectedOrder.total.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}</span>
+                        <span>{selectedOrder && typeof selectedOrder.total === 'number' ? selectedOrder.total.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' }) : 'N/A'}</span>
                       </div>
                     </div>
                   </div>
@@ -369,11 +372,11 @@ export function OrdersManagement() {
                   <h4 className="font-medium text-gray-900 mb-2">Order Status</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[selectedOrder.status]}`}>
-                        {selectedOrder.status}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[selectedOrder?.status] || statusColors.pending}`}>
+                        {selectedOrder?.status || 'pending'}
                       </span>
                       <span className="text-sm text-gray-500">
-                        Last updated: {new Date(selectedOrder.updatedAt).toLocaleString()}
+                        Last updated: {selectedOrder && selectedOrder.updatedAt ? new Date(selectedOrder.updatedAt).toLocaleString() : 'N/A'}
                       </span>
                     </div>
                   </div>

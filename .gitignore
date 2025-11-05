@@ -126,3 +126,4 @@ docker-compose.override.yml
 
 # Stylelint cache
 .stylelintcache
+.vercel

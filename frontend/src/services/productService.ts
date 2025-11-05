@@ -209,8 +209,7 @@ export const productService = {
     } catch (error) {
       console.error('Error fetching products:', error);
       console.error('API Config - Base URL:', config.api.baseURL);
-      console.error('Endpoint:', endpoint);
-      console.error('Full URL:', config.api.baseURL + endpoint);
+      console.error('Full URL will be constructed based on config');
       return [];
     }
   },

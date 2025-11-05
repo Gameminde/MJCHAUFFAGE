@@ -52,22 +52,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoading(true);
       setError(null);
-      
+
       // Check if we're in admin context (window.location.pathname starts with /admin)
       const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-      
+
       // For admin, check authToken from localStorage or try admin endpoint
       if (isAdminRoute) {
         const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-        
+
         if (!token) {
-          // No token, not authenticated
           setUser(null);
           setLoading(false);
           return;
         }
-        
-        // Try to fetch admin user with token
+
         const response = await fetch(`${config.api.baseURL}/admin/me`, {
           method: 'GET',
           headers: {
@@ -75,15 +73,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           },
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
-          // Token invalid, clear it
           if (typeof window !== 'undefined') localStorage.removeItem('authToken');
           setUser(null);
           setLoading(false);
           return;
         }
-        
+
         const data = await response.json();
         setUser(data.data?.user || data.user || null);
       } else {
@@ -93,13 +90,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           credentials: 'include',
           cache: 'no-store',
         });
-        
+
         if (!response.ok) {
           setUser(null);
           setLoading(false);
           return;
         }
-        
+
         const data = await response.json();
         setUser(data.data?.user || data.user || null);
       }
@@ -167,6 +164,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       return userData; // Return user data for redirection logic
     } catch (err) {
+      console.error('❌ AuthContext: Login error:', err);
       setError((err as Error).message);
       throw err; // Re-throw so login page can handle it
     } finally {
@@ -214,10 +212,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       setLoading(true);
-      
+
       // Check if we're on admin route
       const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-      
+
       if (isAdminRoute) {
         // Admin logout - clear localStorage token
         if (typeof window !== 'undefined') {
