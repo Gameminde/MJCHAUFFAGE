@@ -6,30 +6,25 @@
  * Single source of truth for all API URLs
  */
 export const config = {
-  api: {
-    // Client-side API URL (exposed to browser) - direct connection in production
-    baseURL: process.env.NODE_ENV === 'production'
-      ? 'https://pretty-stillness-production.up.railway.app/api'
-      : '/api',
+  // Client-side API URL (exposed to browser)
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
 
-    // Server-side API URL (SSR, API routes) - also direct in production
-    ssrBaseURL: process.env.NODE_ENV === 'production'
-      ? 'https://pretty-stillness-production.up.railway.app/api'
-      : (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'),
-  },
+  // Server-side API URL (SSR, API routes)
+  ssrBaseURL: process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+},
 
   app: {
     // Application URLs
     url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || 'development',
   },
 
-  features: {
-    // Feature flags
-    enablePayments: process.env.NEXT_PUBLIC_ENABLE_PAYMENTS !== 'false',
+features: {
+  // Feature flags
+  enablePayments: process.env.NEXT_PUBLIC_ENABLE_PAYMENTS !== 'false',
     enableGuestCheckout: process.env.NEXT_PUBLIC_ENABLE_GUEST_CHECKOUT !== 'false',
   }
-} as const;
+} as const ;
 
 /**
  * Helper to get API URL based on context
