@@ -1,5 +1,5 @@
 // frontend/src/lib/config.ts
-// v2.0 - Connected to Render backend
+// v2.1 - Force redeploy with backend URL configuration
 // ✅ Centralized configuration for environment variables
 
 /**
