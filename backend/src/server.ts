@@ -131,7 +131,7 @@ app.use('/images', express.static(path.resolve(__dirname, '..', 'uploads'), {
 }));
 
 // API Routes
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({
     message: 'MJ Chauffage Backend API is running',
     environment: config.env,

@@ -18,7 +18,7 @@ export const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       config.frontend.url,
       'http://localhost:3000',
@@ -29,9 +29,11 @@ export const corsOptions = {
       // Vercel deployment URLs - allow all Vercel domains
       /^https:\/\/frontend-[a-zA-Z0-9-]+-youcefs-projects-b3c48b29\.vercel\.app$/,
       /^https:\/\/frontend-[a-zA-Z0-9-]+\.vercel\.app$/,
+      /^https:\/\/mjchauffage-frontend\.vercel\.app$/,
       // Current production URL
       'https://frontend-eight-ruddy-86.vercel.app',
-      'https://frontend-kcx09sr6k-youcefs-projects-b3c48b29.vercel.app'
+      'https://frontend-kcx09sr6k-youcefs-projects-b3c48b29.vercel.app',
+      'https://mjchauffage-frontend.vercel.app'
     ];
 
     if (config.env === 'development') {
@@ -228,7 +230,7 @@ export const enhancedInputValidation = (req: Request, res: Response, next: NextF
     '/api/orders',
     '/api/customers'
   ];
-  
+
   if (skipValidationPaths.some(path => req.path.startsWith(path))) {
     return next();
   }
@@ -242,20 +244,20 @@ export const enhancedInputValidation = (req: Request, res: Response, next: NextF
     /onload\s*=/gi,
     /onerror\s*=/gi,
     /onclick\s*=/gi,
-    
+
     // SQL injection patterns (more specific)
     /(\b(union|select|insert|delete|drop|create|alter|exec|execute)\b.*\b(from|where|into)\b)/gi,
     /(;.*--)|(\/\*.*\*\/)/g,
     /(\b(or|and)\b.*=.*('|"))/gi,
-    
+
     // Path traversal patterns
     /\.\.\//g,
     /%2e%2e%2f/gi,
     /\.\.\\/g,
-    
+
     // Command injection patterns
     /[|&;$`].*\b(nc|netcat|wget|curl|ping|nslookup|rm|del|format)\b/gi,
-    
+
     // NoSQL injection patterns
     /(\$where|\$ne|\$in|\$nin|\$gt|\$lt|\$regex)/gi
   ];
@@ -266,7 +268,7 @@ export const enhancedInputValidation = (req: Request, res: Response, next: NextF
     } else if (Array.isArray(obj)) {
       return obj.some((item, index) => checkInput(item, `${path}[${index}]`));
     } else if (obj && typeof obj === 'object') {
-      return Object.entries(obj).some(([key, value]) => 
+      return Object.entries(obj).some(([key, value]) =>
         checkInput(value, path ? `${path}.${key}` : key)
       );
     }
@@ -299,10 +301,10 @@ export const fileUploadSecurity = (req: Request, res: Response, next: NextFuncti
   const reqWithFiles = req as RequestWithFiles;
   if (reqWithFiles.files || reqWithFiles.file) {
     const files = reqWithFiles.files ? (Array.isArray(reqWithFiles.files) ? reqWithFiles.files : Object.values(reqWithFiles.files).flat()) : [reqWithFiles.file];
-    
+
     for (const file of files) {
       if (!file) continue;
-      
+
       // Check file size
       if (file.size > config.upload.maxSize) {
         res.status(413).json({
@@ -312,7 +314,7 @@ export const fileUploadSecurity = (req: Request, res: Response, next: NextFuncti
         });
         return;
       }
-      
+
       // Check file type
       if (!config.upload.allowedTypes.includes(file.mimetype)) {
         res.status(415).json({
@@ -323,14 +325,14 @@ export const fileUploadSecurity = (req: Request, res: Response, next: NextFuncti
         });
         return;
       }
-      
+
       // Check for malicious file names
       const maliciousFilePatterns = [
         /\.\./g, // Path traversal
         /[<>:"|?*]/g, // Invalid characters
         /\.(exe|bat|cmd|scr|pif|com|dll|vbs|js|jar|php|asp|jsp)$/i // Executable files
       ];
-      
+
       if (maliciousFilePatterns.some(pattern => pattern.test(file.originalname))) {
         res.status(400).json({
           success: false,
@@ -341,7 +343,7 @@ export const fileUploadSecurity = (req: Request, res: Response, next: NextFuncti
       }
     }
   }
-  
+
   next();
 };
 
@@ -394,7 +396,7 @@ export const honeypotTrap = (req: Request, res: Response, next: NextFunction): v
 // Security audit logging
 export const securityAuditLogger = (req: Request, res: Response, next: NextFunction): void => {
   const startTime = Date.now();
-  
+
   // Log security-relevant events
   const securityEvents = [
     req.url.includes('/auth/'),
@@ -421,7 +423,7 @@ export const securityAuditLogger = (req: Request, res: Response, next: NextFunct
 
   res.on('finish', () => {
     const duration = Date.now() - startTime;
-    
+
     // Log failed authentication attempts
     if (req.url.includes('/auth/') && res.statusCode >= 400) {
       logger.warn('Authentication failure:', {
@@ -452,7 +454,7 @@ export const securityAuditLogger = (req: Request, res: Response, next: NextFunct
 // Request logging for security monitoring
 export const securityLogger = (req: Request, res: Response, next: NextFunction): void => {
   const startTime = Date.now();
-  
+
   // Log suspicious patterns
   const suspiciousPatterns = [
     /\b(union|select|insert|delete|drop|create|alter)\b/i, // SQL injection
@@ -483,7 +485,7 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction):
   // Log response time and status
   res.on('finish', () => {
     const duration = Date.now() - startTime;
-    
+
     if (duration > 5000) { // Log slow requests
       console.warn(`Slow request (${duration}ms):`, {
         method: req.method,
@@ -511,7 +513,7 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction):
 export const validateContentType = (allowedTypes: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const contentType = req.get('Content-Type');
-    
+
     if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
       if (!contentType || !allowedTypes.some(type => contentType.includes(type))) {
         res.status(415).json({
@@ -556,7 +558,7 @@ export const preventSQLInjection = (req: Request, res: Response, next: NextFunct
     } else if (Array.isArray(obj)) {
       return obj.some((item, index) => checkForSQLInjection(item, `${path}[${index}]`));
     } else if (obj && typeof obj === 'object') {
-      return Object.entries(obj).some(([key, value]) => 
+      return Object.entries(obj).some(([key, value]) =>
         checkForSQLInjection(value, path ? `${path}.${key}` : key)
       );
     }
