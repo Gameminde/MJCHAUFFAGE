@@ -21,13 +21,13 @@ router.get('/', async (req, res) => {
             orderBy: { name: 'asc' }
         });
 
-        res.json({
+        return res.json({
             success: true,
             data: categories
         });
     } catch (error) {
         console.error('Error fetching categories:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: 'Failed to fetch categories'
         });
@@ -43,7 +43,29 @@ router.get('/:id', async (req, res) => {
             where: { id },
             include: {
                 _count: {
+                    select: { products: true }
                 }
-            });
+            }
+        });
 
-        export default router;
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                message: 'Category not found'
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: category
+        });
+    } catch (error) {
+        console.error('Error fetching category:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch category'
+        });
+    }
+});
+
+export default router;
