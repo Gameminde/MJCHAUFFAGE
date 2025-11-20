@@ -228,26 +228,28 @@ export interface OrderItemDTO {
 export interface OrderDTO {
   id: string;
   orderNumber: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string | null; // Null if no real email (not mock email)
+  customerPhone: string | null; // Phone number for contact
   status: string;
   paymentStatus: string;
   paymentMethod: string | null;
   subtotal: number;
-  taxAmount: number;
-  shippingAmount: number;
-  discountAmount: number;
-  totalAmount: number;
+  tax: number;
+  shipping: number;
+  discount: number;
+  total: number;
+  totalAmount: number; // Keep for backward compatibility
   orderDate: string;
+  createdAt: string; // Alias for orderDate for frontend compatibility
+  updatedAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
   estimatedDelivery: string | null;
   trackingNumber: string | null;
   shippingCarrier: string | null;
   notes: string | null;
-  customer: {
-    id: string;
-    name: string;
-    email: string;
-  };
   items: OrderItemDTO[];
   shippingAddress: Record<string, unknown> | null;
 }
@@ -262,41 +264,94 @@ export const transformOrderItemToDTO = (item: any): OrderItemDTO => ({
   image: item.product?.images?.[0] ? transformImageUrl(item.product.images[0]) : null,
 });
 
-export const transformOrderToDTO = (order: any): OrderDTO => ({
-  id: order.id,
-  orderNumber: order.orderNumber,
-  status: order.status,
-  paymentStatus: order.paymentStatus || 'PENDING',
-  paymentMethod:
-    order.payments?.[0]?.method || order.payment?.method || null,
-  subtotal: decimalToNumber(order.subtotal),
-  taxAmount: decimalToNumber(order.taxAmount),
-  shippingAmount: decimalToNumber(order.shippingAmount),
-  discountAmount: decimalToNumber(order.discountAmount),
-  totalAmount: decimalToNumber(order.totalAmount),
-  orderDate: order.orderDate?.toISOString?.() || order.createdAt.toISOString(),
-  shippedAt: order.shippedAt?.toISOString?.() || null,
-  deliveredAt: order.deliveredAt?.toISOString?.() || null,
-  estimatedDelivery: order.estimatedDelivery?.toISOString?.() || null,
-  trackingNumber: order.trackingNumber ?? null,
-  shippingCarrier: order.shippingCarrier ?? null,
-  notes: order.notes ?? null,
-  customer: {
-    id: order.customer?.id || order.customerId,
-    name: order.customer?.user
-      ? `${order.customer.user.firstName} ${order.customer.user.lastName}`
-      : order.customer?.firstName
-      ? `${order.customer.firstName} ${order.customer.lastName}`
-      : 'Guest Customer',
-    email:
-      order.customer?.user?.email ||
-      order.customer?.email ||
-      order.customerEmail ||
-      'N/A',
-  },
-  items: (order.items ?? []).map(transformOrderItemToDTO),
-  shippingAddress: order.shippingAddress ?? null,
-});
+// Map backend status (uppercase) to frontend status (lowercase)
+const normalizeStatus = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    'PENDING': 'pending',
+    'CONFIRMED': 'processing',
+    'PROCESSING': 'processing',
+    'SHIPPED': 'shipped',
+    'DELIVERED': 'delivered',
+    'CANCELLED': 'cancelled',
+    'REFUNDED': 'refunded',
+  };
+  return statusMap[status.toUpperCase()] || status.toLowerCase();
+};
+
+export const transformOrderToDTO = (order: any): OrderDTO => {
+  const orderDate = order.orderDate?.toISOString?.() || order.createdAt?.toISOString?.() || new Date().toISOString();
+  
+  // Get customer phone (primary identifier for guests)
+  const customerPhone = order.customer?.phone || null;
+  
+  // Determine customer name - use real firstName/lastName from User (even for guests now)
+  let customerName: string;
+  if (order.customer?.user && order.customer.user.firstName) {
+    // Use real name from User (works for both registered users and guests)
+    const firstName = order.customer.user.firstName || '';
+    const lastName = order.customer.user.lastName || '';
+    customerName = `${firstName} ${lastName}`.trim();
+    
+    // Fallback to phone if name is still empty or just "Guest Customer"
+    if (!customerName || customerName === 'Guest Customer' || customerName === 'Guest') {
+      customerName = customerPhone ? `Client ${customerPhone}` : 'Guest Customer';
+    }
+  } else if (customerPhone) {
+    // Fallback: use phone as identifier if no user data
+    customerName = `Client ${customerPhone}`;
+  } else {
+    customerName = 'Guest Customer';
+  }
+  
+  // Get real email (not mock email from temporary User)
+  // Priority: Customer.email (real email) > User.email (if not mock)
+  let customerEmail: string | null = null;
+  
+  // First check Customer.email (this is the real email from the form)
+  if (order.customer?.email && !order.customer.email.includes('@guest.mjchauffage.com')) {
+    customerEmail = order.customer.email;
+  } 
+  // Then check User.email only if it's not a mock email
+  else if (order.customer?.user?.email && !order.customer.user.email.includes('@guest.mjchauffage.com')) {
+    customerEmail = order.customer.user.email;
+  }
+  // Otherwise customerEmail stays null (no real email)
+
+  return {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    customerId: order.customer?.id || order.customerId || '',
+    customerName,
+    customerEmail, // null if no real email
+    customerPhone, // Phone number for contact
+    status: normalizeStatus(order.status || 'PENDING'),
+    paymentStatus: order.paymentStatus || 'PENDING',
+    paymentMethod: order.payments?.[0]?.method || order.payment?.method || null,
+    subtotal: decimalToNumber(order.subtotal),
+    tax: decimalToNumber(order.taxAmount),
+    shipping: decimalToNumber(order.shippingAmount),
+    discount: decimalToNumber(order.discountAmount),
+    total: decimalToNumber(order.totalAmount),
+    totalAmount: decimalToNumber(order.totalAmount), // Keep for backward compatibility
+    orderDate,
+    createdAt: orderDate, // Alias for frontend compatibility
+    updatedAt: order.updatedAt?.toISOString?.() || new Date().toISOString(),
+    shippedAt: order.shippedAt?.toISOString?.() || null,
+    deliveredAt: order.deliveredAt?.toISOString?.() || null,
+    estimatedDelivery: order.estimatedDelivery?.toISOString?.() || null,
+    trackingNumber: order.trackingNumber ?? null,
+    shippingCarrier: order.shippingCarrier ?? null,
+    notes: order.notes ?? null,
+    items: (order.items ?? []).map(transformOrderItemToDTO),
+    shippingAddress: order.shippingAddress ? {
+      street: order.shippingAddress.street || '',
+      city: order.shippingAddress.city || '',
+      postalCode: order.shippingAddress.postalCode || '',
+      country: order.shippingAddress.country || 'Algeria',
+      region: order.shippingAddress.region || null,
+    } : null,
+  };
+};
 
 export const transformOrderList = (orders: any[]): OrderDTO[] =>
   orders.map(transformOrderToDTO);

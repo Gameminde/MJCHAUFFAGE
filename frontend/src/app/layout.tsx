@@ -1,18 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+// Removed next/font for build reliability - using system fonts
 import '../styles/globals.css'
 import { AnalyticsProvider } from '../components/analytics/AnalyticsProvider'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
-
-// Modern Inter Variable font with optimized settings
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-  preload: true,
-  fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
-})
 
 export const metadata: Metadata = {
   title: 'MJ CHAUFFAGE - Professional Heating Solutions',
@@ -43,8 +34,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang="fr" className={`h-full ${inter.variable}`}>
-      <body className={`${inter.className} h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900`}>
+    <html lang="fr" className="h-full">
+      <body className="h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900">
         <NextIntlClientProvider locale="fr" messages={messages}>
           <AnalyticsProvider>
             {children}

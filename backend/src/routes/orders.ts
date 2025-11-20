@@ -73,21 +73,27 @@ const guestOrderValidation = [
   body('customerInfo.firstName')
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage('First name is required'),
+    .withMessage('First name is required (2-50 characters)'),
   
   body('customerInfo.lastName')
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage('Last name is required'),
-  
-  body('customerInfo.email')
-    .isEmail()
-    .withMessage('Valid email is required'),
+    .withMessage('Last name is required (2-50 characters)'),
   
   body('customerInfo.phone')
     .trim()
-    .isLength({ min: 10, max: 20 })
-    .withMessage('Valid phone number is required'),
+    .matches(/^(\+213|0)[567]\d{8}$/)
+    .withMessage('Valid Algerian phone number is required (05, 06, 07 followed by 8 digits)'),
+  
+  body('customerInfo.email')
+    .optional({ values: 'falsy' })
+    .isEmail()
+    .withMessage('Valid email address if provided'),
+  
+  body('customerInfo.profession')
+    .optional({ values: 'falsy' })
+    .isIn(['technicien', 'particulier', 'autre'])
+    .withMessage('Profession must be one of: technicien, particulier, autre'),
   
   body('shippingAddress.street')
     .trim()
@@ -99,10 +105,15 @@ const guestOrderValidation = [
     .isLength({ min: 2, max: 100 })
     .withMessage('City is required'),
   
+  body('shippingAddress.postalCode')
+    .optional({ values: 'falsy' })
+    .isLength({ min: 3, max: 20 })
+    .withMessage('Postal code must be between 3 and 20 characters if provided'),
+  
   body('shippingAddress.region')
     .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Region is required'),
+    .isLength({ min: 1, max: 10 })
+    .withMessage('Wilaya (region) code is required'),
   
   body('totalAmount')
     .isFloat({ min: 0 })
@@ -111,6 +122,7 @@ const guestOrderValidation = [
 
 // Guest order routes (no authentication required)
 router.post('/guest', guestOrderValidation, OrderController.createGuestOrder);
+router.get('/track', OrderController.trackGuestOrder); // Track order by orderNumber and phone
 
 // Customer order routes
 router.post('/', authenticateToken, orderValidation, OrderController.createOrder);

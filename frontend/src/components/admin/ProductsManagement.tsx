@@ -102,6 +102,8 @@ export function ProductsManagement() {
   const [manufacturers, setManufacturers] = useState<any[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
   const [loadingManufacturers, setLoadingManufacturers] = useState(false)
+  const [manufacturerInput, setManufacturerInput] = useState('')
+  const [showManufacturerSuggestions, setShowManufacturerSuggestions] = useState(false)
 
   // Real-time updates
   const { 
@@ -338,6 +340,8 @@ export function ProductsManagement() {
       isActive: true,
       isFeatured: false
     })
+    setManufacturerInput('')
+    setShowManufacturerSuggestions(false)
     setUploadedImages([])
     setEditingProduct(null)
     setShowAddForm(false)
@@ -405,9 +409,9 @@ export function ProductsManagement() {
         productData.salePrice = parseFloat(formData.salePrice)
       }
       
-      // Send manufacturerId only if it's a valid UUID (not empty string)
-      if (formData.manufacturerId && formData.manufacturerId.trim() !== '') {
-        productData.manufacturerId = formData.manufacturerId
+      // Handle manufacturer - send the name directly, backend will handle creation
+      if (manufacturerInput && manufacturerInput.trim() !== '') {
+        productData.manufacturerId = manufacturerInput.trim()
       } else {
         // Explicitly set to null if no manufacturer is selected
         productData.manufacturerId = null
@@ -487,6 +491,7 @@ export function ProductsManagement() {
       isActive: product.isActive,
       isFeatured: product.isFeatured
     })
+    setManufacturerInput(product.brand || '') // Set the manufacturer name for editing
     setUploadedImages(product.images)
     setShowAddForm(true)
   }
@@ -613,25 +618,56 @@ export function ProductsManagement() {
                   />
                   <p className="text-sm text-gray-500 mt-1">Laissez vide pour auto-génération</p>
                 </div>
-                <div>
+                <div className="relative">
                   <label className="form-label">Fabricant (optionnel)</label>
-                  <select
-                    value={formData.manufacturerId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, manufacturerId: e.target.value }))}
+                  <input
+                    type="text"
+                    value={manufacturerInput}
+                    onChange={(e) => {
+                      setManufacturerInput(e.target.value)
+                      setShowManufacturerSuggestions(e.target.value.length > 0)
+                    }}
+                    onFocus={() => setShowManufacturerSuggestions(manufacturerInput.length > 0)}
+                    onBlur={() => setTimeout(() => setShowManufacturerSuggestions(false), 200)}
                     className="form-input"
-                  >
-                    <option value="">Aucun fabricant</option>
-                    {manufacturers && manufacturers.length > 0 ? (
-                      manufacturers.map(man => (
-                        <option key={man.id} value={man.id}>{man.name}</option>
-                      ))
-                    ) : (
-                      !loadingManufacturers && <option value="" disabled>Aucun fabricant disponible</option>
-                    )}
-                  </select>
+                    placeholder="Tapez le nom du fabricant..."
+                  />
                   {loadingManufacturers && <p className="text-sm text-gray-500 mt-1">Chargement des fabricants...</p>}
                   {!loadingManufacturers && manufacturers.length === 0 && (
-                    <p className="text-sm text-amber-600 mt-1">⚠ Aucun fabricant dans la base. Contactez l'admin pour en ajouter.</p>
+                    <p className="text-sm text-green-600 mt-1">💡 Tapez un nom pour créer automatiquement un nouveau fabricant</p>
+                  )}
+                  {!loadingManufacturers && manufacturers.length > 0 && (
+                    <p className="text-sm text-blue-600 mt-1">💡 Tapez pour voir les suggestions ou créer un nouveau fabricant</p>
+                  )}
+
+                  {/* Suggestions dropdown */}
+                  {showManufacturerSuggestions && manufacturers.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      {manufacturers
+                        .filter(man =>
+                          man.name.toLowerCase().includes(manufacturerInput.toLowerCase())
+                        )
+                        .slice(0, 5)
+                        .map(man => (
+                          <div
+                            key={man.id}
+                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            onClick={() => {
+                              setManufacturerInput(man.name)
+                              setShowManufacturerSuggestions(false)
+                            }}
+                          >
+                            <span className="text-sm">{man.name}</span>
+                          </div>
+                        ))}
+                      {manufacturers.filter(man =>
+                        man.name.toLowerCase().includes(manufacturerInput.toLowerCase())
+                      ).length === 0 && manufacturerInput.trim() !== '' && (
+                        <div className="px-3 py-2 text-sm text-green-600 bg-green-50 border-t">
+                          ✨ Nouveau fabricant: "{manufacturerInput}"
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

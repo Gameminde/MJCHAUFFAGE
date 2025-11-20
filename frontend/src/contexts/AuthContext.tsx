@@ -33,9 +33,9 @@ const defaultContext: AuthContextType = {
   user: null,
   loading: true,
   error: null,
-  login: async () => {},
+  login: async () => { },
   register: async () => ({ success: false }),
-  logout: async () => {},
+  logout: async () => { },
 };
 
 // Create context
@@ -52,30 +52,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoading(true);
       setError(null);
-      
+
       // Check if we're in admin context (window.location.pathname starts with /admin)
       const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-      
+
       // For admin, check authToken from localStorage or try admin endpoint
       if (isAdminRoute) {
         const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-        
+
         if (!token) {
           // No token, not authenticated
           setUser(null);
           setLoading(false);
           return;
         }
-        
-        // Try to fetch admin user with token
-        const response = await fetch(`${config.api.baseURL}/admin/me`, {
+
+        // Try to fetch admin user with token - call backend directly
+        const response = await fetch(`${config.api.ssrBaseURL}/admin/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
           },
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
           // Token invalid, clear it
           if (typeof window !== 'undefined') localStorage.removeItem('authToken');
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setLoading(false);
           return;
         }
-        
+
         const data = await response.json();
         setUser(data.data?.user || data.user || null);
       } else {
@@ -93,13 +93,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           credentials: 'include',
           cache: 'no-store',
         });
-        
+
         if (!response.ok) {
           setUser(null);
           setLoading(false);
           return;
         }
-        
+
         const data = await response.json();
         setUser(data.data?.user || data.user || null);
       }
@@ -124,8 +124,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       let userData = null;
 
       if (isAdminRoute) {
-        // Admin login
-        const response = await fetch(`${config.api.baseURL}/admin/auth/login`, {
+        // Admin login - call backend directly (no Next.js API proxy for admin routes)
+        const response = await fetch(`${config.api.ssrBaseURL}/admin/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
@@ -214,25 +214,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       setLoading(true);
-      
+
       // Check if we're on admin route
       const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-      
+
       if (isAdminRoute) {
         // Admin logout - clear localStorage token
         if (typeof window !== 'undefined') {
           localStorage.removeItem('authToken');
         }
-        
-        // Call backend to clear cookie
-        const response = await fetch(`${config.api.baseURL}/admin/auth/logout`, {
+
+        // Call backend to clear cookie - call backend directly
+        const response = await fetch(`${config.api.ssrBaseURL}/admin/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('authToken') || '' : ''}`,
           },
           credentials: 'include',
         });
-        
+
         // Don't throw error if logout fails, just clear local state
       } else {
         // Regular user logout - call backend API directly
@@ -240,10 +240,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           method: 'POST',
           credentials: 'include',
         });
-        
+
         // Don't throw error if logout fails, just clear local state
       }
-      
+
       setUser(null);
     } catch (err) {
       console.error('Logout error:', err);

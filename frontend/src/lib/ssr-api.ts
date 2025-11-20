@@ -212,7 +212,7 @@ export async function fetchProductsSSR(
 }> {
   const fallback = FALLBACKS.products;
   const data = await fetchSSR<ProductsApiResponse>(
-    `/products?page=${page}&limit=${limit}`,
+    `/products?page=${page}&limit=${limit}&include=images,category,manufacturer`,
     {
       cache: 'no-store',
     },
@@ -318,6 +318,7 @@ export async function fetchProductsSSRWithParams(
     featured: params.featured,
     sortBy: params.sortBy,
     sortOrder: params.sortOrder,
+    include: 'images,category,manufacturer', // Always include related data
   });
 
   const data = await fetchSSR<ProductsApiResponse>(`/products?${query}`, {

@@ -20,6 +20,7 @@ const nextConfig = {
   staticPageGenerationTimeout: 60,
   experimental: {
     optimizeCss: true,
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -36,8 +37,21 @@ const nextConfig = {
         hostname: 'localhost',
         port: '3001',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+      },
     ],
     unoptimized: process.env.NODE_ENV === 'development',
+    // Optimisations mobiles pour les images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    formats: ['image/webp', 'image/avif'],
+    // Permettre les images locales via proxy
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   env: {
     NEXT_PUBLIC_API_URL: API_URL_RAW,
@@ -54,7 +68,31 @@ const nextConfig = {
       beforeFiles: [],
       afterFiles: [
         {
-          source: '/api/:path*',
+          source: '/api/auth/login',
+          destination: `${BACKEND_ORIGIN}/api/auth/login`,
+        },
+        {
+          source: '/api/auth/register',
+          destination: `${BACKEND_ORIGIN}/api/auth/register`,
+        },
+        {
+          source: '/api/auth/social-login',
+          destination: `${BACKEND_ORIGIN}/api/auth/social-login`,
+        },
+        {
+          source: '/api/auth/me',
+          destination: `${BACKEND_ORIGIN}/api/auth/me`,
+        },
+        {
+          source: '/api/auth/logout',
+          destination: `${BACKEND_ORIGIN}/api/auth/logout`,
+        },
+        {
+          source: '/api/admin/:path*',
+          destination: `${BACKEND_ORIGIN}/api/admin/:path*`,
+        },
+        {
+          source: '/api/:path((?!auth).*)',
           destination: `${BACKEND_ORIGIN}/api/v1/:path*`,
         },
         // Proxy /files directly to backend (for images)
@@ -83,6 +121,34 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains',
+          },
+          // Optimisations mobiles
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          // Préchargement des ressources critiques - désactivé car police non utilisée
+          // {
+          //   key: 'Link',
+          //   value: '</fonts/inter.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
+          // },
+        ],
+      },
+      // Optimisations spécifiques pour les pages mobiles
+      {
+        source: '/:locale(fr|ar)/:path*',
+        headers: [
+          {
+            key: 'Vary',
+            value: 'Accept-Encoding, User-Agent',
           },
         ],
       },

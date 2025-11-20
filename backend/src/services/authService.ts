@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { config } from '@/config/environment';
 import { prisma } from '@/lib/database';
 import { redisClient } from '@/config/redis';
+import { Response } from 'express';
+
 // Define User type locally to avoid Prisma import issues
 interface User {
   id: string;
@@ -11,7 +13,6 @@ interface User {
   firstName: string;
   lastName: string;
 }
-import { Response } from 'express';
 
 interface TokenPayload {
   userId: string;
@@ -27,14 +28,45 @@ interface AuthTokens {
 }
 
 export class AuthService {
-  /**
-   * Generate JWT tokens for a user with enhanced security
-   */
-  static generateTokens(user: User): AuthTokens {
-    if (!config.jwt.secret || config.jwt.secret.length < 64) {
-      throw new Error('JWT secret must be at least 256 bits (64 hex characters)');
+  static async findOrCreateSocialUser(userData: {
+    email: string
+    firstName: string
+    lastName: string
+    image?: string
+  }) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: userData.email }
+    })
+
+    if (existingUser) {
+      return existingUser
     }
 
+    // Create new user
+    const newUser = await prisma.user.create({
+      data: {
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        password: '', // No password for social login
+        role: 'CUSTOMER',
+        isActive: true,
+        isVerified: true,
+        customer: {
+          create: {
+            customerType: 'B2C'
+          }
+        }
+      }
+    })
+
+    return newUser
+  }
+
+  static generateTokens(user: User): AuthTokens {
+    if (!config.jwt.secret || config.jwt.secret.length < 32) {
+      throw new Error('JWT secret must be at least 256 bits (32 characters)');
+    }
     if (!config.jwt.refreshSecret || config.jwt.refreshSecret.length < 64) {
       throw new Error('JWT refresh secret must be at least 256 bits (64 hex characters)');
     }
@@ -70,7 +102,7 @@ export class AuthService {
 
   static setAuthCookies(res: Response, tokens: AuthTokens): void {
     const isProduction = config.env === 'production';
-    
+
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true, // Not accessible by client-side scripts for security
       secure: isProduction, // HTTPS only in production
@@ -92,15 +124,15 @@ export class AuthService {
 
   static clearAuthCookies(res: Response): void {
     const isProduction = config.env === 'production';
-    
-    res.clearCookie('accessToken', { 
+
+    res.clearCookie('accessToken', {
       path: '/',
       domain: isProduction ? '.mjchauffage.com' : undefined,
       secure: isProduction,
       sameSite: 'strict'
     });
-    
-    res.clearCookie('refreshToken', { 
+
+    res.clearCookie('refreshToken', {
       path: '/api/auth/refresh',
       domain: isProduction ? '.mjchauffage.com' : undefined,
       secure: isProduction,
@@ -113,11 +145,11 @@ export class AuthService {
    */
   static verifyToken(token: string, isRefreshToken = false): TokenPayload {
     const secret = isRefreshToken ? config.jwt.refreshSecret : config.jwt.secret;
-    
+
     if (!secret || secret.length < 64) {
       throw new Error('JWT secret is not properly configured');
     }
-    
+
     try {
       const decoded = jwt.verify(token, secret, {
         issuer: 'mj-chauffage',
@@ -249,7 +281,7 @@ export class AuthService {
     try {
       // Remove refresh tokens
       await this.revokeRefreshToken(userId);
-      
+
       // Add user to token revocation list with timestamp
       const key = `user_token_revoked:${userId}`;
       const timestamp = Date.now().toString();
@@ -266,11 +298,11 @@ export class AuthService {
     try {
       const key = `user_token_revoked:${userId}`;
       const revokedTimestamp = await redisClient.get(key);
-      
+
       if (!revokedTimestamp) {
         return false;
       }
-      
+
       return parseInt(revokedTimestamp) > tokenIssuedAt * 1000; // Convert to milliseconds
     } catch (error) {
       console.error('Error checking user token revocation:', error);
@@ -376,7 +408,7 @@ export class AuthService {
   static async validatePasswordResetToken(token: string): Promise<string | null> {
     try {
       const decoded = jwt.verify(token, config.jwt.secret) as any;
-      
+
       const resetRecord = await prisma.passwordReset.findUnique({
         where: { token },
       });

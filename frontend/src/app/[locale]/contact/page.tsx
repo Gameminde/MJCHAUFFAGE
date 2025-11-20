@@ -74,18 +74,18 @@ export default function ContactPage({ params }: Props) {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">{isArabic ? 'أرسل رسالة' : 'Envoyer un message'}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder={isArabic ? 'الاسم الأول *' : 'Prénom *'} className="form-input" required />
-                  <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder={isArabic ? 'اسم العائلة *' : 'Nom de famille *'} className="form-input" required />
+                  <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder={isArabic ? 'الاسم الأول *' : 'Prénom *'} className="form-input min-h-[48px]" required />
+                  <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder={isArabic ? 'اسم العائلة *' : 'Nom de famille *'} className="form-input min-h-[48px]" required />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder={isArabic ? 'البريد الإلكتروني *' : 'Email *'} className="form-input" required />
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={isArabic ? 'رقم الهاتف *' : 'Téléphone *'} className="form-input" required />
+                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder={isArabic ? 'البريد الإلكتروني *' : 'Email *'} className="form-input min-h-[48px]" required />
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={isArabic ? 'رقم الهاتف *' : 'Téléphone *'} className="form-input min-h-[48px]" required />
                 </div>
-                <select name="wilaya" value={formData.wilaya} onChange={handleInputChange} className="form-select" required>
+                <select name="wilaya" value={formData.wilaya} onChange={handleInputChange} className="form-select min-h-[48px]" required>
                   <option value="">{isArabic ? 'اختر ولايتك *' : 'Sélectionnez votre wilaya *'}</option>
                   {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
                 </select>
-                <select name="serviceType" value={formData.serviceType} onChange={handleInputChange} className="form-select" required>
+                <select name="serviceType" value={formData.serviceType} onChange={handleInputChange} className="form-select min-h-[48px]" required>
                   <option value="">{isArabic ? 'اختر نوع الخدمة *' : 'Sélectionnez un service *'}</option>
                   <option value="installation">
                       {isArabic ? 'التركيب' : 'Installation'}
@@ -108,7 +108,7 @@ export default function ContactPage({ params }: Props) {
                 {status.success && <p className="text-green-600">{status.success}</p>}
                 {status.error && <p className="text-red-600">{status.error}</p>}
 
-                <button type="submit" disabled={status.loading} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 font-semibold">
+                <button type="submit" disabled={status.loading} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 font-semibold min-h-[48px] touch-manipulation">
                   <Send className="h-5 w-5" />
                   {status.loading ? (isArabic ? 'جار الإرسال...' : 'Envoi...') : (isArabic ? 'إرسال الرسالة' : 'Envoyer le message')}
                 </button>

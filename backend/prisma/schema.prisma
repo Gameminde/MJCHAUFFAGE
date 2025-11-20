@@ -87,6 +87,7 @@ model Customer {
   lastName      String?      @map("last_name")
   email         String?      @map("email")
   phone         String?      @map("phone")
+  profession    String?      @map("profession") // "technicien", "particulier", "autre" - pour analytics
   
   // Contact Information
   addresses     Address[]
@@ -115,15 +116,19 @@ model Address {
   type       String      // "BILLING" or "SHIPPING"
   label      String?     // "Home", "Office", etc.
   street     String
-  city       String
-  postalCode String      @map("postal_code")
-  region     String?
+  city       String      // Commune name
+  wilayaId   String?     @map("wilaya_id")
+  communeId  String?     @map("commune_id")
+  postalCode String?     @map("postal_code")
+  region     String?     // Legacy field, keep for backward compatibility
   country    String      @default("Algeria")
   isDefault  Boolean     @default(false) @map("is_default")
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
 
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  wilaya   Wilaya?  @relation(fields: [wilayaId], references: [id])
+  commune  Commune? @relation(fields: [communeId], references: [id])
   orders   Order[]
 
   @@map("addresses")
@@ -232,6 +237,7 @@ model Product {
   // Relationships
   category      Category    @relation(fields: [categoryId], references: [id])
   manufacturer  Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  compatibleBoilers ProductCompatibility[]
   orderItems    OrderItem[]
   reviews       Review[]
   inventoryLogs InventoryLog[]
@@ -287,8 +293,73 @@ model Manufacturer {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   products Product[]
+  boilerModels BoilerModel[]
 
   @@map("manufacturers")
+}
+
+// ✅ BOILER MODELS & COMPATIBILITY (SPARE PARTS FINDER)
+model BoilerModel {
+  id             String        @id @default(uuid())
+  name           String        // e.g., "Thema F25", "Vitodens 100-W"
+  manufacturerId String        @map("manufacturer_id")
+  series         String?       // e.g., "Thema", "Vitodens"
+  type           String?       // "Condensation", "Atmosphérique", "Ventouse"
+  releaseYear    Int?          @map("release_year")
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  manufacturer   Manufacturer  @relation(fields: [manufacturerId], references: [id])
+  compatibleParts ProductCompatibility[]
+
+  @@unique([manufacturerId, name])
+  @@map("boiler_models")
+}
+
+model ProductCompatibility {
+  id            String      @id @default(uuid())
+  productId     String      @map("product_id")
+  boilerModelId String      @map("boiler_model_id")
+  notes         String?     // e.g., "Année > 2015 uniquement"
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  boilerModel   BoilerModel @relation(fields: [boilerModelId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, boilerModelId])
+  @@map("product_compatibility")
+}
+
+// ✅ GEOGRAPHIC DATA (ALGERIA)
+model Wilaya {
+  id        String   @id @default(uuid())
+  code      String   @unique // 01 to 58
+  name      String   // Alger, Oran, etc.
+  nameAr    String?  @map("name_ar") // Arabic name
+  active    Boolean  @default(true)
+  
+  // Shipping cost configuration
+  shippingCost Decimal @default(600) @map("shipping_cost")
+  
+  communes  Commune[]
+  addresses Address[]
+
+  @@map("wilayas")
+}
+
+model Commune {
+  id        String   @id @default(uuid())
+  name      String
+  nameAr    String?  @map("name_ar")
+  postCode  String   @map("post_code")
+  
+  wilayaId  String   @map("wilaya_id")
+  wilaya    Wilaya   @relation(fields: [wilayaId], references: [id])
+  
+  addresses Address[]
+
+  @@map("communes")
 }
 
 // Inventory Management

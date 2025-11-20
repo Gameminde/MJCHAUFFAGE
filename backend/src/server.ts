@@ -32,6 +32,8 @@ import healthRoutes from '@/routes/health';
 import paymentRoutes from '@/routes/payments';
 import geolocationRoutes from '@/routes/geolocation';
 import uploadsRoutes from '@/routes/uploads';
+import wilayaRoutes from '@/routes/wilayas';
+import boilerRoutes from '@/routes/boilers';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -143,6 +145,8 @@ app.use('/api/realtime', realtimeRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/geolocation', geolocationRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/wilayas', wilayaRoutes);
+app.use('/api/boilers', boilerRoutes);
 
 // API v1 alias (legacy clients)
 app.use('/api/v1', apiVersionHeader('v1'));
@@ -157,6 +161,8 @@ app.use('/api/v1/realtime', realtimeRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/geolocation', geolocationRoutes);
 app.use('/api/v1/uploads', uploadsRoutes);
+app.use('/api/v1/wilayas', wilayaRoutes);
+app.use('/api/v1/boilers', boilerRoutes);
 // Remove duplicate legacy middleware insertion
 // (version and deprecation headers already applied earlier)
 // app.use('/api', apiVersionHeader('v1'));

@@ -28,8 +28,10 @@ export interface OrderItem {
   productId: string;
   productName: string;
   quantity: number;
-  price: number;
-  total: number;
+  price?: number; // unitPrice (for backward compatibility)
+  unitPrice?: number; // From backend DTO
+  total?: number; // totalPrice (for backward compatibility)
+  totalPrice?: number; // From backend DTO
   imageUrl?: string;
 }
 
@@ -38,7 +40,8 @@ export interface Order {
   orderNumber: string;
   customerId: string;
   customerName: string;
-  customerEmail: string;
+  customerEmail: string | null; // Null if no real email (not mock email)
+  customerPhone: string | null; // Phone number for contact
   items: OrderItem[];
   subtotal: number;
   tax: number;
@@ -121,10 +124,55 @@ export const ordersService = {
    */
   async getOrders(filters?: OrderFilters): Promise<PaginatedOrders> {
     const qs = toQuery(filters);
-    const result = await api.get<{ success: boolean; data: PaginatedOrders }>(
-      `/admin/orders${qs}`
-    );
-    return result.data as PaginatedOrders;
+    try {
+      // api.get returns the full response: { success: true, data: { orders: [...], pagination: {...} } }
+      const result = await api.get<{ success: boolean; data?: { orders?: Order[]; pagination?: any } }>(
+        `/admin/orders${qs}`
+      );
+      
+      // Handle response structure
+      if (result && typeof result === 'object') {
+        // Case 1: { success: true, data: { orders: [...], pagination: {...} } }
+        if (result.success && result.data) {
+          const orders = result.data.orders || [];
+          const pagination = result.data.pagination || {};
+          
+          return {
+            orders: Array.isArray(orders) ? orders : [],
+            total: pagination.total || 0,
+            page: pagination.page || 1,
+            limit: pagination.limit || 20,
+            totalPages: pagination.totalPages || 0,
+          };
+        }
+        
+        // Case 2: Direct { orders: [...], pagination: {...} } structure
+        if ('orders' in result && Array.isArray((result as any).orders)) {
+          const directResult = result as any;
+          return {
+            orders: directResult.orders || [],
+            total: directResult.pagination?.total || directResult.total || 0,
+            page: directResult.pagination?.page || directResult.page || 1,
+            limit: directResult.pagination?.limit || directResult.limit || 20,
+            totalPages: directResult.pagination?.totalPages || directResult.totalPages || 0,
+          };
+        }
+      }
+      
+      console.warn('[ordersService] Unexpected response structure:', result);
+      
+      // Fallback
+      return {
+        orders: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      };
+    } catch (error) {
+      console.error('[ordersService] Error fetching orders:', error);
+      throw error;
+    }
   },
 
   /**

@@ -2,6 +2,181 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Reset and Mobile-First Corrections */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevent zoom and ensure proper mobile scaling */
+html {
+  font-size: 16px; /* Standard base size */
+  -webkit-text-size-adjust: 100%; /* Prevent iOS zoom */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Ensure proper viewport scaling */
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent unwanted scaling on mobile */
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 16px; /* Force standard size on mobile */
+  }
+
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    transform-origin: top left;
+  }
+}
+
+/* Ensure images don't cause scaling issues */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reset button and input defaults */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+/* Fix potential transform issues */
+* {
+  transform-style: preserve-3d;
+}
+
+/* Golden Ratio Utility Classes */
+.golden-ratio-container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+}
+
+.golden-ratio-sidebar {
+  width: var(--sidebar-width);
+}
+
+.golden-ratio-content {
+  width: var(--content-width);
+}
+
+.golden-ratio-aspect {
+  aspect-ratio: var(--aspect-golden);
+}
+
+.golden-ratio-aspect-inverse {
+  aspect-ratio: var(--aspect-golden-inverse);
+}
+
+/* Golden Ratio Spacing Classes */
+.space-golden-1 { gap: var(--space-1); }
+.space-golden-2 { gap: var(--space-2); }
+.space-golden-3 { gap: var(--space-3); }
+.space-golden-4 { gap: var(--space-4); }
+.space-golden-5 { gap: var(--space-5); }
+.space-golden-6 { gap: var(--space-6); }
+.space-golden-7 { gap: var(--space-7); }
+.space-golden-8 { gap: var(--space-8); }
+
+/* Golden Ratio Padding Classes */
+.p-golden-1 { padding: var(--space-1); }
+.p-golden-2 { padding: var(--space-2); }
+.p-golden-3 { padding: var(--space-3); }
+.p-golden-4 { padding: var(--space-4); }
+.p-golden-5 { padding: var(--space-5); }
+.p-golden-6 { padding: var(--space-6); }
+.p-golden-7 { padding: var(--space-7); }
+.p-golden-8 { padding: var(--space-8); }
+
+/* Golden Ratio Margin Classes */
+.m-golden-1 { margin: var(--space-1); }
+.m-golden-2 { margin: var(--space-2); }
+.m-golden-3 { margin: var(--space-3); }
+.m-golden-4 { margin: var(--space-4); }
+.m-golden-5 { margin: var(--space-5); }
+.m-golden-6 { margin: var(--space-6); }
+.m-golden-7 { margin: var(--space-7); }
+.m-golden-8 { margin: var(--space-8); }
+
+/* Golden Ratio Typography Classes */
+.text-golden-xs { font-size: var(--font-size-xs); line-height: var(--line-height-tight); }
+.text-golden-sm { font-size: var(--font-size-sm); line-height: var(--line-height-tight); }
+.text-golden-base { font-size: var(--font-size-base); line-height: var(--line-height-normal); }
+.text-golden-lg { font-size: var(--font-size-lg); line-height: var(--line-height-normal); }
+.text-golden-xl { font-size: var(--font-size-xl); line-height: var(--line-height-relaxed); }
+.text-golden-2xl { font-size: var(--font-size-2xl); line-height: var(--line-height-relaxed); }
+.text-golden-3xl { font-size: var(--font-size-3xl); line-height: var(--line-height-relaxed); }
+
+/* Golden Ratio Border Radius Classes */
+.rounded-golden-sm { border-radius: var(--border-radius-sm); }
+.rounded-golden-md { border-radius: var(--border-radius-md); }
+.rounded-golden-lg { border-radius: var(--border-radius-lg); }
+.rounded-golden-xl { border-radius: var(--border-radius-xl); }
+.rounded-golden-2xl { border-radius: var(--border-radius-2xl); }
+
+/* Golden Ratio Transitions */
+.transition-golden-fast { transition-duration: var(--transition-fast); }
+.transition-golden-normal { transition-duration: var(--transition-normal); }
+.transition-golden-slow { transition-duration: var(--transition-slow); }
+
+/* Responsive Golden Ratio Layout */
+@media (max-width: 1200px) {
+  :root {
+    --container-max-width: 960px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --container-max-width: 720px;
+  }
+
+  .golden-ratio-sidebar {
+    width: 100%;
+  }
+
+  .golden-ratio-content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --container-max-width: 100vw;
+    --size-6: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* Reduce for mobile */
+    --size-7: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* Reduce for mobile */
+    --size-8: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* Reduce for mobile */
+  }
+}
+
 /* Import modern theme variables */
 @import './modern-theme.css';
 
@@ -12,8 +187,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 @import url('https://rsms.me/inter/inter.css');
 
-/* CSS Custom Properties for 2025 Design System */
+/* CSS Custom Properties for 2025 Design System with Golden Ratio */
 :root {
+  /* Golden Ratio Constants */
+  --golden-ratio: 1.618033988749895;
+  --golden-ratio-inverse: 0.6180339887498948;
+
+  /* Golden Ratio Scale (Base = 8px) */
+  --size-1: calc(8px * var(--golden-ratio-inverse)); /* ~4.94px */
+  --size-2: 8px; /* Base unit */
+  --size-3: calc(8px * var(--golden-ratio)); /* ~12.94px */
+  --size-4: calc(8px * var(--golden-ratio) * var(--golden-ratio)); /* ~20.94px */
+  --size-5: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* ~33.94px */
+  --size-6: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* ~55px */
+  --size-7: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* ~89px */
+  --size-8: calc(8px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* ~144px */
+
   /* Colors - ORANGE IS PRIMARY BRAND */
   --color-primary-50: #fef7ee;
   --color-primary-500: #f3761a;
@@ -24,24 +213,59 @@
   --color-neutral-100: #f4f6f8;
   --color-neutral-500: #6b7280;
   --color-neutral-900: #0f172a;
-  
-  /* Typography */
+
+  /* Typography with Golden Ratio */
   --font-family-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-family-display: 'Cal Sans', 'Inter Variable', 'Inter', sans-serif;
-  
-  /* Shadows */
+
+  /* Typography Scale (Base = 16px) */
+  --font-size-xs: calc(16px * var(--golden-ratio-inverse) * var(--golden-ratio-inverse)); /* ~9.51px */
+  --font-size-sm: calc(16px * var(--golden-ratio-inverse)); /* ~9.89px */
+  --font-size-base: 16px;
+  --font-size-lg: calc(16px * var(--golden-ratio)); /* ~25.89px */
+  --font-size-xl: calc(16px * var(--golden-ratio) * var(--golden-ratio)); /* ~41.89px */
+  --font-size-2xl: calc(16px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* ~67.89px */
+  --font-size-3xl: calc(16px * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio) * var(--golden-ratio)); /* ~109.89px */
+
+  /* Line Height with Golden Ratio */
+  --line-height-tight: var(--golden-ratio-inverse);
+  --line-height-normal: var(--golden-ratio);
+  --line-height-relaxed: calc(var(--golden-ratio) * 1.2);
+
+  /* Spacing Scale */
+  --space-1: var(--size-1);
+  --space-2: var(--size-2);
+  --space-3: var(--size-3);
+  --space-4: var(--size-4);
+  --space-5: var(--size-5);
+  --space-6: var(--size-6);
+  --space-7: var(--size-7);
+  --space-8: var(--size-8);
+
+  /* Shadows with Golden Ratio proportions */
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  
-  /* Border Radius */
-  --border-radius-lg: 0.5rem;
-  --border-radius-xl: 0.75rem;
-  --border-radius-2xl: 1rem;
-  
-  /* Transitions */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 200ms ease-in-out;
-  --transition-slow: 300ms ease-in-out;
+
+  /* Border Radius with Golden Ratio */
+  --border-radius-sm: var(--size-1);
+  --border-radius-md: var(--size-2);
+  --border-radius-lg: var(--size-3);
+  --border-radius-xl: var(--size-4);
+  --border-radius-2xl: var(--size-5);
+
+  /* Transitions with Golden Ratio timing */
+  --transition-fast: calc(150ms * var(--golden-ratio-inverse)); /* ~92ms */
+  --transition-normal: 150ms;
+  --transition-slow: calc(150ms * var(--golden-ratio)); /* ~243ms */
+
+  /* Layout Proportions */
+  --container-max-width: 1200px; /* Golden ratio based: ~1200/741.5 ≈ 1.618 */
+  --sidebar-width: calc(var(--container-max-width) * var(--golden-ratio-inverse)); /* ~741px */
+  --content-width: calc(var(--container-max-width) * var(--golden-ratio-inverse) * var(--golden-ratio-inverse)); /* ~458px */
+
+  /* Aspect Ratios */
+  --aspect-golden: var(--golden-ratio);
+  --aspect-golden-inverse: var(--golden-ratio-inverse);
 }
 
 /* Dark mode variables */

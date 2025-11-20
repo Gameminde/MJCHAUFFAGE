@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthService } from '@/services/authService';
-// import { // EmailService } from '@/services/emailService';
+// import { EmailService } from '@/services/emailService';
 import { prisma } from '@/lib/database';
 import { logger } from '@/utils/logger';
 
@@ -45,11 +45,9 @@ const formatUserForResponse = (user: any) => ({
     user.updatedAt?.toISOString?.() ?? new Date(user.updatedAt).toISOString(),
 });
 
-
-
 export class AuthController {
   /**
-   * Register a new user
+   * Register new user
    */
   static async register(req: Request, res: Response): Promise<void> {
     try {
@@ -135,7 +133,7 @@ export class AuthController {
       await AuthService.storeRefreshToken(result.user.id, refreshToken);
 
       // Send verification email
-      // await // EmailService.sendVerificationEmail(result.user.email, result.user.firstName);
+      // await EmailService.sendVerificationEmail(result.user.email, result.user.firstName);
 
       AuthService.setAuthCookies(res, { accessToken, refreshToken });
 
@@ -154,6 +152,45 @@ export class AuthController {
         success: false,
         message: 'Internal server error',
       });
+    }
+  }
+
+  /**
+   * Social Login
+   */
+  static async socialLogin(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, firstName, lastName, image } = req.body;
+
+      if (!email) {
+        res.status(400).json({ message: 'Email is required' });
+        return;
+      }
+
+      const user = await AuthService.findOrCreateSocialUser({
+        email,
+        firstName: firstName || '',
+        lastName: lastName || '',
+        image
+      });
+
+      const tokens = AuthService.generateTokens(user);
+      await AuthService.storeRefreshToken(user.id, tokens.refreshToken);
+
+      AuthService.setAuthCookies(res, tokens);
+
+      res.json({
+        success: true,
+        message: 'Social login successful',
+        data: {
+          user: formatUserForResponse(user),
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        }
+      });
+    } catch (error) {
+      console.error('Social login error:', error);
+      res.status(500).json({ message: 'Social login failed' });
     }
   }
 
@@ -282,7 +319,7 @@ export class AuthController {
 
       // Verify refresh token
       const decoded = AuthService.verifyToken(refreshToken, true);
-      
+
       // Check if user tokens were revoked
       const areTokensRevoked = await AuthService.areUserTokensRevoked(decoded.userId, decoded.iat || 0);
       if (areTokensRevoked) {
@@ -293,7 +330,7 @@ export class AuthController {
         });
         return;
       }
-      
+
       // Validate token in Redis
       const isValidToken = await AuthService.validateRefreshToken(decoded.userId, refreshToken);
       if (!isValidToken) {
@@ -362,7 +399,7 @@ export class AuthController {
       });
     } catch (error) {
       console.error('Token refresh error:', error);
-      
+
       let message = 'Invalid or expired refresh token';
       let code = 'REFRESH_TOKEN_INVALID';
 
@@ -633,7 +670,7 @@ export class AuthController {
       await prisma.$transaction(async (tx: any) => {
         await tx.user.update({
           where: { id: userId! },
-          data: { 
+          data: {
             password: hashedNewPassword,
             updatedAt: new Date()
           },
@@ -693,7 +730,7 @@ export class AuthController {
       // const resetToken = await AuthService.generatePasswordResetToken(user.id);
 
       // Send reset email
-      // await // EmailService.sendPasswordResetEmail(user.email, user.firstName, resetToken);
+      // await EmailService.sendPasswordResetEmail(user.email, user.firstName, resetToken);
 
       res.json({
         success: true,

@@ -78,16 +78,25 @@ export class AdminController {
         limit: parseInt(limit as string),
       };
 
+      // Default to createdAt if orderDate is requested (more reliable)
+      const sortField = (sortBy as string) === 'orderDate' ? 'createdAt' : (sortBy as string);
       const sort = {
-        field: sortBy as string,
+        field: sortField,
         order: sortOrder as 'asc' | 'desc',
       };
 
       const result = await AdminService.getOrders(filters, pagination, sort);
 
+      // Transform orders to DTO format for frontend
+      const { transformOrderList } = require('@/utils/dtoTransformers');
+      const transformedOrders = transformOrderList(result.orders);
+
       res.json({
         success: true,
-        data: result,
+        data: {
+          orders: transformedOrders,
+          pagination: result.pagination,
+        },
       });
     } catch (error) {
       console.error('Get orders error:', error);

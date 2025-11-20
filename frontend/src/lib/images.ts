@@ -23,6 +23,11 @@ export function getImageUrl(path: string | null | undefined): string {
     return '/placeholder-product.svg' // Fallback to local placeholder (bundled SVG)
   }
 
+  // If path is just a placeholder or empty, return the local placeholder
+  if (path === '/placeholder-product.svg' || path === 'placeholder-product.svg' || path.trim() === '') {
+    return '/placeholder-product.svg'
+  }
+
   // Decode HTML entities if present (e.g., &#x2F; -> /, &amp; -> &)
   let decodedPath = path
   if (path.includes('&')) {
@@ -55,8 +60,11 @@ export function getImageUrl(path: string | null | undefined): string {
     try {
       const u = new URL(decodedPath)
       const backendOrigin = new URL(getBackendBaseUrl()).origin
-      if (u.origin === backendOrigin) {
-        // Convert backend absolute to relative for Next.js rewrite compatibility
+      const frontendOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+      
+      // Convert to relative if it's from backend or frontend (proxy)
+      if (u.origin === backendOrigin || u.origin === frontendOrigin) {
+        // Convert backend/frontend absolute to relative for Next.js rewrite compatibility
         let relPath = u.pathname
         // Fix known backend URL case where images are served under /files (not /api/v1/files)
         if (relPath.startsWith('/api/v1/')) {
@@ -102,13 +110,51 @@ export function getImageUrl(path: string | null | undefined): string {
 }
 
 /**
- * Get product image URL with fallback
+ * Get localized placeholder image based on category and locale
+ */
+function getLocalizedPlaceholder(categoryName: string, categorySlug: string, locale: string = 'fr'): string {
+  const isArabic = locale === 'ar'
+
+  // Category-specific fallbacks with localization
+  if (categoryName.includes('chaudière') || categorySlug.includes('boiler')) {
+    return '/chaudiere-a-gaz-1024x683-removebg-preview.png'
+  }
+  if (categoryName.includes('radiateur') || categorySlug.includes('radiator')) {
+    return '/placeholder-radiator.svg'
+  }
+  if (categoryName.includes('brûleur') || categorySlug.includes('burner')) {
+    return '/placeholder-burner.svg'
+  }
+  if (categoryName.includes('chauffe') || categorySlug.includes('heating')) {
+    return '/chaudiere-a-gaz-1024x683-removebg-preview.png'
+  }
+  if (categoryName.includes('climatisation') || categorySlug.includes('air-conditioning')) {
+    return isArabic ? '/placeholder-ac-ar.svg' : '/placeholder-ac.svg'
+  }
+
+  // Default fallback - could be localized in the future
+  return '/placeholder-product.svg'
+}
+
+/**
+ * Get product image URL with fallback based on category and locale
  */
 export function getProductImageUrl(
-  product: { images?: Array<{ url: string }> } | null | undefined
+  product: { images?: Array<{ url: string }>; category?: { name?: string; slug?: string } } | null | undefined,
+  locale: string = 'fr'
 ): string {
   const firstImage = product?.images?.[0]?.url
-  return getImageUrl(firstImage)
+
+  // If product has images, use them
+  if (firstImage) {
+    return getImageUrl(firstImage)
+  }
+
+  // Fallback based on category and locale
+  const categoryName = product?.category?.name?.toLowerCase() || ''
+  const categorySlug = product?.category?.slug?.toLowerCase() || ''
+
+  return getLocalizedPlaceholder(categoryName, categorySlug, locale)
 }
 
 /**

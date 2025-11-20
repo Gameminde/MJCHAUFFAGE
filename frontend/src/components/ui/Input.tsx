@@ -30,9 +30,9 @@ const inputVariants = cva(
           'border-yellow-500 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100',
       },
       inputSize: {
-        sm: 'px-3 py-2 text-sm',
-        md: 'px-4 py-3 text-base',
-        lg: 'px-5 py-4 text-lg',
+        sm: 'px-3 py-2 text-sm min-h-[44px]',
+        md: 'px-4 py-3 text-base min-h-[48px]',
+        lg: 'px-5 py-4 text-lg min-h-[52px]',
       },
     },
     defaultVariants: {

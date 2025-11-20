@@ -34,11 +34,11 @@ const buttonVariants = cva(
           'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:-translate-y-0.5 focus:ring-green-500 active:translate-y-0 shadow-card hover:shadow-card-hover',
       },
       size: {
-        sm: 'px-4 py-2 text-xs',
-        md: 'px-6 py-3 text-sm',
-        lg: 'px-8 py-4 text-base',
-        xl: 'px-10 py-5 text-lg',
-        icon: 'p-2.5',
+        sm: 'px-4 py-2 text-xs min-h-[44px]',
+        md: 'px-6 py-3 text-sm min-h-[44px]',
+        lg: 'px-8 py-4 text-base min-h-[48px]',
+        xl: 'px-10 py-5 text-lg min-h-[52px]',
+        icon: 'p-3 min-h-[44px] min-w-[44px]',
       },
       fullWidth: {
         true: 'w-full',

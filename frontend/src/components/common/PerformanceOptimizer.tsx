@@ -86,9 +86,8 @@ function preloadCriticalResources(): () => void {
   const preloadLinks: HTMLLinkElement[] = [];
   
   // Preload critical fonts with security validation
-  const criticalFonts = [
-    '/fonts/inter-var.woff2',
-    '/fonts/cal-sans.woff2',
+  const criticalFonts: string[] = [
+    // Fonts are loaded from Google Fonts, no local preloading needed
   ];
 
   criticalFonts.forEach(font => {

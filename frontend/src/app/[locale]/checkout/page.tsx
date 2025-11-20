@@ -14,9 +14,10 @@ export default function CheckoutPage({ params: { locale } }: Props) {
   const { items, itemCount } = useCart()
   const router = useRouter()
 
-  // Redirect to cart if empty
+  // Redirect to cart if empty (but allow navigation to success page)
   useEffect(() => {
-    if (itemCount === 0) {
+    // Don't redirect if we're navigating to success page
+    if (itemCount === 0 && !window.location.pathname.includes('/checkout/success')) {
       router.push(`/${locale}/cart`)
     }
   }, [itemCount, router, locale])

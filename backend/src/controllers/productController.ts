@@ -19,7 +19,8 @@ export class ProductController {
         sortBy = 'createdAt',
         sortOrder = 'desc',
         featured,
-        inStock
+        inStock,
+        boilerModel
       } = req.query;
 
       const filters: ProductFilters = {};
@@ -31,6 +32,7 @@ export class ProductController {
       if (maxPrice) filters.maxPrice = parseFloat(maxPrice as string);
       if (featured !== undefined) filters.featured = featured === 'true';
       if (inStock !== undefined) filters.inStock = inStock === 'true';
+      if (boilerModel) filters.boilerModelId = boilerModel as string;
 
       // Multi-select filters support: categories[], manufacturers[]
       const categoriesParam = req.query.categories as string | string[] | undefined;

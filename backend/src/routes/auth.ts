@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { AuthController } from '@/controllers/authController';
-import { authenticateToken, rateLimitAuth } from '@/middleware/auth';
-import { 
-  authValidation, 
+import { authenticateToken } from '@/middleware/auth';
+import {
+  authValidation,
   handleValidationErrors,
   authRateLimit,
-  strictRateLimit 
+  strictRateLimit
 } from '@/middleware/validation';
 
 const router = Router();
@@ -51,10 +51,10 @@ const router = Router();
  *       409:
  *         description: User already exists
  */
-router.post('/register', 
+router.post('/register',
   authRateLimit,
-  authValidation.register, 
-  handleValidationErrors, 
+  authValidation.register,
+  handleValidationErrors,
   AuthController.register
 );
 
@@ -85,10 +85,10 @@ router.post('/register',
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', 
-  rateLimitAuth,
-  authValidation.login, 
-  handleValidationErrors, 
+router.post('/login',
+  authRateLimit,
+  authValidation.login,
+  handleValidationErrors,
   AuthController.login
 );
 
@@ -198,8 +198,8 @@ router.get('/profile', authenticateToken, AuthController.getProfile);
  *       400:
  *         description: Validation error
  */
-router.put('/profile', 
-  authenticateToken, 
+router.put('/profile',
+  authenticateToken,
   authValidation.register.slice(2, 4), // firstName and lastName validation
   handleValidationErrors,
   AuthController.updateProfile

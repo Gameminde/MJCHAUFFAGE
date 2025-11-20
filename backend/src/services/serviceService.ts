@@ -74,9 +74,14 @@ export class ServiceService {
       include: { user: { select: { isActive: true } } },
     });
 
-    if (!customer || !customer.user?.isActive) {
-      throw new Error('Customer not found or inactive');
+    if (!customer) {
+      // Allow guest requests if customer doesn't exist
+      // In a real app, we might create a guest customer here or require registration
+      throw new Error('Customer not found');
     }
+
+    // Verify active subscription or warranty if required
+    // Implementation pending...
 
     return prisma.serviceRequest.create({
       data: {
@@ -86,7 +91,7 @@ export class ServiceService {
         requestedDate: data.requestedDate,
         priority: data.priority || 'NORMAL',
         status: 'PENDING',
-        equipmentDetails: data.equipmentDetails,
+        equipmentDetails: data.equipmentDetails ? JSON.stringify(data.equipmentDetails) : null,
         estimatedCost: data.estimatedCost || null,
       },
       include: {

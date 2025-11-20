@@ -1,4 +1,4 @@
-import { AuthForm } from '@/components/auth/AuthForm'
+import { UnifiedAuthForm } from '@/components/auth/UnifiedAuthForm'
 import { Metadata } from 'next'
 import { setRequestLocale } from 'next-intl/server';
 
@@ -7,13 +7,16 @@ interface Props {
 }
 
 export const metadata: Metadata = {
-  title: 'إنشاء حساب - MJ CHAUFFAGE | Créer un compte - MJ CHAUFFAGE',
+  title: 'التسجيل - MJ CHAUFFAGE | Register - MJ CHAUFFAGE',
   description: 'إنشاء حساب جديد في MJ CHAUFFAGE | Créer un nouveau compte MJ CHAUFFAGE',
 }
+
+// Force dynamic rendering to avoid SSG issues with useSearchParams
+export const dynamic = 'force-dynamic'
 
 export default function RegisterPage({ params: { locale } }: Props) {
   setRequestLocale(locale);
   return (
-    <AuthForm mode="register" locale={locale} />
+    <UnifiedAuthForm defaultTab="register" />
   )
 }

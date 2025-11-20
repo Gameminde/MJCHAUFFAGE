@@ -24,48 +24,19 @@ import {
 interface ShippingAddress {
   firstName: string;
   lastName: string;
-  email: string;
   phone: string;
+  email?: string; // Optionnel
   street: string;
   city: string;
   postalCode: string;
   region: string;
+  profession?: string; // Optionnel : "technicien", "particulier", "autre"
 }
 
-const ALGERIA_REGIONS = [
-  'Adrar',
-  'Chlef',
-  'Laghouat',
-  'Oum El Bouaghi',
-  'Batna',
-  'Béjaïa',
-  'Biskra',
-  'Béchar',
-  'Blida',
-  'Bouira',
-  'Tamanrasset',
-  'Tébessa',
-  'Tlemcen',
-  'Tiaret',
-  'Tizi Ouzou',
-  'Alger',
-  'Djelfa',
-  'Jijel',
-  'Sétif',
-  'Saïda',
-  'Skikda',
-  'Sidi Bel Abbès',
-  'Annaba',
-  'Guelma',
-  'Constantine',
-  'Médéa',
-  'Mostaganem',
-  'MSila',
-  'Mascara',
-  'Ouargla',
-  'Oran',
-  'El Bayadh',
-];
+import { api } from '@/lib/api';
+
+// Remove hardcoded wilayas, will fetch from API
+const ALGERIA_REGIONS: string[] = [];
 
 export function ModernCheckoutForm() {
   const { items, total, clearCart, formatPrice } = useCart();
@@ -77,16 +48,94 @@ export function ModernCheckoutForm() {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     firstName: '',
     lastName: '',
-    email: '',
     phone: '',
+    email: '',
     street: '',
     city: '',
     postalCode: '',
     region: '',
+    profession: '',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [shippingCost, setShippingCost] = useState<number>(0);
   const finalTotal = total + (shippingCost || 0);
+
+  const [wilayas, setWilayas] = useState<any[]>([]);
+  const [loadingWilayas, setLoadingWilayas] = useState(true);
+
+  // Fetch wilayas on mount
+  useEffect(() => {
+    const fetchWilayas = async () => {
+      setLoadingWilayas(true);
+      try {
+        // Use Next.js API proxy first (recommended), then fallback to direct backend
+        let response: Response | null = null;
+        let data: any = null;
+
+        // List of endpoints to try in order (proxy first, then direct)
+        const endpoints = [
+          '/api/wilayas', // Next.js proxy -> backend /api/v1/wilayas
+          '/api/v1/wilayas', // Direct proxy
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/wilayas`, // Direct backend
+        ];
+
+        for (const endpoint of endpoints) {
+          try {
+            console.log(`🔍 Tentative de connexion à: ${endpoint}`);
+            response = await fetch(endpoint, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              cache: 'no-cache',
+            });
+            
+            if (response.ok) {
+              data = await response.json();
+              console.log(`✅ Succès avec: ${endpoint}`);
+              break;
+            } else {
+              console.warn(`⚠️ ${endpoint} retourné: ${response.status} ${response.statusText}`);
+            }
+          } catch (e) {
+            console.warn(`❌ Erreur avec ${endpoint}:`, e);
+            continue;
+          }
+        }
+
+        if (data) {
+          // Handle different response formats
+          let wilayasList: any[] = [];
+          
+          if (data.success && Array.isArray(data.data)) {
+            wilayasList = data.data;
+          } else if (Array.isArray(data)) {
+            wilayasList = data;
+          } else if (data.data && Array.isArray(data.data)) {
+            wilayasList = data.data;
+          }
+
+          if (wilayasList.length > 0) {
+            console.log(`✅ ${wilayasList.length} wilayas chargées avec succès`);
+            setWilayas(wilayasList);
+          } else {
+            console.warn('⚠️ Aucune wilaya trouvée dans la réponse:', data);
+          }
+        } else {
+          throw new Error(`HTTP ${response?.status || 'unknown'}: ${response?.statusText || 'No response'}`);
+        }
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des wilayas:', error);
+        console.error('💡 Vérifiez que le backend est démarré et que les wilayas sont dans la base de données');
+        // Keep empty array to show error message
+        setWilayas([]);
+      } finally {
+        setLoadingWilayas(false);
+      }
+    };
+
+    fetchWilayas();
+  }, []);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -96,15 +145,53 @@ export function ModernCheckoutForm() {
 
   // Fetch shipping cost
   useEffect(() => {
-    const wilaya = shippingAddress.region;
-    if (!wilaya) {
+    const wilayaCode = shippingAddress.region; // We store code in region now
+    if (!wilayaCode) {
       setShippingCost(0);
       return;
     }
-    PaymentService.getShippingCost(wilaya, total)
-      .then((cost) => setShippingCost(Number(cost) || 0))
-      .catch(() => setShippingCost(0));
-  }, [shippingAddress.region, total]);
+    
+    const fetchShippingCost = async () => {
+      try {
+        // Try Next.js proxy first, then direct backend
+        let response: Response | null = null;
+        const endpoints = [
+          `/api/wilayas/${wilayaCode}/shipping-cost`, // Next.js proxy
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/wilayas/${wilayaCode}/shipping-cost`, // Direct backend
+        ];
+
+        for (const endpoint of endpoints) {
+          try {
+            response = await fetch(endpoint, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+            if (response.ok) break;
+          } catch (e) {
+            continue;
+          }
+        }
+
+        if (response && response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.shippingCost) {
+            setShippingCost(Number(data.data.shippingCost));
+          } else {
+            setShippingCost(600); // Default shipping cost
+          }
+        } else {
+          setShippingCost(600); // Default shipping cost
+        }
+      } catch (error) {
+        console.error('Failed to calculate shipping:', error);
+        setShippingCost(600); // Default shipping cost on error
+      }
+    };
+
+    fetchShippingCost();
+  }, [shippingAddress.region]);
 
   const handleInputChange = (field: keyof ShippingAddress, value: string) => {
     setShippingAddress((prev) => ({ ...prev, [field]: value }));
@@ -123,35 +210,26 @@ export function ModernCheckoutForm() {
     const requiredFields: (keyof ShippingAddress)[] = [
       'firstName',
       'lastName',
-      'email',
       'phone',
       'street',
       'city',
       'region',
-      'postalCode',
     ];
 
     requiredFields.forEach((field) => {
-      if (!shippingAddress[field].trim()) {
+      if (!shippingAddress[field] || !String(shippingAddress[field]).trim()) {
         newErrors[field] = locale === 'ar' ? 'مطلوب' : 'Requis';
       }
     });
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (shippingAddress.email && !emailRegex.test(shippingAddress.email)) {
-      newErrors.email =
-        locale === 'ar' ? 'بريد إلكتروني غير صحيح' : 'Email invalide';
-    }
-
-    // Phone validation
+    // Phone validation (strict Algerian format)
     const phoneRegex = /^(\+213|0)[567]\d{8}$/;
     if (
       shippingAddress.phone &&
       !phoneRegex.test(shippingAddress.phone.replace(/\s/g, ''))
     ) {
       newErrors.phone =
-        locale === 'ar' ? 'رقم هاتف غير صحيح' : 'Numéro invalide';
+        locale === 'ar' ? 'رقم هاتف غير صحيح (05/06/07)' : 'Numéro invalide (05/06/07)';
     }
 
     setErrors(newErrors);
@@ -166,7 +244,8 @@ export function ModernCheckoutForm() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/orders', {
+      // Use Next.js proxy to avoid duplicate /api/v1/api/v1
+      const response = await fetch('/api/orders/guest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -178,15 +257,16 @@ export function ModernCheckoutForm() {
           shippingAddress: {
             street: shippingAddress.street,
             city: shippingAddress.city,
-            postalCode: shippingAddress.postalCode,
+            postalCode: shippingAddress.postalCode.trim() || undefined, // Optional postal code
             region: shippingAddress.region,
             country: 'Algeria',
           },
           customerInfo: {
-            firstName: shippingAddress.firstName,
-            lastName: shippingAddress.lastName,
-            email: shippingAddress.email,
+            firstName: shippingAddress.firstName.trim(),
+            lastName: shippingAddress.lastName.trim(),
             phone: shippingAddress.phone,
+            email: shippingAddress.email?.trim() || undefined, // Optional email
+            profession: shippingAddress.profession?.trim() || undefined, // Optional profession
           },
           paymentMethod: 'CASH_ON_DELIVERY',
           subtotal: total,
@@ -202,17 +282,32 @@ export function ModernCheckoutForm() {
       }
 
       const result = await response.json();
-      clearCart();
-      router.push(`/${locale}/checkout/success?orderId=${result.data.order.id}`);
+      
+      // Use orderNumber for tracking instead of orderId
+      const orderNumber = result.data?.order?.orderNumber || result.data?.order?.id;
+      
+      if (!orderNumber) {
+        throw new Error('Order number not received from server');
+      }
+      
+      // Navigate to success page FIRST, then clear cart
+      // Use replace to prevent back navigation to checkout
+      router.replace(`/${locale}/checkout/success?orderNumber=${orderNumber}`);
+      
+      // Clear cart AFTER navigation to prevent redirect to empty cart page
+      setTimeout(() => {
+        clearCart();
+      }, 100);
     } catch (err) {
-      setErrors({
-        email:
-          err instanceof Error
-            ? err.message
-            : locale === 'ar'
-            ? 'فشل في إنشاء الطلب'
-            : 'Échec de la commande',
-      });
+      const errorMessage = err instanceof Error
+        ? err.message
+        : locale === 'ar'
+        ? 'فشل في إنشاء الطلب'
+        : 'Échec de la commande';
+      
+      // Show error in a user-friendly way
+      alert(errorMessage);
+      console.error('Order creation error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -253,32 +348,20 @@ export function ModernCheckoutForm() {
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Input
-                        label={locale === 'ar' ? 'الاسم الأول' : 'Prénom'}
+                        label={locale === 'ar' ? 'الاسم' : 'Prénom'}
                         value={shippingAddress.firstName}
                         onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        leftIcon={<User className="w-4 h-4" />}
                         error={errors.firstName}
                         required
                       />
                       <Input
-                        label={locale === 'ar' ? 'الاسم الأخير' : 'Nom'}
+                        label={locale === 'ar' ? 'اللقب' : 'Nom'}
                         value={shippingAddress.lastName}
                         onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        leftIcon={<User className="w-4 h-4" />}
                         error={errors.lastName}
                         required
                       />
                     </div>
-
-                    <Input
-                      label={locale === 'ar' ? 'البريد الإلكتروني' : 'Email'}
-                      type="email"
-                      value={shippingAddress.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      leftIcon={<Mail className="w-4 h-4" />}
-                      error={errors.email}
-                      required
-                    />
 
                     <Input
                       label={locale === 'ar' ? 'رقم الهاتف' : 'Téléphone'}
@@ -290,6 +373,44 @@ export function ModernCheckoutForm() {
                       helperText="Ex: 0555123456 ou +213555123456"
                       required
                     />
+
+                    <Input
+                      label={locale === 'ar' ? 'البريد الإلكتروني (اختياري)' : 'Email (optionnel)'}
+                      type="email"
+                      value={shippingAddress.email || ''}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      leftIcon={<Mail className="w-4 h-4" />}
+                      error={errors.email}
+                    />
+
+                    <div className="space-y-2">
+                      <label className="block text-body-sm font-medium text-neutral-700">
+                        {locale === 'ar' ? 'المهنة (اختياري)' : 'Profession (optionnel)'}
+                      </label>
+                      <select
+                        value={shippingAddress.profession || ''}
+                        onChange={(e) => handleInputChange('profession', e.target.value)}
+                        className="form-input w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                      >
+                        <option value="">
+                          {locale === 'ar' ? 'اختر...' : 'Sélectionner...'}
+                        </option>
+                        <option value="technicien">
+                          {locale === 'ar' ? 'تقني' : 'Technicien'}
+                        </option>
+                        <option value="particulier">
+                          {locale === 'ar' ? 'شخص عادي' : 'Particulier'}
+                        </option>
+                        <option value="autre">
+                          {locale === 'ar' ? 'آخر' : 'Autre'}
+                        </option>
+                      </select>
+                      <p className="text-body-xs text-neutral-500">
+                        {locale === 'ar' 
+                          ? '💡 Cette information nous aide à améliorer nos services' 
+                          : '💡 Cette information nous aide à améliorer nos services'}
+                      </p>
+                    </div>
 
                     <Input
                       label={locale === 'ar' ? 'العنوان' : 'Adresse'}
@@ -309,32 +430,67 @@ export function ModernCheckoutForm() {
                         required
                       />
                       <Input
-                        label={locale === 'ar' ? 'الرمز البريدي' : 'Code postal'}
+                        label={locale === 'ar' ? 'الرمز البريدي (اختياري)' : 'Code postal (optionnel)'}
                         value={shippingAddress.postalCode}
                         onChange={(e) => handleInputChange('postalCode', e.target.value)}
                         error={errors.postalCode}
-                        required
                       />
                       <div className="space-y-2">
                         <label className="block text-body-sm font-medium text-neutral-700">
                           {locale === 'ar' ? 'الولاية' : 'Wilaya'}
                           <span className="text-red-500 ml-1">*</span>
+                          {wilayas.length > 0 && (
+                            <span className="text-xs text-neutral-500 ml-2">
+                              ({wilayas.length} {locale === 'ar' ? 'ولاية متاحة' : 'wilayas disponibles'})
+                            </span>
+                          )}
                         </label>
                         <select
                           value={shippingAddress.region}
                           onChange={(e) => handleInputChange('region', e.target.value)}
-                          className="form-input"
+                          className={`form-input w-full px-4 py-3 rounded-lg border transition-all ${
+                            loadingWilayas 
+                              ? 'opacity-50 cursor-wait border-neutral-300 bg-neutral-50' 
+                              : wilayas.length === 0 
+                              ? 'border-red-300 bg-red-50' 
+                              : 'border-neutral-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                          }`}
                           required
+                          disabled={loadingWilayas}
                         >
                           <option value="">
-                            {locale === 'ar' ? 'اختر ولاية' : 'Sélectionner'}
+                            {loadingWilayas 
+                              ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement des wilayas...')
+                              : wilayas.length === 0
+                              ? (locale === 'ar' ? 'لا توجد ولايات متاحة - Rechargez la page' : 'Aucune wilaya disponible - Rechargez la page')
+                              : (locale === 'ar' ? 'اختر ولاية' : 'Sélectionner une wilaya')}
                           </option>
-                          {ALGERIA_REGIONS.map((region) => (
-                            <option key={region} value={region}>
-                              {region}
-                            </option>
-                          ))}
+                          {wilayas.map((w) => {
+                            const code = w.code || w.id || '';
+                            const name = locale === 'ar' ? (w.nameAr || w.name || '') : (w.name || w.nameAr || '');
+                            return (
+                              <option key={code} value={code}>
+                                {code.padStart(2, '0')} - {name}
+                              </option>
+                            );
+                          })}
                         </select>
+                        {wilayas.length === 0 && !loadingWilayas && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                            <p className="text-body-xs text-red-700 font-medium">
+                              {locale === 'ar' 
+                                ? '⚠️ Impossible de charger les wilayas. Vérifiez votre connexion et rechargez la page.' 
+                                : '⚠️ Impossible de charger les wilayas. Vérifiez votre connexion et rechargez la page.'}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => window.location.reload()}
+                              className="mt-2 text-xs text-red-600 underline hover:text-red-800"
+                            >
+                              {locale === 'ar' ? 'Recharger la page' : 'Recharger la page'}
+                            </button>
+                          </div>
+                        )}
                         {errors.region && (
                           <p className="text-body-xs text-red-600 mt-1">{errors.region}</p>
                         )}

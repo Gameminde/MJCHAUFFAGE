@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Filter, Download, Eye, Trash2, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
+import { Search, Filter, Download, Eye, Trash2, Package, Truck, CheckCircle, XCircle, Clock, Cog } from 'lucide-react'
 import { ordersService, type Order as OrderType } from '@/services/ordersService'
 import { ApiError } from '@/lib/api'
 
@@ -9,14 +9,17 @@ interface Order {
   id: string
   orderNumber: string
   customerName: string
-  customerEmail: string
+  customerEmail: string | null // Null if no real email (not mock email)
+  customerPhone: string | null // Phone number for contact
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
   total: number
   items: Array<{
     id: string
     productName: string
     quantity: number
-    price: number
+    price?: number // unitPrice
+    unitPrice?: number
+    totalPrice?: number
   }>
   shippingAddress: {
     street: string
@@ -39,7 +42,7 @@ const statusColors: Record<Order['status'], string> = {
 
 const statusIcons: Record<Order['status'], any> = {
   pending: Package,
-  processing: Package,
+  processing: Cog,
   shipped: Truck,
   delivered: CheckCircle,
   cancelled: XCircle,
@@ -55,25 +58,57 @@ export function OrdersManagement() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
 
+  // Prevent state updates during render
+  const [isMounted, setIsMounted] = useState(false)
+
   useEffect(() => {
-    fetchOrders()
+    setIsMounted(true)
+    return () => setIsMounted(false)
   }, [])
 
+  useEffect(() => {
+    if (isMounted) {
+      fetchOrders()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]) // Only run once when component is mounted
+
   const fetchOrders = async () => {
+    if (!isMounted) return; // Don't fetch if component is unmounted
+    
     setLoading(true)
     setError(null)
     try {
+      console.log('[OrdersManagement] Fetching orders...')
       const result = await ordersService.getOrders({
         sortBy: 'createdAt',
         sortOrder: 'desc'
       })
-      setOrders(result.orders || [])
+      
+      console.log('[OrdersManagement] Received result:', result)
+      console.log('[OrdersManagement] Orders count:', result.orders?.length || 0, 'Total:', result.total)
+      
+      if (isMounted) {
+        const ordersList = Array.isArray(result.orders) ? result.orders : []
+        console.log('[OrdersManagement] Setting orders:', ordersList.length)
+        setOrders(ordersList)
+        
+        if (ordersList.length === 0 && result.total > 0) {
+          console.warn('[OrdersManagement] WARNING: No orders in array but total > 0. Result:', result)
+          setError('Orders data structure mismatch. Check console for details.')
+        }
+      }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch orders'
-      setError(message)
-      console.error('Error fetching orders:', err)
+      if (isMounted) {
+        setError(message)
+        setOrders([]) // Clear orders on error
+      }
+      console.error('[OrdersManagement] Error fetching orders:', err)
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -129,7 +164,8 @@ export function OrdersManagement() {
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())
+                         (order.customerEmail && order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                         (order.customerPhone && order.customerPhone.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesStatus = !selectedStatus || order.status === selectedStatus
     return matchesSearch && matchesStatus
   })
@@ -234,36 +270,48 @@ export function OrdersManagement() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredOrders.map((order) => {
-                    const StatusIcon = statusIcons[order.status]
+                    const StatusIcon = statusIcons[order.status] || Package; // Fallback icon
                     return (
-                      <tr key={order.id} className="hover:bg-gray-50">
+                      <tr key={order.id || Math.random()} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {order.orderNumber}
+                            {order.orderNumber || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                            {Array.isArray(order.items) ? order.items.length : 0} item{(Array.isArray(order.items) && order.items.length !== 1) ? 's' : ''}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {order.customerName}
+                            {order.customerName || 'N/A'}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {order.customerEmail}
-                          </div>
+                          {order.customerPhone && (
+                            <div className="text-sm text-gray-600">
+                              📞 {order.customerPhone}
+                            </div>
+                          )}
+                          {order.customerEmail && (
+                            <div className="text-sm text-gray-500">
+                              ✉️ {order.customerEmail}
+                            </div>
+                          )}
+                          {!order.customerPhone && !order.customerEmail && (
+                            <div className="text-sm text-gray-400 italic">
+                              Pas de contact
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status] || 'bg-gray-100 text-gray-800'}`}>
                             <StatusIcon className="w-3 h-3 mr-1" />
-                            {order.status}
+                            {order.status || 'unknown'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {order.total.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
+                          {(typeof order.total === 'number' ? order.total : 0).toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                          {order.createdAt ? new Date(order.createdAt).toLocaleDateString('fr-FR') : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
@@ -324,9 +372,17 @@ export function OrdersManagement() {
                 {/* Customer Information */}
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Customer Information</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                     <p><strong>Name:</strong> {selectedOrder.customerName}</p>
-                    <p><strong>Email:</strong> {selectedOrder.customerEmail}</p>
+                    {selectedOrder.customerPhone && (
+                      <p><strong>Téléphone:</strong> <a href={`tel:${selectedOrder.customerPhone}`} className="text-blue-600 hover:underline">{selectedOrder.customerPhone}</a></p>
+                    )}
+                    {selectedOrder.customerEmail && (
+                      <p><strong>Email:</strong> <a href={`mailto:${selectedOrder.customerEmail}`} className="text-blue-600 hover:underline">{selectedOrder.customerEmail}</a></p>
+                    )}
+                    {!selectedOrder.customerPhone && !selectedOrder.customerEmail && (
+                      <p className="text-gray-500 italic">Aucune information de contact disponible</p>
+                    )}
                   </div>
                 </div>
 
@@ -334,9 +390,15 @@ export function OrdersManagement() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Shipping Address</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p>{selectedOrder.shippingAddress.street}</p>
-                    <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</p>
-                    <p>{selectedOrder.shippingAddress.country}</p>
+                    {selectedOrder.shippingAddress ? (
+                      <>
+                        <p>{selectedOrder.shippingAddress.street || 'N/A'}</p>
+                        <p>{selectedOrder.shippingAddress.city || 'N/A'}, {selectedOrder.shippingAddress.postalCode || 'N/A'}</p>
+                        <p>{selectedOrder.shippingAddress.country || 'N/A'}</p>
+                      </>
+                    ) : (
+                      <p className="text-gray-500">No shipping address available</p>
+                    )}
                   </div>
                 </div>
 
@@ -344,17 +406,26 @@ export function OrdersManagement() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Order Items</h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    {selectedOrder.items.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                        <div>
-                          <p className="font-medium">{item.productName}</p>
-                          <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                    {selectedOrder.items.map((item, index) => {
+                      // Use totalPrice if available, otherwise calculate from unitPrice
+                      const itemTotal = typeof item.totalPrice === 'number' && !isNaN(item.totalPrice)
+                        ? item.totalPrice
+                        : (typeof item.unitPrice === 'number' && !isNaN(item.unitPrice) && item.quantity)
+                        ? item.unitPrice * item.quantity
+                        : 0;
+                      
+                      return (
+                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                          <div>
+                            <p className="font-medium">{item.productName}</p>
+                            <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                          </div>
+                          <p className="font-medium">
+                            {itemTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
+                          </p>
                         </div>
-                        <p className="font-medium">
-                          {(item.price * item.quantity).toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                     <div className="pt-4 border-t border-gray-300 mt-4">
                       <div className="flex justify-between items-center font-bold">
                         <span>Total:</span>

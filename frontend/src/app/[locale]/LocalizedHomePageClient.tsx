@@ -314,11 +314,11 @@ export default function LocalizedHomePageClient({ params }: Props) {
             data-aos="fade-up" 
             data-aos-delay="200"
           >
-            <Link 
-              href={`tel:+213123456789`} 
+            <Link
+              href={`tel:0774102255`}
               className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-4 md:text-lg md:px-10 transition-colors duration-300"
             >
-              <Phone className="mr-2 h-5 w-5" /> +213 1 23 45 67 89
+              <Phone className="mr-2 h-5 w-5" /> 0774102255
             </Link>
           </div>
         </div>

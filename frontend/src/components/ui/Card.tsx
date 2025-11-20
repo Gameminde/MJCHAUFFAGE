@@ -37,7 +37,11 @@ const cardVariants = cva(
         none: '',
         lift: 'hover:shadow-card-hover hover:-translate-y-1',
         scale: 'hover:scale-[1.02]',
-        interactive: 'cursor-pointer hover:shadow-card-hover hover:-translate-y-2 active:translate-y-0 active:shadow-card',
+        interactive: 'cursor-pointer hover:shadow-card-hover hover:-translate-y-2 active:translate-y-0 active:shadow-card active:scale-95',
+      },
+      mobile: {
+        default: '',
+        touch: 'active:scale-95 active:shadow-sm',
       },
       padding: {
         none: 'p-0',
@@ -59,14 +63,17 @@ export interface CardProps
     VariantProps<typeof cardVariants> {
   /** Card content */
   children?: React.ReactNode;
+  /** Enable mobile touch interactions */
+  mobileTouch?: boolean;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant, hover, padding, children, ...props }, ref) => {
+  ({ className, variant, hover, padding, mobileTouch, children, ...props }, ref) => {
+    const mobileClass = mobileTouch ? 'touch' : 'default';
     return (
       <div
         ref={ref}
-        className={cn(cardVariants({ variant, hover, padding, className }))}
+        className={cn(cardVariants({ variant, hover, padding, mobile: mobileClass, className }))}
         {...props}
       >
         {children}

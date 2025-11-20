@@ -167,7 +167,7 @@ export function AddToCartButton({
         onClick={handleAddToCart}
         disabled={isAdding || justAdded}
         className={`${variantClasses[variant]} ${className} transition-colors`}
-        aria-label={t('cart.addToCart')}
+        aria-label="Ajouter au panier"
       >
         {justAdded ? (
           <Check className="h-5 w-5" />
@@ -245,8 +245,8 @@ export function AddToCartButton({
             <ShoppingCart className="h-5 w-5" />
             <span>
               {showQuantitySelector 
-                ? `${t('cart.addToCart')} - ${formatPrice(product.price * quantity)}`
-                : t('cart.addToCart')
+                ? `Ajouter au panier - ${formatPrice(product.price * quantity)}`
+                : 'Ajouter au panier'
               }
             </span>
           </>

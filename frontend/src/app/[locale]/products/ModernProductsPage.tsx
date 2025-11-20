@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, SlidersHorizontal, Grid3x3, List, X } from 'lucide-react';
+import { Search, SlidersHorizontal, Grid3x3, List, X, Menu } from 'lucide-react';
 import { Product } from '@/services/productService';
-import { ModernProductCard } from '@/components/products/ModernProductCard';
-import FilterSidebar, { FilterValues } from '@/components/products/FilterSidebar';
+import { ModernProductCardOptimized } from '@/components/products/ModernProductCardOptimized';
+import FilterSidebarOptimized, { FilterValues } from '@/components/products/FilterSidebarOptimized';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
 
 export type ModernProductsPageProps = {
   locale: string;
@@ -94,183 +96,145 @@ export default function ModernProductsPage({
     initialFilters.featured !== undefined;
 
   return (
-    <div className={`min-h-screen bg-white ${isArabic ? 'rtl' : 'ltr'}`}>
-      {/* Reduced Header Section */}
-      <div className="bg-gradient-to-r from-[#051937] to-[#0b2e59] text-white">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-1">
-                {isArabic ? 'منتجاتنا' : 'Nos Produits'}
-              </h1>
-              <p className="text-white/90 text-sm">
-                {isArabic
-                  ? `${totalProducts} منتج متاح`
-                  : `${totalProducts} produits disponibles`}
-              </p>
-            </div>
-
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="w-full md:w-96">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={isArabic ? 'ابحث عن المنتجات...' : 'Rechercher...'}
-                  className="w-full px-4 py-2 pr-11 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white shadow-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[#3EC4D0] hover:opacity-90 transition-colors"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6 bg-gray-50">
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    <div className={`min-h-screen bg-neutral-50 ${isArabic ? 'rtl' : 'ltr'}`}>
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
-            {/* Mobile Filter Toggle */}
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              icon={<SlidersHorizontal className="w-4 h-4" />}
-              className="lg:hidden"
-            >
-              {isArabic ? 'الفلاتر' : 'Filtres'}
-            </Button>
+            <h1 className="flex-shrink-0 text-2xl font-bold text-neutral-900">
+              MJ CHAUFFAGE
+            </h1>
 
-            {/* Results Count */}
-            <p className="text-gray-600">
-              {isArabic ? (
-                <>
-                  عرض <span className="font-semibold text-gray-900">{productCount}</span> من{' '}
-                  <span className="font-semibold text-gray-900">{totalProducts}</span> منتج
-                </>
-              ) : (
-                <>
-                  Affichage de <span className="font-semibold text-gray-900">{productCount}</span> sur{' '}
-                  <span className="font-semibold text-gray-900">{totalProducts}</span> produits
-                </>
-              )}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Clear Filters */}
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllFilters}
-                icon={<X className="w-4 h-4" />}
-              >
-                {isArabic ? 'مسح الفلاتر' : 'Effacer filtres'}
-              </Button>
-            )}
-
-            {/* View Mode Toggle */}
-            <div className="hidden sm:flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-md transition-colors ${
-                  viewMode === 'grid'
-                    ? 'bg-white shadow-sm text-[#3EC4D0]'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-                aria-label="Vue grille"
-              >
-                <Grid3x3 className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-white shadow-sm text-[#3EC4D0]'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-                aria-label="Vue liste"
-              >
-                <List className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filter Sidebar */}
-          <div
-            className={`${
-              showFilters ? 'fixed inset-0 z-50 bg-black/50 lg:relative lg:bg-transparent' : 'hidden'
-            } lg:block lg:col-span-1`}
-            onClick={() => setShowFilters(false)}
-          >
-            <div
-              className={`${
-                showFilters ? 'fixed left-0 top-0 h-full w-80 bg-white shadow-2xl overflow-y-auto' : ''
-              } lg:sticky lg:top-4`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Mobile Filter Header */}
-              <div className="lg:hidden flex items-center justify-between p-4 border-b">
-                <h2 className="text-lg font-semibold">
-                  {isArabic ? 'الفلاتر' : 'Filtres'}
-                </h2>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <FilterSidebar
-                locale={locale}
-                categories={categories}
-                manufacturers={manufacturers}
-                value={initialFilters}
-                onChange={applyFilters}
+            {/* Barre de recherche */}
+            <div className="flex-1 max-w-2xl relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder={isArabic ? 'Rechercher un produit...' : 'Rechercher un produit...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+                className="pl-10"
               />
             </div>
-          </div>
 
-          {/* Products Grid/List */}
-          <div className="lg:col-span-3">
+            {/* Bouton filtres mobile */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setShowFilters(true)}
+            >
+              <Menu className="w-5 h-5" />
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800">
+                  {hasActiveFilters ? 1 : 0}
+                </Badge>
+              )}
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex gap-8">
+          {/* Sidebar Filtres - Desktop */}
+          <aside className="hidden lg:block w-80 flex-shrink-0">
+            <FilterSidebarOptimized
+              locale={locale}
+              categories={categories}
+              manufacturers={manufacturers}
+              value={initialFilters}
+              onChange={applyFilters}
+            />
+          </aside>
+
+          {/* Sidebar Filtres - Mobile */}
+          {showFilters && (
+            <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setShowFilters(false)}>
+              <div
+                className="absolute inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-4">
+                  <FilterSidebarOptimized
+                    locale={locale}
+                    categories={categories}
+                    manufacturers={manufacturers}
+                    value={initialFilters}
+                    onChange={applyFilters}
+                    isMobile={true}
+                    onClose={() => setShowFilters(false)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Contenu Principal */}
+          <main className="flex-1 min-w-0">
+            {/* Barre d'action */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-neutral-600">
+                  {productCount} produit{productCount > 1 ? 's' : ''} trouvé{productCount > 1 ? 's' : ''}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700' : 'hover:bg-orange-50 hover:text-orange-700'}
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700' : 'hover:bg-orange-50 hover:text-orange-700'}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Grille de produits */}
             {productCount === 0 ? (
               <div className="text-center py-16">
-                <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Search className="w-10 h-10 text-gray-400" />
+                <div className="w-20 h-20 mx-auto mb-4 bg-neutral-100 rounded-full flex items-center justify-center">
+                  <Search className="w-10 h-10 text-neutral-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {isArabic ? 'لم يتم العثور على منتجات' : 'Aucun produit trouvé'}
+                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+                  {isArabic ? 'Aucun produit trouvé' : 'Aucun produit trouvé'}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-neutral-600 mb-4">
                   {isArabic
-                    ? 'جرب تغيير معايير البحث أو الفلاتر'
-                    : 'Essayez de modifier vos critères de recherche ou filtres'}
+                    ? 'Essayez de modifier vos critères de recherche'
+                    : 'Essayez de modifier vos critères de recherche'}
                 </p>
-                <Button variant="outline" onClick={clearAllFilters}>
-                  {isArabic ? 'مسح جميع الفلاتر' : 'Effacer tous les filtres'}
+                <Button onClick={clearAllFilters} className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700">
+                  {isArabic ? 'Effacer les filtres' : 'Effacer les filtres'}
                 </Button>
               </div>
             ) : (
-              <div
-                className={
-                  viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch'
-                    : 'space-y-4'
-                }
-              >
-                {initialProducts.map((product) => (
-                  <ModernProductCard key={product.id} product={product} />
+              <div className={
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                  : 'space-y-4'
+              }>
+                {initialProducts.map(product => (
+                  <ModernProductCardOptimized
+                    key={product.id}
+                    product={product}
+                    viewMode={viewMode}
+                    onClick={() => {
+                      // Navigation vers la page produit
+                      router.push(`/${locale}/products/${product.id}`);
+                    }}
+                  />
                 ))}
               </div>
             )}
@@ -284,14 +248,14 @@ export default function ModernProductsPage({
                       <button
                         key={page}
                         onClick={() => {
-                          const params = new URLSearchParams(window.location.search);
+                          const params = new URLSearchParams(searchParams?.toString() || '');
                           params.set('page', String(page));
                           router.push(`/${locale}/products?${params.toString()}`);
                         }}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           page === initialPagination.page
-                            ? 'bg-[#051937] text-white shadow-lg'
-                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                            ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
+                            : 'bg-white text-neutral-700 hover:bg-orange-50 hover:text-orange-700 border border-neutral-200'
                         }`}
                       >
                         {page}
@@ -301,7 +265,7 @@ export default function ModernProductsPage({
                 </div>
               </div>
             )}
-          </div>
+          </main>
         </div>
       </div>
     </div>

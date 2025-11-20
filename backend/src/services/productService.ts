@@ -14,6 +14,7 @@ export interface ProductFilters {
   maxPrice?: number;
   featured?: boolean;
   inStock?: boolean;
+  boilerModelId?: string;
 }
 
 interface Pagination {
@@ -96,6 +97,15 @@ export class ProductService {
 
     if (filters.inStock) {
       where.stockQuantity = { gt: 0 };
+    }
+
+    // Filter by Boiler Compatibility
+    if (filters.boilerModelId) {
+      where.compatibleBoilers = {
+        some: {
+          boilerModelId: filters.boilerModelId
+        }
+      };
     }
 
     // Build orderBy

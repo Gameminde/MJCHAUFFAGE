@@ -32,37 +32,37 @@ export function RegisterForm() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = 'Le prénom est requis'
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = 'Le nom est requis'
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = "L'email est requis"
+    } else if (!/\S+@\S+\.\S/.test(formData.email)) {
+      newErrors.email = 'Veuillez entrer une adresse email valide'
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = 'Le mot de passe est requis'
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = 'Le mot de passe doit contenir au moins 8 caractères'
     } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain uppercase, lowercase, and number'
+      newErrors.password = 'Le mot de passe doit contenir une majuscule, une minuscule et un chiffre'
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = 'Les mots de passe ne correspondent pas'
     }
 
     if (formData.customerType === 'B2B' && !formData.companyName.trim()) {
-      newErrors.companyName = 'Company name is required for business accounts'
+      newErrors.companyName = "Le nom de l'entreprise est requis pour les comptes professionnels"
     }
 
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions'
+      newErrors.agreeToTerms = 'Vous devez accepter les conditions générales'
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -82,23 +82,23 @@ export function RegisterForm() {
       if (result?.success) {
         router.push(`/${currentLocale}/auth/login?registered=1`)
       } else {
-        setErrors({ general: result?.message || error || 'Registration failed. Please try again.' })
+        setErrors({ general: result?.message || error || "L'inscription a échoué. Veuillez réessayer." })
       }
     } catch (err) {
       // Error is handled by AuthContext
-      setErrors({ general: error || 'Registration failed. Please try again.' })
+      setErrors({ general: error || "L'inscription a échoué. Veuillez réessayer." })
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : false
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
-    
+
     // Clear specific field error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
@@ -115,7 +115,7 @@ export function RegisterForm() {
 
       {/* Customer Type Selection */}
       <div>
-        <label className="form-label">Account Type</label>
+        <label className="form-label">Type de compte</label>
         <div className="mt-2 space-y-2">
           <div className="flex items-center">
             <input
@@ -128,8 +128,8 @@ export function RegisterForm() {
               className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300"
             />
             <label htmlFor="b2c" className="ml-2 block text-sm text-neutral-900">
-              <span className="font-medium">Personal Account</span>
-              <span className="block text-neutral-500">For homeowners and individual customers</span>
+              <span className="font-medium">Compte Personnel</span>
+              <span className="block text-neutral-500">Pour les particuliers et propriétaires</span>
             </label>
           </div>
           <div className="flex items-center">
@@ -143,8 +143,8 @@ export function RegisterForm() {
               className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300"
             />
             <label htmlFor="b2b" className="ml-2 block text-sm text-neutral-900">
-              <span className="font-medium">Business Account</span>
-              <span className="block text-neutral-500">For contractors, plumbers, and professionals</span>
+              <span className="font-medium">Compte Professionnel</span>
+              <span className="block text-neutral-500">Pour les entrepreneurs et plombiers</span>
             </label>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function RegisterForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="firstName" className="form-label">
-            First name
+            Prénom
           </label>
           <input
             id="firstName"
@@ -164,14 +164,14 @@ export function RegisterForm() {
             value={formData.firstName}
             onChange={handleChange}
             className={`form-input ${errors.firstName ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-            placeholder="Enter your first name"
+            placeholder="Votre prénom"
           />
           {errors.firstName && <p className="form-error">{errors.firstName}</p>}
         </div>
 
         <div>
           <label htmlFor="lastName" className="form-label">
-            Last name
+            Nom
           </label>
           <input
             id="lastName"
@@ -181,7 +181,7 @@ export function RegisterForm() {
             value={formData.lastName}
             onChange={handleChange}
             className={`form-input ${errors.lastName ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-            placeholder="Enter your last name"
+            placeholder="Votre nom"
           />
           {errors.lastName && <p className="form-error">{errors.lastName}</p>}
         </div>
@@ -189,7 +189,7 @@ export function RegisterForm() {
 
       <div>
         <label htmlFor="email" className="form-label">
-          Email address
+          Adresse email
         </label>
         <input
           id="email"
@@ -200,14 +200,14 @@ export function RegisterForm() {
           value={formData.email}
           onChange={handleChange}
           className={`form-input ${errors.email ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-          placeholder="Enter your email"
+          placeholder="votre@email.com"
         />
         {errors.email && <p className="form-error">{errors.email}</p>}
       </div>
 
       <div>
         <label htmlFor="phone" className="form-label">
-          Phone number (optional)
+          Numéro de téléphone (optionnel)
         </label>
         <input
           id="phone"
@@ -216,7 +216,7 @@ export function RegisterForm() {
           value={formData.phone}
           onChange={handleChange}
           className="form-input"
-          placeholder="Enter your phone number"
+          placeholder="Votre numéro de téléphone"
         />
       </div>
 
@@ -224,7 +224,7 @@ export function RegisterForm() {
       {formData.customerType === 'B2B' && (
         <div>
           <label htmlFor="companyName" className="form-label">
-            Company name
+            Nom de l'entreprise
           </label>
           <input
             id="companyName"
@@ -234,7 +234,7 @@ export function RegisterForm() {
             value={formData.companyName}
             onChange={handleChange}
             className={`form-input ${errors.companyName ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-            placeholder="Enter your company name"
+            placeholder="Nom de votre entreprise"
           />
           {errors.companyName && <p className="form-error">{errors.companyName}</p>}
         </div>
@@ -242,7 +242,7 @@ export function RegisterForm() {
 
       <div>
         <label htmlFor="password" className="form-label">
-          Password
+          Mot de passe
         </label>
         <input
           id="password"
@@ -253,17 +253,17 @@ export function RegisterForm() {
           value={formData.password}
           onChange={handleChange}
           className={`form-input ${errors.password ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-          placeholder="Create a strong password"
+          placeholder="Créez un mot de passe fort"
         />
         {errors.password && <p className="form-error">{errors.password}</p>}
         <p className="mt-1 text-xs text-neutral-500">
-          Password must contain uppercase, lowercase, number, and special character
+          Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial
         </p>
       </div>
 
       <div>
         <label htmlFor="confirmPassword" className="form-label">
-          Confirm password
+          Confirmer le mot de passe
         </label>
         <input
           id="confirmPassword"
@@ -274,7 +274,7 @@ export function RegisterForm() {
           value={formData.confirmPassword}
           onChange={handleChange}
           className={`form-input ${errors.confirmPassword ? 'border-error-300 focus:border-error-500 focus:ring-error-500' : ''}`}
-          placeholder="Confirm your password"
+          placeholder="Confirmez votre mot de passe"
         />
         {errors.confirmPassword && <p className="form-error">{errors.confirmPassword}</p>}
       </div>
@@ -291,13 +291,13 @@ export function RegisterForm() {
             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded mt-0.5"
           />
           <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-neutral-900">
-            I agree to the{' '}
+            J'accepte les{' '}
             <Link href="/terms" className="text-primary-600 hover:text-primary-500">
-              Terms and Conditions
+              Conditions Générales
             </Link>{' '}
-            and{' '}
+            et la{' '}
             <Link href="/privacy" className="text-primary-600 hover:text-primary-500">
-              Privacy Policy
+              Politique de Confidentialité
             </Link>
           </label>
         </div>
@@ -313,7 +313,7 @@ export function RegisterForm() {
             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded mt-0.5"
           />
           <label htmlFor="subscribeNewsletter" className="ml-2 block text-sm text-neutral-900">
-            Subscribe to our newsletter for heating tips and product updates
+            S'abonner à notre newsletter pour des conseils et mises à jour
           </label>
         </div>
       </div>
@@ -327,19 +327,19 @@ export function RegisterForm() {
           {loading ? (
             <div className="flex items-center justify-center">
               <div className="loading-spinner w-4 h-4 mr-2"></div>
-              Creating account...
+              Création du compte...
             </div>
           ) : (
-            'Create account'
+            'Créer un compte'
           )}
         </button>
       </div>
 
       <div className="text-center">
         <p className="text-sm text-neutral-600">
-          Already have an account?{' '}
+          Vous avez déjà un compte?{' '}
           <Link href={`/${currentLocale}/auth/login`} className="font-medium text-primary-600 hover:text-primary-500">
-            Sign in here
+            Connectez-vous ici
           </Link>
         </p>
       </div>

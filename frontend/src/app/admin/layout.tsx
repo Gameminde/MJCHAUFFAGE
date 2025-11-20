@@ -14,6 +14,7 @@ interface AdminLayoutProps {
 
 function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const { logout, user } = useAdminAuth()
@@ -23,10 +24,17 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
     router.push('/admin/login')
   }
 
+  // Close mobile sidebar on navigation
+  const handleNavigation = (path: string) => {
+    router.push(path)
+    setIsMobileSidebarOpen(false)
+  }
+
   // Don't apply layout to login page
   if (pathname === '/admin/login') {
     return <>{children}</>
   }
+
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
@@ -38,15 +46,28 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
 
   return (
     <AdminAuthGuard>
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        {/* Mobile Sidebar Overlay */}
+        {isMobileSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
         <aside
-          className={`bg-gray-900 text-white transition-all duration-300 ${
-            isSidebarOpen ? 'w-64' : 'w-20'
-          } flex flex-col`}
+          className={`
+            fixed lg:static inset-y-0 left-0 z-50
+            bg-gray-900 text-white transition-all duration-300
+            flex flex-col
+            ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            ${isSidebarOpen ? 'w-64' : 'w-20'}
+            lg:flex
+          `}
         >
           {/* Logo */}
-          <div className="flex items-center justify-center h-16 border-b border-gray-800">
+          <div className="flex items-center justify-center h-16 border-b border-gray-800 flex-shrink-0">
             {isSidebarOpen ? (
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -62,13 +83,13 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 space-y-2">
+          <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
             {menuItems.map((item) => {
               const isActive = pathname === item.path
               return (
                 <button
                   key={item.id}
-                  onClick={() => router.push(item.path)}
+                  onClick={() => handleNavigation(item.path)}
                   className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
                       ? 'bg-blue-600 text-white'
@@ -84,7 +105,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-3 border-t border-gray-800">
+          <div className="p-3 border-t border-gray-800 flex-shrink-0">
             <button
               onClick={handleLogout}
               className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
@@ -97,12 +118,24 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
           {/* Header */}
-          <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center px-6">
+          <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center px-4 lg:px-6 flex-shrink-0">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 mr-4"
+              aria-label="Open Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            {/* Desktop Toggle Sidebar Button */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 mr-4"
+              className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 text-gray-600 mr-4"
               aria-label="Toggle Sidebar"
             >
               <svg
@@ -119,12 +152,14 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 />
               </svg>
             </button>
-            <h1 className="text-xl font-semibold text-gray-800">
-              MJ CHAUFFAGE - Administration
+
+            <h1 className="text-lg lg:text-xl font-semibold text-gray-800 truncate">
+              MJ CHAUFFAGE
             </h1>
-            <div className="ml-auto flex items-center space-x-4">
+            
+            <div className="ml-auto flex items-center space-x-2 lg:space-x-4">
               {user && (
-                <div className="text-sm text-gray-600">
+                <div className="hidden md:block text-sm text-gray-600">
                   <span className="font-medium">{user.firstName} {user.lastName}</span>
                   <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                     {user.role}
@@ -138,13 +173,13 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 className="text-sm text-gray-600 hover:text-blue-600 flex items-center"
               >
                 <span className="mr-1">🌐</span>
-                View Website
+                <span className="hidden sm:inline">View Website</span>
               </a>
             </div>
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50 w-full">
             {children}
           </main>
         </div>

@@ -230,8 +230,10 @@ export class AdminService {
       if (filters.dateTo) where.orderDate.lte = filters.dateTo;
     }
 
+    // Use createdAt as default if orderDate is requested but doesn't exist
+    const orderByField = sort.field === 'orderDate' ? 'createdAt' : sort.field;
     const orderBy: Prisma.OrderOrderByWithRelationInput = {};
-    orderBy[sort.field as keyof Prisma.OrderOrderByWithRelationInput] = sort.order;
+    orderBy[orderByField as keyof Prisma.OrderOrderByWithRelationInput] = sort.order;
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -242,9 +244,19 @@ export class AdminService {
               user: { select: { firstName: true, lastName: true, email: true } }
             }
           },
+          shippingAddress: true, // Include shipping address
           items: {
             include: {
-              product: { select: { name: true, price: true } }
+              product: { 
+                select: { 
+                  name: true, 
+                  price: true,
+                  images: {
+                    take: 1,
+                    select: { url: true, altText: true }
+                  }
+                } 
+              }
             }
           }
         },

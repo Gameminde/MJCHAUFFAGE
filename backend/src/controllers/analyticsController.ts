@@ -194,4 +194,58 @@ export class AnalyticsController {
       })
     }
   }
+
+  static async getSalesByCategories(req: Request, res: Response): Promise<void> {
+    try {
+      const { timeframe = '30d' } = req.query
+
+      let start: Date
+      const end: Date = new Date()
+
+      // Calculate date range based on timeframe
+      const days = parseInt(timeframe as string) || 30
+      start = new Date()
+      start.setDate(start.getDate() - days)
+
+      const categoryAnalytics = await AnalyticsService.getSalesByCategories(start, end)
+
+      res.json({
+        success: true,
+        data: categoryAnalytics
+      })
+    } catch (error) {
+      console.error('Error fetching sales by categories:', error)
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch sales by categories'
+      })
+    }
+  }
+
+  static async getTrafficSources(req: Request, res: Response): Promise<void> {
+    try {
+      const { timeframe = '30d' } = req.query
+
+      let start: Date
+      const end: Date = new Date()
+
+      // Calculate date range based on timeframe
+      const days = parseInt(timeframe as string) || 30
+      start = new Date()
+      start.setDate(start.getDate() - days)
+
+      const trafficAnalytics = await AnalyticsService.getTrafficSources(start, end)
+
+      res.json({
+        success: true,
+        data: trafficAnalytics
+      })
+    } catch (error) {
+      console.error('Error fetching traffic sources:', error)
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch traffic sources'
+      })
+    }
+  }
 }

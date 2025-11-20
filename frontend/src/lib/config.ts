@@ -15,15 +15,15 @@ export const config = {
     // Server-side API URL (SSR, API routes) - also direct in production
     ssrBaseURL: process.env.NODE_ENV === 'production'
       ? 'https://pretty-stillness-production.up.railway.app/api'
-      : (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'),
+      : (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'),
   },
-  
+
   app: {
     // Application URLs
     url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     environment: process.env.NODE_ENV || 'development',
   },
-  
+
   features: {
     // Feature flags
     enablePayments: process.env.NEXT_PUBLIC_ENABLE_PAYMENTS !== 'false',

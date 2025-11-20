@@ -74,8 +74,18 @@ if (process.env.NODE_ENV !== 'production') {
     );
     
     // Payment Method Analytics
-    router.get('/payments/methods', (req: Request, res: Response) => 
+    router.get('/payments/methods', (req: Request, res: Response) =>
       handleAnalyticsCall(req, res, AnalyticsController.getPaymentMethodAnalytics, 'Failed to fetch payment method analytics')
+    );
+
+    // Sales by Categories
+    router.get('/sales/categories', (req: Request, res: Response) =>
+      handleAnalyticsCall(req, res, AnalyticsController.getSalesByCategories, 'Failed to fetch sales by categories')
+    );
+
+    // Traffic Sources
+    router.get('/traffic/sources', (req: Request, res: Response) =>
+      handleAnalyticsCall(req, res, AnalyticsController.getTrafficSources, 'Failed to fetch traffic sources')
     );
 
   } catch (importError) {
@@ -116,6 +126,14 @@ if (process.env.NODE_ENV !== 'production') {
     
     router.get('/payments/methods', (_req: Request, res: Response) => {
       res.json(getEmptyAnalyticsResponse('Payment analytics not available'));
+    });
+
+    router.get('/sales/categories', (_req: Request, res: Response) => {
+      res.json(getEmptyAnalyticsResponse('Sales by categories not available'));
+    });
+
+    router.get('/traffic/sources', (_req: Request, res: Response) => {
+      res.json(getEmptyAnalyticsResponse('Traffic sources not available'));
     });
   }
 
@@ -179,6 +197,12 @@ if (process.env.NODE_ENV !== 'production') {
     
     // Payment Method Analytics
     router.get('/payments/methods', AnalyticsController.getPaymentMethodAnalytics);
+
+    // Sales by Categories
+    router.get('/sales/categories', AnalyticsController.getSalesByCategories);
+
+    // Traffic Sources
+    router.get('/traffic/sources', AnalyticsController.getTrafficSources);
 
     // Analytics tracking endpoint (no auth required for tracking)
     router.post('/track', AnalyticsTrackingController.trackEvent);

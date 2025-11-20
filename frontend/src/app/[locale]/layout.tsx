@@ -2,7 +2,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import '@/styles/globals.css'
 import '@/styles/accessibility.css'
-import { Inter } from 'next/font/google'
+import '@/styles/mobile-optimizations.css'
+// Removed next/font for build reliability - using system fonts
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/common/Header'
 import { Footer } from '@/components/common/Footer'
@@ -11,8 +12,7 @@ import { AccessibilityProvider } from '@/components/accessibility/AccessibilityP
 import { AccessibilityToolbar } from '@/components/accessibility/AccessibilityToolbar'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/seo/StructuredData'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-
-const inter = Inter({ subsets: ['latin'] })
+import { MobileAccessibility } from '@/components/ui/MobileAccessibility'
 
 type Props = {
   children: React.ReactNode;
@@ -58,13 +58,13 @@ export const metadata = {
   publisher: 'MJ CHAUFFAGE',
   category: 'Business',
   classification: 'Heating Services',
-  
+
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  
+
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
@@ -81,14 +81,14 @@ export const metadata = {
       },
     ],
   },
-  
+
   twitter: {
     card: 'summary_large_image',
     title: 'MJ CHAUFFAGE - Professional Heating Solutions Algeria',
     description: 'Professional heating equipment, installation services, and maintenance solutions.',
     images: ['/og-image.jpg'],
   },
-  
+
   robots: {
     index: true,
     follow: true,
@@ -102,13 +102,13 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
-  
+
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
     yandex: process.env.YANDEX_VERIFICATION,
     yahoo: process.env.YAHOO_VERIFICATION,
   },
-  
+
   alternates: {
     canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://mjchauffage.com',
     languages: {
@@ -118,9 +118,9 @@ export const metadata = {
       'x-default': '/fr',
     },
   },
-  
+
   manifest: '/manifest.json',
-  
+
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -137,13 +137,13 @@ export const metadata = {
       },
     ],
   },
-  
+
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'MJ CHAUFFAGE',
   },
-  
+
   other: {
     'msapplication-TileColor': '#f3761a',
     'msapplication-config': '/browserconfig.xml',
@@ -161,7 +161,7 @@ export default async function RootLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   // Debug logs removed to reduce noise in console
-  
+
   // Set document direction based on locale
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
@@ -174,24 +174,26 @@ export default async function RootLayout({
       <a href="#navigation" className="skip-link">
         Skip to navigation
       </a>
-      
+
       {/* Structured Data */}
       <OrganizationStructuredData />
       <WebsiteStructuredData />
-      
+
       <NextIntlClientProvider locale={locale} messages={messages}>
         <AccessibilityProvider>
-          <Providers locale={locale}>
-            <ErrorBoundary>
-              <Header locale={locale} />
-              <main id="main-content" className="flex-1 pt-20" role="main">
-                {children}
-              </main>
-              <Footer />
-              <FloatingComparisonBar locale={locale} />
-              <AccessibilityToolbar />
-            </ErrorBoundary>
-          </Providers>
+          <MobileAccessibility>
+            <Providers locale={locale}>
+              <ErrorBoundary>
+                <Header locale={locale} />
+                <main id="main-content" className="flex-1 pt-20" role="main">
+                  {children}
+                </main>
+                <Footer />
+                <FloatingComparisonBar locale={locale} />
+                <AccessibilityToolbar />
+              </ErrorBoundary>
+            </Providers>
+          </MobileAccessibility>
         </AccessibilityProvider>
       </NextIntlClientProvider>
     </div>

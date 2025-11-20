@@ -10,6 +10,51 @@ import {
 
 export class OrderController {
   /**
+   * Track guest order status by order number and phone
+   */
+  static async trackGuestOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderNumber, phone } = req.query;
+
+      if (!orderNumber || !phone) {
+        res.status(400).json({
+          success: false,
+          message: 'Order number and phone number are required',
+        });
+        return;
+      }
+
+      const order = await OrderService.trackGuestOrder(
+        orderNumber as string,
+        phone as string
+      );
+
+      if (!order) {
+        res.status(404).json({
+          success: false,
+          message: 'Order not found or phone number does not match',
+        });
+        return;
+      }
+
+      const orderDto = transformOrderToDTO(order);
+
+      res.json({
+        success: true,
+        data: {
+          order: orderDto, // Return full order DTO
+        },
+      });
+    } catch (error) {
+      console.error('Track guest order error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
+
+  /**
    * Create a guest order (no authentication required)
    */
   static async createGuestOrder(req: Request, res: Response): Promise<void> {

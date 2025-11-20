@@ -1,284 +1,294 @@
-# 🚀 MJ CHAUFFAGE Deployment Guide
+# 📦 Guide de Déploiement - MJ CHAUFFAGE
 
-## Free Hosting Setup (Railway + Vercel)
+## 🌐 Déploiement sur Netlify
 
-### Prerequisites
-1. **Railway Account**: Sign up at [railway.app](https://railway.app)
-2. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-3. **GitHub Account**: For connecting repositories
+### 1. Préparation du Build
 
----
+Le dossier de build Next.js se trouve dans `frontend/.next/`. Pour Netlify, nous devons utiliser le répertoire `.next` avec les bonnes configurations.
 
-## 1. Backend Deployment (Railway)
+#### Configuration Netlify
 
-### Step 1: Create Railway Project
-```bash
-# Install Railway CLI (optional, but recommended)
-npm install -g @railway/cli
-railway login
+Créez un fichier `netlify.toml` à la racine du projet frontend:
 
-# Or use Railway web interface
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"
+  
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "8"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 ```
 
-### Step 2: Connect Repository
-1. Go to [railway.app](https://railway.app)
-2. Click "New Project" → "Deploy from GitHub repo"
-3. Connect your GitHub repository
-4. Railway will automatically detect the `railway.json` and `backend/Dockerfile`
+### 2. Variables d'Environnement Netlify
 
-### Step 3: Configure Environment Variables
-In Railway dashboard, go to your project → Variables tab and add:
+Configurez ces variables dans **Netlify Dashboard → Site Settings → Environment Variables**:
 
-```env
-# Environment
+```bash
+# Backend API (votre backend Railway)
+NEXT_PUBLIC_API_URL=https://pretty-stillness-production.up.railway.app/api
+BACKEND_API_URL=https://pretty-stillness-production.up.railway.app/api
+
+# Application
+NEXT_PUBLIC_APP_URL=https://votre-site.netlify.app
+NEXT_PUBLIC_SITE_URL=https://votre-site.netlify.app
 NODE_ENV=production
 
-# API Configuration
-API_PORT=3001
-FRONTEND_URL=https://mj-chauffage.vercel.app
+# NextAuth (si utilisé)
+NEXTAUTH_URL=https://votre-site.netlify.app
+NEXTAUTH_SECRET=votre-secret-tres-securise-32-caracteres-minimum
 
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=7d
-
-# Session Configuration
-SESSION_SECRET=your-session-secret-change-this-in-production
-
-# Email Configuration (Optional for now)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-EMAIL_FROM=MJ CHAUFFAGE <noreply@mjchauffage.com>
-
-# Upload Configuration
-UPLOAD_MAX_SIZE=10485760
-UPLOAD_ALLOWED_TYPES=image/jpeg,image/png,image/webp,application/pdf
-
-# Security
-BCRYPT_ROUNDS=12
-
-# Rate Limiting
-RATE_LIMIT_WINDOW=15
-RATE_LIMIT_MAX_REQUESTS=100
-
-# External APIs (Optional)
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
-WEATHER_API_KEY=your-weather-api-key
-GEMINI_API_KEY=your-gemini-api-key
-
-# Logging
-LOG_LEVEL=info
-LOG_FILE=logs/app.log
-
-# Algeria Configuration
-DEFAULT_CURRENCY=DZD
-DEFAULT_LOCALE=ar
-SUPPORTED_LOCALES=ar,fr
-TIMEZONE=Africa/Algiers
-
-# Payment Configuration (Optional)
-PAYMENT_PROCESSING_ENABLED=false
-PAYMENT_TEST_MODE=true
-DAHABIA_API_URL=https://api.poste.dz
-DAHABIA_MERCHANT_ID=your-merchant-id
-DAHABIA_SECRET_KEY=your-secret-key
+# Google OAuth
+GOOGLE_CLIENT_ID=votre-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=votre-client-secret
 ```
 
-### Step 4: Database Setup
-Railway automatically provides PostgreSQL. The `DATABASE_URL` environment variable will be set automatically.
+### 3. Déploiement
 
-### Step 5: Deploy
-1. Railway will automatically build and deploy when you push to your main branch
-2. Or you can manually trigger deployment in the dashboard
-3. Once deployed, note down your backend URL (e.g., `https://mj-chauffage-backend-production.up.railway.app`)
+#### Option A: Déploiement via Git (Recommandé)
+
+1. **Connectez votre repo GitHub à Netlify**
+   - Allez sur https://app.netlify.com
+   - Click "Add new site" → "Import an existing project"
+   - Sélectionnez votre repo GitHub
+   - Configurez:
+     - Base directory: `frontend`
+     - Build command: `npm run build`
+     - Publish directory: `.next`
+
+2. **Déploiement automatique**
+   - Chaque push sur `main` déclenchera un déploiement automatique
+
+#### Option B: Déploiement Manuel
+
+1. **Build local**
+   ```bash
+   cd frontend
+   npm run build
+   ```
+
+2. **Déployer via Netlify CLI**
+   ```bash
+   npm install -g netlify-cli
+   netlify login
+   netlify deploy --prod
+   ```
 
 ---
 
-## 2. Frontend Deployment (Vercel)
+## 🔐 Accès au Dashboard Admin en Production
 
-### Step 1: Create Vercel Project
-```bash
-# Install Vercel CLI
-npm install -g vercel
-vercel login
+### URL d'Accès
 
-# Or use Vercel web interface
+Une fois déployé, le dashboard admin sera accessible à:
+
+```
+https://votre-site.netlify.app/admin
 ```
 
-### Step 2: Deploy Frontend
-```bash
-cd frontend
-vercel --prod
+Ou spécifiquement la page de connexion:
+
+```
+https://votre-site.netlify.app/admin/login
 ```
 
-### Step 3: Configure Environment Variables
-In Vercel dashboard, go to your project → Settings → Environment Variables:
+### Identifiants Admin
 
-```env
-# API Configuration
-NEXT_PUBLIC_API_URL=https://mj-chauffage-backend-production.up.railway.app/api/v1
+**Email**: `admin@mjchauffage.com`  
+**Mot de passe**: `Admin123!`
 
-# Site Configuration
-NEXT_PUBLIC_SITE_URL=https://mj-chauffage.vercel.app
+⚠️ **IMPORTANT**: Changez ce mot de passe après la première connexion!
 
-# Analytics (Optional)
-NEXT_PUBLIC_GA_ID=your-google-analytics-id
+### Routes Admin Disponibles
 
-# Other environment variables as needed...
-```
+Après connexion réussie, vous aurez accès à:
 
-### Step 4: Custom Domain (Optional)
-1. Go to Vercel project settings
-2. Add custom domain if you have one
-3. Configure DNS settings
+- **Dashboard**: `/admin` - Vue d'ensemble
+- **Commandes**: `/admin/orders` - Gestion des commandes
+- **Produits**: `/admin/products` - Gestion du catalogue
+- **Clients**: `/admin/customers` - Gestion des clients
+- **Services**: `/admin/services` - Demandes de service
+- **Techniciens**: `/admin/technicians` - Gestion de l'équipe
+- **Analytiques**: `/admin/analytics` - Statistiques et rapports
 
----
+### Vérifications Post-Déploiement
 
-## 3. Database Migration
+1. **Testez la connexion admin**:
+   ```bash
+   curl https://votre-site.netlify.app/api/admin/login \
+     -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"email":"admin@mjchauffage.com","password":"Admin123!"}'
+   ```
 
-### Step 1: Run Migrations
-After backend is deployed, run database migrations:
+2. **Vérifiez les endpoints API**:
+   - `/api/products` - Liste des produits
+   - `/api/admin/dashboard` - Stats dashboard (avec auth)
+
+### Sécurité Admin en Production
+
+#### 1. Variables d'environnement sensibles
+
+Assurez-vous que ces variables sont configurées dans Netlify:
 
 ```bash
-# Connect to Railway CLI
-railway connect
-
-# Run migrations
-cd backend
-npx prisma migrate deploy
-
-# Seed database (optional)
-npx prisma db seed
+JWT_SECRET=votre-jwt-secret-securise
+DATABASE_URL=votre-database-url-postgres
+REDIS_URL=votre-redis-url
 ```
 
-### Step 2: Verify Database
-Check that tables are created and seeded properly.
+#### 2. CORS Configuration
+
+Le backend (Railway) doit autoriser votre domaine Netlify:
+
+```javascript
+// backend/src/server.ts
+const allowedOrigins = [
+  'https://votre-site.netlify.app',
+  'https://pretty-stillness-production.up.railway.app',
+  process.env.FRONTEND_URL
+];
+```
+
+#### 3. Rate Limiting
+
+Le rate limiting est déjà configuré pour les routes admin:
+- Max 5 tentatives de connexion par 15 minutes
+- Protection contre le brute force
+
+### Changer le Mot de Passe Admin
+
+#### Via l'interface admin (après connexion):
+
+1. Allez sur `/admin/settings`
+2. Section "Sécurité"
+3. "Changer le mot de passe"
+
+#### Via la base de données directement:
+
+```typescript
+// Exécuter ce script sur Railway
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function changeAdminPassword() {
+  const newPassword = 'VotreNouveauMotDePasse123!';
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  
+  await prisma.user.update({
+    where: { email: 'admin@mjchauffage.com' },
+    data: { password: hashedPassword }
+  });
+  
+  console.log('✅ Mot de passe admin mis à jour');
+}
+
+changeAdminPassword();
+```
 
 ---
 
-## 4. Testing the Deployment
+## 🚀 Checklist de Déploiement
 
-### Step 1: Health Check
-Visit your backend URL + `/health` to verify it's running:
-```
-https://mj-chauffage-backend-production.up.railway.app/health
-```
+### Avant le déploiement:
 
-### Step 2: Frontend Testing
-1. Visit your Vercel frontend URL
-2. Try registering a new user
-3. Try logging in
-4. Test adding items to cart
-5. Test navigation between pages
+- [ ] Build local réussi (`npm run build`)
+- [ ] Tests passent (`npm test`)
+- [ ] Variables d'environnement configurées
+- [ ] Backend déployé et fonctionnel (Railway)
+- [ ] Base de données migrée et seedée
+- [ ] Admin user créé dans la DB
 
-### Step 3: End-to-End Testing
-- Register → Login → Browse products → Add to cart → Checkout flow
-- Test both Arabic and French locales
-- Test on mobile devices
+### Après le déploiement:
 
----
-
-## 5. Monitoring & Troubleshooting
-
-### Railway Logs
-```bash
-railway logs
-# Or check logs in Railway dashboard
-```
-
-### Vercel Logs
-```bash
-vercel logs
-# Or check logs in Vercel dashboard
-```
-
-### Common Issues
-
-#### 1. Build Failures
-- Check that all dependencies are in `package.json`
-- Ensure TypeScript compilation passes
-- Verify environment variables are set correctly
-
-#### 2. Database Connection Issues
-- Verify `DATABASE_URL` is set in Railway
-- Check database migrations ran successfully
-- Ensure Prisma client is generated
-
-#### 3. API Connection Issues
-- Verify `NEXT_PUBLIC_API_URL` points to correct Railway URL
-- Check CORS settings in backend
-- Ensure API routes are working
-
-#### 4. Environment Variables
-- Make sure all required environment variables are set
-- Check variable names match exactly (case-sensitive)
-- Restart deployments after changing variables
+- [ ] Site accessible (https://votre-site.netlify.app)
+- [ ] Page de connexion admin fonctionne
+- [ ] Login admin réussi
+- [ ] Dashboard admin s'affiche correctement  
+- [ ] API calls fonctionnent (check Network tab)
+- [ ] Images et assets chargent
+- [ ] Performance acceptable (Lighthouse > 80)
+- [ ] Pas d'erreurs console
+- [ ] SSL/HTTPS actif
+- [ ] Redirections configurées
+- [ ] Sitemap disponible (/sitemap.xml)
+- [ ] Robots.txt configuré
 
 ---
 
-## 6. Free Tier Limitations
+## 🔧 Dépannage
 
-### Railway Free Tier
-- 512 MB RAM
-- 1 GB storage (PostgreSQL)
-- 100 hours/month
-- Automatic sleep after inactivity
+### Erreur "Cannot connect to backend"
 
-### Vercel Free Tier
-- 100 GB bandwidth/month
-- 100 deployments/month
-- No custom domains (can use Vercel domains)
-- No serverless function duration limits
+1. Vérifiez que `NEXT_PUBLIC_API_URL` est bien configuré
+2. Testez l'URL du backend directement: `curl https://pretty-stillness-production.up.railway.app/health`
+3. Vérifiez les CORS sur le backend
 
----
+### Erreur 404 sur /admin
 
-## 7. Production Checklist
+1. Vérifiez que le build Next.js inclut bien les routes admin
+2. Configurez les redirections Netlify si nécessaire
+3. Check `_redirects` file dans `/public`
 
-- [ ] Backend deployed and healthy
-- [ ] Frontend deployed and accessible
-- [ ] Database migrated and seeded
-- [ ] Environment variables configured
-- [ ] Registration/login working
-- [ ] Product browsing working
-- [ ] Cart functionality working
-- [ ] Mobile responsive
-- [ ] Both languages working
-- [ ] SSL certificates working (automatic on both platforms)
+### Login admin ne fonctionne pas
 
----
+1. Vérifiez que l'user admin existe dans la DB
+2. Testez le endpoint `/api/admin/login` directement
+3. Check les logs du backend sur Railway
+4. Vérifiez que le JWT_SECRET est le même partout
 
-## Cost Estimation (Free Tier)
+### Build échoue sur Netlify
 
-| Service | Cost | Notes |
-|---------|------|-------|
-| Railway | Free | 100 hours/month, auto-sleep |
-| Vercel | Free | 100GB bandwidth/month |
-| PostgreSQL | Free | 1GB included with Railway |
-| Redis | Free | Included with Railway |
-| **Total** | **$0/month** | Perfect for testing! |
+1. Check les logs de build Netlify
+2. Vérifiez Node version (doit être 18+)
+3. Supprimez node_modules et package-lock, puis rebuild
+4. Vérifiez qu'il n'y a pas d'erreurs TypeScript
 
 ---
 
-## Quick Commands
+## 📱 Accès Mobile au Dashboard Admin
 
-```bash
-# Deploy backend
-railway up
+Le dashboard admin est **responsive** et fonctionne sur mobile:
 
-# Deploy frontend
-cd frontend && vercel --prod
+- **Tablettes**: Interface adaptée avec sidebar collapsible
+- **Smartphones**: Navigation mobile optimisée
+- **Touch-friendly**: Tous les éléments sont tactiles
 
-# Check Railway logs
-railway logs
+URL identique: `https://votre-site.netlify.app/admin`
 
-# Check Vercel logs
-vercel logs
+---
 
-# Connect to Railway database
-railway connect
-```
+## 📊 Monitoring Post-Déploiement
 
-Happy deploying! 🎉
+1. **Netlify Analytics**: Activez dans les settings
+2. **Google Analytics**: Déjà configuré dans le code
+3. **Sentry**: Pour le monitoring d'erreurs (recommandé)
+4. **Uptime Robot**: Pour surveiller la disponibilité
+
+---
+
+## 🎯 Performance Optimizations
+
+Le site est déjà optimisé avec:
+
+- ✅ Next.js 14 App Router
+- ✅ Image optimization (next/image)
+- ✅ Code splitting automatique
+- ✅ Static generation où possible
+- ✅ API routes proxifiées
+- ✅ Compression Gzip/Brotli
+- ✅ Cache headers optimisés
+- ✅ Progressive Web App (PWA) ready
+
+---
+
+Pour toute question, consultez:
+- [Documentation Netlify](https://docs.netlify.com)
+- [Next.js Deployment](https://nextjs.org/docs/deployment)
+- [Railway Docs](https://docs.railway.app)

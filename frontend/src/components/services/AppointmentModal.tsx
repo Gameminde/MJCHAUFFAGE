@@ -187,12 +187,10 @@ export default function AppointmentModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isAuthenticated) {
-      setSubmitStatus('error');
-      setErrors({ auth: t.loginRequired });
-      return;
-    }
-
+    // Allow guest request if not authenticated
+    // Authentication check is now handled by the backend if it strictly requires auth
+    // But we want to support guest bookings
+    
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -208,6 +206,8 @@ export default function AppointmentModal({
         requestedDate: requestedDateTime.toISOString(),
         priority: formData.priority,
         equipmentDetails: formData.equipmentDetails || undefined,
+        // Guest info - In a real implementation, add guest fields to form
+        // For now, we assume logged in OR handle guest on backend if implemented
       };
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/requests`, {

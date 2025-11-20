@@ -37,7 +37,7 @@ export interface OrderItemData {
 export interface ShippingAddressData {
   street: string;
   city: string;
-  postalCode: string;
+  postalCode?: string; // Optional postal code
   region?: string;
   country: string;
 }
@@ -61,8 +61,9 @@ export interface GuestOrderData {
   customerInfo: {
     firstName: string;
     lastName: string;
-    email: string;
     phone: string;
+    email?: string; // Optional email
+    profession?: string; // Optional: "technicien", "particulier", "autre"
   };
   paymentMethod: string;
   subtotal: number;
@@ -72,6 +73,47 @@ export interface GuestOrderData {
 }
 
 export class OrderService {
+  /**
+   * Track a guest order
+   */
+  static async trackGuestOrder(orderNumber: string, phone: string) {
+    // Find order by number
+    const order = await prisma.order.findUnique({
+      where: { orderNumber },
+      include: {
+        customer: true,
+        shippingAddress: true,
+        items: {
+          include: {
+            product: {
+              select: { 
+                id: true, 
+                name: true, 
+                sku: true, 
+                images: { take: 1, select: { url: true, altText: true } }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!order) {
+      return null;
+    }
+
+    // Strict phone verification
+    // Guest phone is in customer record
+    const customerPhone = order.customer?.phone?.replace(/\s/g, '');
+    const searchPhone = phone.replace(/\s/g, '');
+
+    if (customerPhone !== searchPhone) {
+      return null;
+    }
+
+    return order;
+  }
+
   /**
    * Create a guest order (no customer account required)
    */
@@ -84,13 +126,28 @@ export class OrderService {
       // Product validation implemented
       // await ProductValidationService.validateProductStock(data.items, tx);
 
-      // Create guest customer record
+      // Use real email if provided, otherwise create temporary email
+      const userEmail = data.customerInfo.email || `guest_${Date.now()}_${Math.random().toString(36).substring(7)}@guest.mjchauffage.com`;
+      
+      // Create temporary guest user (required for Customer relation)
+      // Use real firstName/lastName from form
+      const guestUser = await tx.user.create({
+        data: {
+          email: userEmail,
+          firstName: data.customerInfo.firstName || 'Guest',
+          lastName: data.customerInfo.lastName || 'Customer',
+          role: 'CUSTOMER',
+          isActive: false, // Guest users are not active
+        },
+      });
+
+      // Create guest customer record with real name, phone, email, and profession
       const guestCustomer = await tx.customer.create({
         data: {
-          firstName: data.customerInfo.firstName,
-          lastName: data.customerInfo.lastName,
-          email: data.customerInfo.email,
+          userId: guestUser.id,
           phone: data.customerInfo.phone,
+          email: data.customerInfo.email || null, // Store real email if provided
+          profession: data.customerInfo.profession || null,
           isGuest: true,
         },
       });
@@ -102,8 +159,8 @@ export class OrderService {
           type: 'SHIPPING',
           street: data.shippingAddress.street,
           city: data.shippingAddress.city,
-          postalCode: data.shippingAddress.postalCode,
-          region: data.shippingAddress.region,
+          postalCode: data.shippingAddress.postalCode || null, // Optional postal code
+          region: data.shippingAddress.region || null,
           country: data.shippingAddress.country,
         },
       });
@@ -208,8 +265,8 @@ export class OrderService {
           type: 'SHIPPING',
           street: data.shippingAddress.street,
           city: data.shippingAddress.city,
-          postalCode: data.shippingAddress.postalCode,
-          region: data.shippingAddress.region,
+          postalCode: data.shippingAddress.postalCode || null, // Optional postal code
+          region: data.shippingAddress.region || null,
           country: data.shippingAddress.country,
         },
       });

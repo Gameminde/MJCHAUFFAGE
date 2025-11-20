@@ -63,9 +63,10 @@ export function Footer() {
           <div>
             <h4 className="text-md font-semibold mb-4">{t('footer.contact')}</h4>
             <div className="space-y-2 text-sm text-gray-300">
-              <p>{t('footer.phone')}: +213 XXX XXX XXX</p>
+              <p>{t('footer.phone')}: 0774102255</p>
               <p>{t('footer.email')}: contact@mjchauffage.com</p>
-              <p>{t('footer.address')}: Algiers, Algeria</p>
+              <p>{t('footer.address')}: Rue Maure, djasr kasentina</p>
+              <p className="text-xs text-gray-400 mt-1">Madjid chauffage sur maps direct au magasin</p>
             </div>
           </div>
         </div>
