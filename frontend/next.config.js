@@ -5,13 +5,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
-const API_URL_RAW = process.env.NEXT_PUBLIC_API_URL || 'https://pretty-stillness-production.up.railway.app';
+const API_URL_RAW = process.env.NEXT_PUBLIC_API_URL || 'https://mj-chauffage-backend.onrender.com';
 // Ensure we always proxy to the backend origin (strip any path like /api/v1)
 let BACKEND_ORIGIN;
 try {
   BACKEND_ORIGIN = new URL(API_URL_RAW).origin;
 } catch {
-  BACKEND_ORIGIN = 'https://pretty-stillness-production.up.railway.app';
+  BACKEND_ORIGIN = 'https://mj-chauffage-backend.onrender.com';
 }
 
 /** @type {import('next').NextConfig} */

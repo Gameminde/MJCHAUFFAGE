@@ -9,7 +9,10 @@
 export const config = {
   api: {
     // Client-side API URL (exposed to browser)
-    baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
+    // If it's an absolute URL (production) and doesn't have /api, append it
+    baseURL: (process.env.NEXT_PUBLIC_API_URL?.startsWith('http') && !process.env.NEXT_PUBLIC_API_URL?.endsWith('/api'))
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api`
+      : (process.env.NEXT_PUBLIC_API_URL || '/api'),
 
     // Server-side API URL (SSR, API routes)
     ssrBaseURL: process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
