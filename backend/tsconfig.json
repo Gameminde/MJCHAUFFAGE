@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -28,24 +31,46 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
     "experimentalDecorators": true,
-    "types": ["node", "multer"],
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "typeRoots": ["./node_modules/@types", "../node_modules/@types"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../node_modules/@types"
+    ],
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"],
-      "@/controllers/*": ["./controllers/*"],
-      "@/middleware/*": ["./middleware/*"],
-      "@/models/*": ["./models/*"],
-      "@/routes/*": ["./routes/*"],
-      "@/services/*": ["./services/*"],
-      "@/utils/*": ["./utils/*"],
-      "@/types/*": ["./types/*"],
-      "@/config/*": ["./config/*"],
-      "@shared/*": ["../shared/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/controllers/*": [
+        "./controllers/*"
+      ],
+      "@/middleware/*": [
+        "./middleware/*"
+      ],
+      "@/models/*": [
+        "./models/*"
+      ],
+      "@/routes/*": [
+        "./routes/*"
+      ],
+      "@/services/*": [
+        "./services/*"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/config/*": [
+        "./config/*"
+      ],
+      "@shared/*": [
+        "../shared/src/*"
+      ]
     }
   },
   "include": [
@@ -58,6 +83,8 @@
     "node_modules/@aws-sdk/**/*"
   ],
   "ts-node": {
-    "require": ["tsconfig-paths/register"]
+    "require": [
+      "tsconfig-paths/register"
+    ]
   }
 }
