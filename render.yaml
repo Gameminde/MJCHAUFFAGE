@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: mj-chauffage-backend
+    env: node
+    plan: free
+    rootDir: .
+    buildCommand: npm install && cd backend && npx prisma generate && npm run build
+    startCommand: cd backend && npm run start:compiled
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mj-chauffage-db
+          property: connectionString
+
+databases:
+  - name: mj-chauffage-db
+    databaseName: mjchauffage
+    user: mjchauffage
+    plan: free
+    ipAllowList: [] # Allow all connections for now, or restrict as needed
