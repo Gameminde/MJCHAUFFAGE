@@ -30,10 +30,12 @@ export const corsOptions = {
       /^https:\/\/frontend-[a-zA-Z0-9-]+-youcefs-projects-b3c48b29\.vercel\.app$/,
       /^https:\/\/frontend-[a-zA-Z0-9-]+\.vercel\.app$/,
       /^https:\/\/mjchauffage-frontend\.vercel\.app$/,
+      /^https:\/\/mjchauffage.*\.vercel\.app$/,
       // Current production URL
       'https://frontend-eight-ruddy-86.vercel.app',
       'https://frontend-kcx09sr6k-youcefs-projects-b3c48b29.vercel.app',
-      'https://mjchauffage-frontend.vercel.app'
+      'https://mjchauffage-frontend.vercel.app',
+      'https://mjchauffage.vercel.app'
     ];
 
     if (config.env === 'development') {
