@@ -22,6 +22,7 @@ import { apiVersionHeader, deprecationWarning } from '@/middleware/apiVersioning
 // Import routes
 import authRoutes from '@/routes/auth';
 import productRoutes from '@/routes/products';
+import categoryRoutes from '@/routes/categories';
 import customerRoutes from '@/routes/customers';
 import orderRoutes from '@/routes/orders';
 import serviceRoutes from '@/routes/services';
@@ -145,6 +146,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/services', serviceRoutes);
