@@ -131,6 +131,14 @@ app.use('/images', express.static(path.resolve(__dirname, '..', 'uploads'), {
 }));
 
 // API Routes
+app.get('/', (req, res) => {
+  res.json({
+    message: 'MJ Chauffage Backend API is running',
+    environment: config.env,
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use('/health', healthRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/v1/health', healthRoutes);
@@ -192,19 +200,19 @@ const startServer = async () => {
   const isTestEnv = process.env.NODE_ENV === 'test';
   try {
     console.log('🚀 Starting MJ Chauffage Backend...');
-    
+
     console.log('📊 Connecting to database...');
     // Test simple de connexion
     await prisma.$queryRaw`SELECT 1 as test`;
     console.log('✅ Database connected successfully.');
-    
+
     console.log('🔗 Connecting to Redis...');
     await connectRedis();
     console.log('✅ Redis connected successfully.');
 
     const port = config.api.port || 3001;
     console.log(`🌐 Starting server on port ${port}...`);
-    
+
     server.listen(port, () => {
       console.log(`✅ Server listening on http://localhost:${port}`);
       console.log(`🔍 Health check: http://localhost:${port}/health`);
