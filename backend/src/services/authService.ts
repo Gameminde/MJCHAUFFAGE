@@ -61,385 +61,372 @@ export class AuthService {
     })
 
     return newUser
-  }
-
-  static generateTokens(user: User): AuthTokens {
-    if (!config.jwt.secret || config.jwt.secret.length < 32) {
-      throw new Error('JWT secret must be at least 256 bits (32 characters)');
-    }
-    if (!config.jwt.refreshSecret || config.jwt.refreshSecret.length < 64) {
-      throw new Error('JWT refresh secret must be at least 256 bits (64 hex characters)');
-    }
-
-    const payload: TokenPayload = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+    role: user.role,
     };
 
-    const accessToken = jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
-      issuer: 'mj-chauffage',
-      audience: 'mj-chauffage-app',
-      algorithm: 'HS256',
-    } as jwt.SignOptions);
+  const accessToken = jwt.sign(payload, config.jwt.secret, {
+    expiresIn: config.jwt.expiresIn,
+    issuer: 'mj-chauffage',
+    audience: 'mj-chauffage-app',
+    algorithm: 'HS256',
+  } as jwt.SignOptions);
 
-    // Refresh token with minimal payload for security
-    const refreshPayload = {
-      userId: user.id,
-      type: 'refresh',
-    };
+  // Refresh token with minimal payload for security
+  const refreshPayload = {
+    userId: user.id,
+    type: 'refresh',
+  };
 
-    const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshSecret, {
-      expiresIn: config.jwt.refreshExpiresIn,
-      issuer: 'mj-chauffage',
-      audience: 'mj-chauffage-app',
-      algorithm: 'HS256',
-    } as jwt.SignOptions);
+  const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshSecret, {
+    expiresIn: config.jwt.refreshExpiresIn,
+    issuer: 'mj-chauffage',
+    audience: 'mj-chauffage-app',
+    algorithm: 'HS256',
+  } as jwt.SignOptions);
 
     return { accessToken, refreshToken };
   }
 
   static setAuthCookies(res: Response, tokens: AuthTokens): void {
-    const isProduction = config.env === 'production';
+  const isProduction = config.env === 'production';
 
-    res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true, // Not accessible by client-side scripts for security
-      secure: isProduction, // HTTPS only in production
-      sameSite: 'strict', // CSRF protection
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/',
-      domain: isProduction ? '.mjchauffage.com' : undefined, // Set domain in production
-    });
+  res.cookie('accessToken', tokens.accessToken, {
+    httpOnly: true, // Not accessible by client-side scripts for security
+    secure: isProduction, // HTTPS only in production
+    sameSite: 'strict', // CSRF protection
+    maxAge: 15 * 60 * 1000, // 15 minutes
+    path: '/',
+    domain: isProduction ? '.mjchauffage.com' : undefined, // Set domain in production
+  });
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true, // Not accessible by client-side scripts
-      secure: isProduction, // HTTPS only in production
-      sameSite: 'strict', // CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/api/auth/refresh', // Restrict to refresh endpoint only
-      domain: isProduction ? '.mjchauffage.com' : undefined, // Set domain in production
-    });
-  }
+  res.cookie('refreshToken', tokens.refreshToken, {
+    httpOnly: true, // Not accessible by client-side scripts
+    secure: isProduction, // HTTPS only in production
+    sameSite: 'strict', // CSRF protection
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/api/auth/refresh', // Restrict to refresh endpoint only
+    domain: isProduction ? '.mjchauffage.com' : undefined, // Set domain in production
+  });
+}
 
   static clearAuthCookies(res: Response): void {
-    const isProduction = config.env === 'production';
+  const isProduction = config.env === 'production';
 
-    res.clearCookie('accessToken', {
-      path: '/',
-      domain: isProduction ? '.mjchauffage.com' : undefined,
-      secure: isProduction,
-      sameSite: 'strict'
-    });
+  res.clearCookie('accessToken', {
+    path: '/',
+    domain: isProduction ? '.mjchauffage.com' : undefined,
+    secure: isProduction,
+    sameSite: 'strict'
+  });
 
-    res.clearCookie('refreshToken', {
-      path: '/api/auth/refresh',
-      domain: isProduction ? '.mjchauffage.com' : undefined,
-      secure: isProduction,
-      sameSite: 'strict'
-    });
-  }
+  res.clearCookie('refreshToken', {
+    path: '/api/auth/refresh',
+    domain: isProduction ? '.mjchauffage.com' : undefined,
+    secure: isProduction,
+    sameSite: 'strict'
+  });
+}
 
   /**
    * Verify and decode JWT token with enhanced security
    */
   static verifyToken(token: string, isRefreshToken = false): TokenPayload {
-    const secret = isRefreshToken ? config.jwt.refreshSecret : config.jwt.secret;
+  const secret = isRefreshToken ? config.jwt.refreshSecret : config.jwt.secret;
 
-    if (!secret || secret.length < 64) {
-      throw new Error('JWT secret is not properly configured');
+  if (!secret || secret.length < 64) {
+    throw new Error('JWT secret is not properly configured');
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret, {
+      issuer: 'mj-chauffage',
+      audience: 'mj-chauffage-app',
+      algorithms: ['HS256'], // Explicitly specify algorithm
+      clockTolerance: 30, // Allow 30 seconds clock skew
+    }) as TokenPayload;
+
+    // Additional validation
+    if (!decoded.userId || !decoded.email || !decoded.role) {
+      throw new Error('Invalid token payload');
     }
 
-    try {
-      const decoded = jwt.verify(token, secret, {
-        issuer: 'mj-chauffage',
-        audience: 'mj-chauffage-app',
-        algorithms: ['HS256'], // Explicitly specify algorithm
-        clockTolerance: 30, // Allow 30 seconds clock skew
-      }) as TokenPayload;
-
-      // Additional validation
-      if (!decoded.userId || !decoded.email || !decoded.role) {
-        throw new Error('Invalid token payload');
-      }
-
-      return decoded;
-    } catch (error) {
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw new Error('Invalid token signature');
-      } else if (error instanceof jwt.TokenExpiredError) {
-        throw new Error('Token has expired');
-      } else if (error instanceof jwt.NotBeforeError) {
-        throw new Error('Token not active yet');
-      } else {
-        throw new Error('Token verification failed');
-      }
+    return decoded;
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new Error('Invalid token signature');
+    } else if (error instanceof jwt.TokenExpiredError) {
+      throw new Error('Token has expired');
+    } else if (error instanceof jwt.NotBeforeError) {
+      throw new Error('Token not active yet');
+    } else {
+      throw new Error('Token verification failed');
     }
   }
+}
 
   /**
    * Hash password with secure bcrypt
    */
-  static async hashPassword(password: string): Promise<string> {
-    if (!password || password.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
-    }
+  static async hashPassword(password: string): Promise < string > {
+  if(!password || password.length < 6) {
+  throw new Error('Password must be at least 6 characters long');
+}
 
-    const saltRounds = config.security.bcryptRounds;
-    if (saltRounds < 10) {
-      throw new Error('Bcrypt rounds must be at least 10 for security');
-    }
+const saltRounds = config.security.bcryptRounds;
+if (saltRounds < 10) {
+  throw new Error('Bcrypt rounds must be at least 10 for security');
+}
 
-    return bcrypt.hash(password, saltRounds);
+return bcrypt.hash(password, saltRounds);
   }
 
   /**
    * Compare password with hash securely
    */
-  static async comparePassword(password: string, hash: string): Promise<boolean> {
-    if (!password || !hash) {
-      return false;
-    }
+  static async comparePassword(password: string, hash: string): Promise < boolean > {
+  if(!password || !hash) {
+  return false;
+}
 
-    try {
-      return await bcrypt.compare(password, hash);
-    } catch (error) {
-      console.error('Password comparison error:', error);
-      return false;
-    }
+try {
+  return await bcrypt.compare(password, hash);
+} catch (error) {
+  console.error('Password comparison error:', error);
+  return false;
+}
   }
 
   /**
    * Store refresh token in Redis
    */
-  static async storeRefreshToken(userId: string, token: string): Promise<void> {
-    try {
-      const key = `refresh_token:${userId}`;
-      // Store for 7 days
-      await redisClient.setEx(key, 7 * 24 * 60 * 60, token);
-    } catch (error) {
-      console.error('Error storing refresh token:', error);
-    }
+  static async storeRefreshToken(userId: string, token: string): Promise < void> {
+  try {
+    const key = `refresh_token:${userId}`;
+    // Store for 7 days
+    await redisClient.setEx(key, 7 * 24 * 60 * 60, token);
+  } catch(error) {
+    console.error('Error storing refresh token:', error);
   }
+}
 
   /**
    * Validate refresh token from Redis
    */
-  static async validateRefreshToken(userId: string, token: string): Promise<boolean> {
-    try {
-      const key = `refresh_token:${userId}`;
-      const storedToken = await redisClient.get(key);
-      return storedToken === token;
-    } catch (error) {
-      console.error('Error validating refresh token:', error);
-      return false;
-    }
+  static async validateRefreshToken(userId: string, token: string): Promise < boolean > {
+  try {
+    const key = `refresh_token:${userId}`;
+    const storedToken = await redisClient.get(key);
+    return storedToken === token;
+  } catch(error) {
+    console.error('Error validating refresh token:', error);
+    return false;
   }
+}
 
   /**
    * Remove refresh token from Redis
    */
-  static async revokeRefreshToken(userId: string): Promise<void> {
-    try {
-      const key = `refresh_token:${userId}`;
-      await redisClient.del(key);
-    } catch (error) {
-      console.error('Error revoking refresh token:', error);
-    }
+  static async revokeRefreshToken(userId: string): Promise < void> {
+  try {
+    const key = `refresh_token:${userId}`;
+    await redisClient.del(key);
+  } catch(error) {
+    console.error('Error revoking refresh token:', error);
   }
+}
 
   /**
    * Blacklist a token (for logout/security)
    */
-  static async blacklistToken(token: string, expiresIn: number): Promise<void> {
-    try {
-      const key = `blacklisted_token:${token}`;
-      await redisClient.setEx(key, expiresIn, 'true');
-    } catch (error) {
-      console.error('Error blacklisting token:', error);
-    }
+  static async blacklistToken(token: string, expiresIn: number): Promise < void> {
+  try {
+    const key = `blacklisted_token:${token}`;
+    await redisClient.setEx(key, expiresIn, 'true');
+  } catch(error) {
+    console.error('Error blacklisting token:', error);
   }
+}
 
   /**
    * Check if token is blacklisted
    */
-  static async isTokenBlacklisted(token: string): Promise<boolean> {
-    try {
-      const key = `blacklisted_token:${token}`;
-      const result = await redisClient.get(key);
-      return result === 'true';
-    } catch (error) {
-      console.error('Error checking token blacklist:', error);
-      return false;
-    }
+  static async isTokenBlacklisted(token: string): Promise < boolean > {
+  try {
+    const key = `blacklisted_token:${token}`;
+    const result = await redisClient.get(key);
+    return result === 'true';
+  } catch(error) {
+    console.error('Error checking token blacklist:', error);
+    return false;
   }
+}
 
   /**
    * Revoke all tokens for a user (security breach response)
    */
-  static async revokeAllUserTokens(userId: string): Promise<void> {
-    try {
-      // Remove refresh tokens
-      await this.revokeRefreshToken(userId);
+  static async revokeAllUserTokens(userId: string): Promise < void> {
+  try {
+    // Remove refresh tokens
+    await this.revokeRefreshToken(userId);
 
-      // Add user to token revocation list with timestamp
-      const key = `user_token_revoked:${userId}`;
-      const timestamp = Date.now().toString();
-      await redisClient.setEx(key, 7 * 24 * 60 * 60, timestamp); // 7 days
-    } catch (error) {
-      console.error('Error revoking all user tokens:', error);
-    }
+    // Add user to token revocation list with timestamp
+    const key = `user_token_revoked:${userId}`;
+    const timestamp = Date.now().toString();
+    await redisClient.setEx(key, 7 * 24 * 60 * 60, timestamp); // 7 days
+  } catch(error) {
+    console.error('Error revoking all user tokens:', error);
   }
+}
 
   /**
    * Check if user tokens were revoked after token issue time
    */
-  static async areUserTokensRevoked(userId: string, tokenIssuedAt: number): Promise<boolean> {
-    try {
-      const key = `user_token_revoked:${userId}`;
-      const revokedTimestamp = await redisClient.get(key);
+  static async areUserTokensRevoked(userId: string, tokenIssuedAt: number): Promise < boolean > {
+  try {
+    const key = `user_token_revoked:${userId}`;
+    const revokedTimestamp = await redisClient.get(key);
 
-      if (!revokedTimestamp) {
-        return false;
-      }
-
-      return parseInt(revokedTimestamp) > tokenIssuedAt * 1000; // Convert to milliseconds
-    } catch (error) {
-      console.error('Error checking user token revocation:', error);
+    if(!revokedTimestamp) {
       return false;
     }
+
+      return parseInt(revokedTimestamp) > tokenIssuedAt * 1000; // Convert to milliseconds
+  } catch(error) {
+    console.error('Error checking user token revocation:', error);
+    return false;
   }
+}
 
   /**
    * Create user session
    */
   static async createSession(
-    userId: string,
-    ipAddress?: string,
-    userAgent?: string
-  ): Promise<string> {
-    const sessionToken = jwt.sign(
-      { userId, sessionId: Date.now().toString() },
-      config.jwt.secret,
-      { expiresIn: '24h' }
-    );
+  userId: string,
+  ipAddress ?: string,
+  userAgent ?: string
+): Promise < string > {
+  const sessionToken = jwt.sign(
+    { userId, sessionId: Date.now().toString() },
+    config.jwt.secret,
+    { expiresIn: '24h' }
+  );
 
-    await prisma.userSession.create({
-      data: {
-        userId,
-        sessionToken,
-        ipAddress: ipAddress || null,
-        userAgent: userAgent || null,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-      },
-    });
+  await prisma.userSession.create({
+    data: {
+      userId,
+      sessionToken,
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    },
+  });
 
-    return sessionToken;
-  }
+  return sessionToken;
+}
 
   /**
    * Validate user session
    */
-  static async validateSession(sessionToken: string): Promise<boolean> {
-    try {
-      const session = await prisma.userSession.findUnique({
-        where: { sessionToken },
-        include: { user: true },
-      });
+  static async validateSession(sessionToken: string): Promise < boolean > {
+  try {
+    const session = await prisma.userSession.findUnique({
+      where: { sessionToken },
+      include: { user: true },
+    });
 
-      if (!session || session.expiresAt < new Date()) {
-        return false;
-      }
+    if(!session || session.expiresAt < new Date()) {
+  return false;
+}
 
-      return session.user.isActive;
+return session.user.isActive;
     } catch (error) {
-      return false;
-    }
+  return false;
+}
   }
 
   /**
    * Revoke user session
    */
-  static async revokeSession(sessionToken: string): Promise<void> {
-    await prisma.userSession.delete({
-      where: { sessionToken },
-    }).catch(() => {
-      // Session might not exist, ignore error
-    });
-  }
+  static async revokeSession(sessionToken: string): Promise < void> {
+  await prisma.userSession.delete({
+    where: { sessionToken },
+  }).catch(() => {
+    // Session might not exist, ignore error
+  });
+}
 
   /**
    * Clean expired sessions
    */
-  static async cleanExpiredSessions(): Promise<void> {
-    await prisma.userSession.deleteMany({
-      where: {
-        expiresAt: {
-          lt: new Date(),
-        },
+  static async cleanExpiredSessions(): Promise < void> {
+  await prisma.userSession.deleteMany({
+    where: {
+      expiresAt: {
+        lt: new Date(),
       },
-    });
-  }
+    },
+  });
+}
 
   /**
    * Generate password reset token
    */
-  static async generatePasswordResetToken(userId: string): Promise<string> {
-    const token = jwt.sign(
-      { userId, type: 'password_reset' },
-      config.jwt.secret,
-      { expiresIn: '1h' }
-    );
+  static async generatePasswordResetToken(userId: string): Promise < string > {
+  const token = jwt.sign(
+    { userId, type: 'password_reset' },
+    config.jwt.secret,
+    { expiresIn: '1h' }
+  );
 
-    await prisma.passwordReset.create({
-      data: {
-        userId,
-        token,
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
-      },
-    });
+  await prisma.passwordReset.create({
+    data: {
+      userId,
+      token,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+    },
+  });
 
-    return token;
-  }
+  return token;
+}
 
   /**
    * Validate password reset token
    */
-  static async validatePasswordResetToken(token: string): Promise<string | null> {
-    try {
-      const decoded = jwt.verify(token, config.jwt.secret) as any;
+  static async validatePasswordResetToken(token: string): Promise < string | null > {
+  try {
+    const decoded = jwt.verify(token, config.jwt.secret) as any;
 
-      const resetRecord = await prisma.passwordReset.findUnique({
-        where: { token },
-      });
+    const resetRecord = await prisma.passwordReset.findUnique({
+      where: { token },
+    });
 
-      if (!resetRecord || resetRecord.usedAt || resetRecord.expiresAt < new Date()) {
-        return null;
-      }
+    if(!resetRecord || resetRecord.usedAt || resetRecord.expiresAt < new Date()) {
+  return null;
+}
 
-      return decoded.userId;
+return decoded.userId;
     } catch (error) {
-      return null;
-    }
+  return null;
+}
   }
 
   /**
    * Mark password reset token as used
    */
-  static async markPasswordResetTokenAsUsed(token: string): Promise<void> {
-    await prisma.passwordReset.update({
-      where: { token },
-      data: { usedAt: new Date() },
-    });
-  }
+  static async markPasswordResetTokenAsUsed(token: string): Promise < void> {
+  await prisma.passwordReset.update({
+    where: { token },
+    data: { usedAt: new Date() },
+  });
+}
 
   /**
    * Update user last login
    */
-  static async updateLastLogin(userId: string): Promise<void> {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { lastLoginAt: new Date() },
-    });
-  }
+  static async updateLastLogin(userId: string): Promise < void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { lastLoginAt: new Date() },
+  });
+}
 }

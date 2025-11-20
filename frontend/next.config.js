@@ -5,13 +5,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
-const API_URL_RAW = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL_RAW = process.env.NEXT_PUBLIC_API_URL || 'https://pretty-stillness-production.up.railway.app';
 // Ensure we always proxy to the backend origin (strip any path like /api/v1)
 let BACKEND_ORIGIN;
 try {
   BACKEND_ORIGIN = new URL(API_URL_RAW).origin;
 } catch {
-  BACKEND_ORIGIN = 'http://localhost:3001';
+  BACKEND_ORIGIN = 'https://pretty-stillness-production.up.railway.app';
 }
 
 /** @type {import('next').NextConfig} */
@@ -31,6 +31,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'cdn.mjchauffage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
       },
       {
         protocol: 'http',
