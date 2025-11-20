@@ -29,3 +29,4 @@ export function ProductSpecifications({ specifications, locale }: ProductSpecifi
 
 
 
+
