@@ -24,17 +24,10 @@ export const getDatabaseConfig = (): DatabaseConfig => {
     };
   }
   
-  // Parse existing URL and add connection pool parameters for PostgreSQL
-  const url = new URL(baseUrl);
-  
-  // Add PostgreSQL connection pool parameters
-  url.searchParams.set('connection_limit', '10');
-  url.searchParams.set('pool_timeout', '20');
-  url.searchParams.set('connect_timeout', '60');
-  url.searchParams.set('socket_timeout', '60');
-  
+  // For Neon with PgBouncer, we must remove the connection_limit param and add pgbouncer=true if not present
+  // We rely on the URL provided in env which should be the pooled connection string
   return {
-    url: url.toString(),
+    url: baseUrl,
     maxConnections: parseInt(process.env.DB_MAX_CONNECTIONS || '10'),
     connectionTimeout: parseInt(process.env.DB_CONNECTION_TIMEOUT || '60000'),
     queryTimeout: parseInt(process.env.DB_QUERY_TIMEOUT || '30000'),
