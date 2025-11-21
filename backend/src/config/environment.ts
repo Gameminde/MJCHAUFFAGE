@@ -149,6 +149,14 @@ export const config: Config = {
       'image/jpeg,image/png,image/webp,application/pdf'
     ).split(','),
   },
+
+  storage: {
+    endpoint: process.env.R2_ENDPOINT || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    bucketName: process.env.R2_BUCKET_NAME || 'mj-chauffage-assets',
+    publicUrl: process.env.R2_PUBLIC_URL || '',
+  },
   
   security: {
     bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12', 10),

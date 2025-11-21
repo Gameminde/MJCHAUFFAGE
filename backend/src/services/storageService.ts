@@ -58,9 +58,11 @@ export class StorageService {
    * Delete a file from Cloudflare R2
    * @param fileUrl The full URL of the file to delete
    */
-  static async deleteFile(fileUrl: string): Promise<void> {
-    // Implementation for delete if needed
-    // Extract key from URL and use DeleteObjectCommand
-  }
+  // Remove unused parameter warning
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+static async deleteFile(_fileUrl: string): Promise<void> {
+  // Implementation for delete if needed
+  // Extract key from URL and use DeleteObjectCommand
+}
 }
 

@@ -8,20 +8,26 @@
 
 CONFIGURATIONS POUR RENDER (BACKEND) :
 
-1. Créez un nouveau "Web Service".
+1. Créez un nouveau "Web Service" (ou mettez à jour l'existant).
 2. Connectez votre GitHub repo.
 3. Paramètres :
    - Name: mj-chauffage-backend
-   - Root Directory: backend  <-- TRES IMPORTANT
+   - Root Directory: backend
    - Environment: Node
    - Build Command: npm install && npm run build
    - Start Command: npm run start:compiled
 
-4. Environment Variables (Variables d'environnement) :
+4. Environment Variables (Mettez à jour ces valeurs) :
    - NODE_ENV = production
-   - DATABASE_URL = (Collez le lien Neon copié à l'étape 1)
-   - JWT_SECRET = (Inventez un mot de passe long et compliqué)
-   - SESSION_SECRET = (Inventez un autre mot de passe long)
+   - DATABASE_URL = (Votre lien Neon copié à l'étape 1)
+   - JWT_SECRET = (Votre secret JWT)
+   - SESSION_SECRET = (Votre secret de session)
+   
+   NOUVEAU - CLOUDFLARE R2 (Ajoutez ces variables pour les images) :
+   - R2_ENDPOINT = https://b68c5a7939e1ea0b651791359c78326b.r2.cloudflarestorage.com
+   - R2_ACCESS_KEY_ID = (Votre Access Key ID Cloudflare - à générer dans le dashboard R2)
+   - R2_SECRET_ACCESS_KEY = (Votre Secret Access Key Cloudflare - à générer dans le dashboard R2)
+   - R2_BUCKET_NAME = mj-chauffage-assets (Ou le nom exact de votre bucket)
+   - R2_PUBLIC_URL = (L'URL publique de votre bucket ou worker, ex: https://cdn.mjchauffage.com)
 
-5. Cliquez sur "Create Web Service".
-
+5. Redéployez le service.
