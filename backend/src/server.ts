@@ -11,6 +11,7 @@ import path from 'path';
 
 import { config } from '@/config/environment';
 import { logger } from '@/utils/logger';
+import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFoundHandler';
 import { applySecurity, authRateLimit, apiRateLimit, strictRateLimit, adminRateLimit, progressiveDelay } from '@/middleware/security';
 import { sanitizeRequestBody } from '@/middleware/validation';
@@ -94,7 +95,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cookieParser());
+app.use(cookieParser() as unknown as RequestHandler);
 
 // Security middleware (after cookieParser to access req.cookies)
 app.use(applySecurity);
@@ -129,7 +130,7 @@ app.use(session({
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
-}));
+}) as unknown as RequestHandler);
 
 // Public files (uploaded assets) with proper CORS
 // allowedOrigins already defined above

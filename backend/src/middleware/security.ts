@@ -180,7 +180,7 @@ export const createAdvancedRateLimit = (options: {
         retryAfter: Math.ceil(options.windowMs / 1000)
       });
     }
-  });
+  } as any);
 };
 
 // Specific rate limiters for different endpoint types
