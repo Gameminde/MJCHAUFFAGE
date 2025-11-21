@@ -1,13 +1,14 @@
-import { UserRole } from '@prisma/client';
 import * as multer from 'multer';
 
 declare global {
   namespace Express {
-    // Export Multer interface to be available in global namespace
-    export interface Multer {
-      File: multer.File;
+    // Define Multer as a namespace, not an interface
+    namespace Multer {
+      // Re-export File interface from multer
+      // We need to ensure this matches what's expected
+      interface File extends multer.File {}
     }
-    
+
     interface Request {
       user?: {
         id: string;
@@ -20,8 +21,9 @@ declare global {
       };
       rateLimitKey?: string;
       currentAttempts?: number;
-      file?: multer.File;
-      files?: multer.File[] | { [fieldname: string]: multer.File[] };
+      // Use the namespaced File type
+      file?: Multer.File;
+      files?: Multer.File[] | { [fieldname: string]: Multer.File[] };
     }
   }
 }
