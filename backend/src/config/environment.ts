@@ -40,6 +40,13 @@ interface Config {
     maxSize: number;
     allowedTypes: string[];
   };
+  storage: {
+    endpoint: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    bucketName: string;
+    publicUrl: string;
+  };
   security: {
     bcryptRounds: number;
   };
@@ -171,14 +178,6 @@ export const config: Config = {
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
     weatherApiKey: process.env.WEATHER_API_KEY || '',
     geminiApiKey: process.env.GEMINI_API_KEY || '',
-  },
-
-  storage: {
-    endpoint: process.env.R2_ENDPOINT || '',
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-    bucketName: process.env.R2_BUCKET_NAME || 'mj-chauffage-assets',
-    publicUrl: process.env.R2_PUBLIC_URL || '',
   },
   
   logging: {

@@ -52,7 +52,7 @@ const router = Router();
  *         description: User already exists
  */
 router.post('/register',
-  authRateLimit,
+  authRateLimit as unknown as import('express').RequestHandler,
   authValidation.register,
   handleValidationErrors,
   AuthController.register
@@ -89,7 +89,7 @@ router.post('/register',
  *         description: Missing email
  */
 router.post('/social-login',
-  authRateLimit,
+  authRateLimit as unknown as import('express').RequestHandler,
   AuthController.socialLogin
 );
 
@@ -121,7 +121,7 @@ router.post('/social-login',
  *         description: Invalid credentials
  */
 router.post('/login',
-  authRateLimit,
+  authRateLimit as unknown as import('express').RequestHandler,
   authValidation.login,
   handleValidationErrors,
   AuthController.login
@@ -272,7 +272,7 @@ router.put('/profile',
 router.post(
   '/change-password',
   authenticateToken,
-  strictRateLimit,
+  strictRateLimit as unknown as import('express').RequestHandler,
   authValidation.changePassword,
   handleValidationErrors,
   AuthController.changePassword
@@ -302,7 +302,7 @@ router.post(
  */
 router.post(
   '/request-password-reset',
-  strictRateLimit,
+  strictRateLimit as unknown as import('express').RequestHandler,
   authValidation.login.slice(0, 1), // email validation only
   handleValidationErrors,
   AuthController.requestPasswordReset
@@ -339,7 +339,7 @@ router.post(
  */
 router.post(
   '/reset-password',
-  strictRateLimit,
+  strictRateLimit as unknown as import('express').RequestHandler,
   authValidation.resetPassword,
   handleValidationErrors,
   AuthController.resetPassword

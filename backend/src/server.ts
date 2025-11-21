@@ -11,13 +11,13 @@ import path from 'path';
 
 import { config } from '@/config/environment';
 import { logger } from '@/utils/logger';
-import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFoundHandler';
 import { applySecurity, authRateLimit, apiRateLimit, strictRateLimit, adminRateLimit, progressiveDelay } from '@/middleware/security';
 import { sanitizeRequestBody } from '@/middleware/validation';
 import { connectRedis, redisClient } from '@/config/redis';
 import { prisma } from '@/lib/database';
 import { apiVersionHeader, deprecationWarning } from '@/middleware/apiVersioning';
+import { RequestHandler } from 'express';
 
 // Import routes
 import authRoutes from '@/routes/auth';
@@ -61,8 +61,8 @@ const io = new SocketServer(server, {
 });
 
 // Core Middleware
-app.use(compression());
-app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
+app.use(compression() as unknown as RequestHandler);
+app.use(morgan(config.env === 'development' ? 'dev' : 'combined') as unknown as RequestHandler);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -103,21 +103,21 @@ app.use(applySecurity);
 app.use(sanitizeRequestBody);
 
 // Enhanced Rate Limiting with progressive delays
-app.use('/api', progressiveDelay);
-app.use('/api', apiRateLimit);
+app.use('/api', progressiveDelay as unknown as RequestHandler);
+app.use('/api', apiRateLimit as unknown as RequestHandler);
 app.use('/api', apiVersionHeader('v1'));
 app.use('/api', deprecationWarning);
 
 // Payments routes
-app.use('/api/payments/process', strictRateLimit);
+app.use('/api/payments/process', strictRateLimit as unknown as RequestHandler);
 app.use('/api/payments', paymentRoutes);
 
 // Specific rate limits for different endpoint types
-app.use('/api/auth/login', authRateLimit);
-app.use('/api/auth/register', authRateLimit);
-app.use('/api/auth/reset-password', authRateLimit);
-app.use('/api/auth/change-password', strictRateLimit);
-app.use('/api/admin', adminRateLimit);
+app.use('/api/auth/login', authRateLimit as unknown as RequestHandler);
+app.use('/api/auth/register', authRateLimit as unknown as RequestHandler);
+app.use('/api/auth/reset-password', authRateLimit as unknown as RequestHandler);
+app.use('/api/auth/change-password', strictRateLimit as unknown as RequestHandler);
+app.use('/api/admin', adminRateLimit as unknown as RequestHandler);
 
 // Session configuration (without Redis store)
 app.use(session({

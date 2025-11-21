@@ -170,8 +170,8 @@ export const createAdvancedRateLimit = (options: {
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     skipFailedRequests: options.skipFailedRequests || false,
     keyGenerator: options.keyGenerator || ((req: Request) => req.ip || 'unknown'),
-    skip: (req) => (options.skip ? options.skip(req) : false),
-    handler: (req, res) => {
+    skip: (req: Request) => (options.skip ? options.skip(req) : false),
+    handler: (req: Request, res: Response) => {
       logger.warn(`Rate limit exceeded for IP: ${req.ip || 'unknown'}, URL: ${req.url}`);
       res.status(429).json({
         success: false,
@@ -189,32 +189,32 @@ export const authRateLimit = createAdvancedRateLimit({
   max: 5, // 5 attempts per window
   message: 'Too many authentication attempts, please try again later',
   skipSuccessfulRequests: true
-});
+} as any);
 
 export const apiRateLimit = createAdvancedRateLimit({
   windowMs: config.env === 'production' ? 15 * 60 * 1000 : 60 * 60 * 1000, // 15 min prod, 1 hour dev
   max: config.env === 'production' ? 100 : 5000, // Higher limit in development
   message: 'Too many API requests, please try again later',
   // Skip analytics endpoints in development to avoid interfering with local testing
-  skip: (req: Request) => (
+    skip: (req: Request) => (
     config.env !== 'production' && (
       req.path.includes('/analytics/events') ||
       req.path.includes('/analytics/track')
     )
   )
-});
+} as any);
 
 export const strictRateLimit = createAdvancedRateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // 10 requests per hour
   message: 'Too many requests for this sensitive operation'
-});
+} as any);
 
 export const adminRateLimit = createAdvancedRateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200, // Higher limit for admin operations
   message: 'Too many admin requests, please try again later'
-});
+} as any);
 
 // Progressive delay for repeated requests
 export const progressiveDelay = slowDown({
@@ -222,7 +222,7 @@ export const progressiveDelay = slowDown({
   delayAfter: 10, // Allow 10 requests per window without delay
   delayMs: () => 500, // Add 500ms delay per request after delayAfter
   maxDelayMs: 20000, // Maximum delay of 20 seconds
-});
+} as any);
 
 // Enhanced input validation and sanitization
 export const enhancedInputValidation = (req: Request, res: Response, next: NextFunction): void => {
