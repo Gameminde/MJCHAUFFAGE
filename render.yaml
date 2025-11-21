@@ -4,17 +4,29 @@ services:
     env: node
     plan: free
     buildCommand: cd backend && npm install && npm run build
-    startCommand: cd backend && npm run start:compiled
+    startCommand: cd backend && npm run db:seed && npm run start:compiled
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
       - key: SESSION_SECRET
-        sync: false
+        generateValue: true
       - key: FRONTEND_URL
         value: https://mj-chauffage-frontend.netlify.app
+      # Cloudflare R2 Configuration
+      - key: R2_ENDPOINT
+        value: https://b68c5a7939e1ea0b651791359c78326b.r2.cloudflarestorage.com
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: mj-chauffage-assets
+      - key: R2_PUBLIC_URL
+        sync: false
     autoDeploy: true
-

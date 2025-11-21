@@ -75,20 +75,12 @@ const requiredEnvVars =
   process.env.NODE_ENV === 'production'
     ? [
         'DATABASE_URL',
-        'JWT_SECRET',
-        'JWT_REFRESH_SECRET',
-        'SESSION_SECRET',
-        // Email variables are optional for now
-        // 'EMAIL_HOST',
-        // 'EMAIL_USER',
-        // 'EMAIL_PASSWORD',
+        // 'JWT_SECRET', // Has fallback
+        // 'JWT_REFRESH_SECRET', // Has fallback
+        // 'SESSION_SECRET', // Has fallback
       ]
     : [
-        // En développement, ne valider que l'essentiel
         'DATABASE_URL',
-        'JWT_SECRET',
-        'JWT_REFRESH_SECRET',
-        'SESSION_SECRET',
       ];
 
 // Validate required environment variables
