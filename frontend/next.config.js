@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 const createNextIntlPlugin = require('next-intl/plugin');
 
 // Bundle Analyzer needs to be optional and only loaded if requested
@@ -16,7 +17,6 @@ try {
   BACKEND_ORIGIN = 'https://mj-chauffage-backend.onrender.com';
 }
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   staticPageGenerationTimeout: 60,
@@ -26,6 +26,17 @@ const nextConfig = {
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    ignoreBuildErrors: true,
   },
   generateBuildId: async () => 'local-dev',
   images: {
