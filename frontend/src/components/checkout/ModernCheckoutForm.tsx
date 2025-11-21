@@ -44,10 +44,55 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export function ModernCheckoutForm() {
   const { user } = useAuth();
+  const router = useRouter();
   const { items, total, clearCart, formatPrice } = useCart();
   // ... existing hooks ...
 
   // ... existing state ...
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    street: '',
+    city: '',
+    postalCode: '',
+    region: '',
+    profession: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [wilayas, setWilayas] = useState<any[]>([]);
+  const [loadingWilayas, setLoadingWilayas] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const shippingCost = 600; // Default or calculated
+  const finalTotal = total + shippingCost;
+  const locale = useLanguage().language;
+
+  const handleInputChange = (field: keyof ShippingAddress, value: string) => {
+    setShippingAddress(prev => ({ ...prev, [field]: value }));
+    // Clear error when user types
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!shippingAddress.firstName) newErrors.firstName = 'Requis';
+    if (!shippingAddress.lastName) newErrors.lastName = 'Requis';
+    if (!shippingAddress.phone) newErrors.phone = 'Requis';
+    if (!shippingAddress.street) newErrors.street = 'Requis';
+    if (!shippingAddress.city) newErrors.city = 'Requis';
+    if (!shippingAddress.region) newErrors.region = 'Requis';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Pre-fill form with user data
   useEffect(() => {
@@ -62,6 +107,26 @@ export function ModernCheckoutForm() {
       }));
     }
   }, [user]);
+
+  // Fetch Wilayas
+  useEffect(() => {
+    const fetchWilayas = async () => {
+      setLoadingWilayas(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wilayas`);
+        if (res.ok) {
+          const data = await res.json();
+          setWilayas(data.data || []);
+        }
+      } catch (e) {
+        console.error('Failed to fetch wilayas', e);
+      } finally {
+        setLoadingWilayas(false);
+      }
+    };
+    fetchWilayas();
+  }, []);
+
 
   // ... existing useEffects ...
 

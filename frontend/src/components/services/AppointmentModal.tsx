@@ -134,7 +134,7 @@ export default function AppointmentModal({
   const [fetchedServices, setFetchedServices] = useState<Service[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<string>('idle');
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
 
@@ -143,7 +143,7 @@ export default function AppointmentModal({
     if (session?.user) {
       setFormData(prev => ({
         ...prev,
-        contactName: prev.contactName || `${session.user.name || ''}`,
+        contactName: prev.contactName || `${session.user?.name || ''}`,
         contactPhone: prev.contactPhone || (session.user as any).phone || '',
         address: prev.address || (session.user as any).address || '',
       }));

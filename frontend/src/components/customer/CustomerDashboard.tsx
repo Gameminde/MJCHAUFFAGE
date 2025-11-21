@@ -298,7 +298,7 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
           <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noOrders')}</h3>
           <div className="mt-6">
-            <Button href={`/${locale}/products`}>
+            <Button onClick={() => router.push(`/${locale}/products`)}>
               {t('browseProducts')}
             </Button>
           </div>
@@ -389,7 +389,7 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
           <Heart className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noFavorites')}</h3>
           <div className="mt-6">
-            <Button href={`/${locale}/products`}>
+            <Button onClick={() => router.push(`/${locale}/products`)}>
               {t('browseProducts')}
             </Button>
           </div>
