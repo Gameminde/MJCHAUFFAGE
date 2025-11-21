@@ -41,6 +41,8 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
     { id: 'products', label: 'Products', path: '/admin/products', icon: '📦' },
     { id: 'orders', label: 'Orders', path: '/admin/orders', icon: '🛍️' },
     { id: 'customers', label: 'Customers', path: '/admin/customers', icon: '👥' },
+    { id: 'services', label: 'Services', path: '/admin/services', icon: '🔧' },
+    { id: 'technicians', label: 'Technicians', path: '/admin/technicians', icon: '👷' },
     { id: 'analytics', label: 'Analytics', path: '/admin/analytics', icon: '📈' },
   ]
 

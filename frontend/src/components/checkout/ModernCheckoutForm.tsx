@@ -38,203 +38,32 @@ import { api } from '@/lib/api';
 // Remove hardcoded wilayas, will fetch from API
 const ALGERIA_REGIONS: string[] = [];
 
+import { useAuth } from '@/contexts/AuthContext';
+
+// ... existing imports ...
+
 export function ModernCheckoutForm() {
+  const { user } = useAuth();
   const { items, total, clearCart, formatPrice } = useCart();
-  const router = useRouter();
-  const { locale } = useLanguage();
+  // ... existing hooks ...
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<ShippingAddress>>({});
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    street: '',
-    city: '',
-    postalCode: '',
-    region: '',
-    profession: '',
-  });
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [shippingCost, setShippingCost] = useState<number>(0);
-  const finalTotal = total + (shippingCost || 0);
+  // ... existing state ...
 
-  const [wilayas, setWilayas] = useState<any[]>([]);
-  const [loadingWilayas, setLoadingWilayas] = useState(true);
-
-  // Fetch wilayas on mount
+  // Pre-fill form with user data
   useEffect(() => {
-    const fetchWilayas = async () => {
-      setLoadingWilayas(true);
-      try {
-        // Use Next.js API proxy first (recommended), then fallback to direct backend
-        let response: Response | null = null;
-        let data: any = null;
-
-        // List of endpoints to try in order (proxy first, then direct)
-        const endpoints = [
-          '/api/wilayas', // Next.js proxy -> backend /api/v1/wilayas
-          '/api/v1/wilayas', // Direct proxy
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/wilayas`, // Direct backend
-        ];
-
-        for (const endpoint of endpoints) {
-          try {
-            console.log(`🔍 Tentative de connexion à: ${endpoint}`);
-            response = await fetch(endpoint, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              cache: 'no-cache',
-            });
-            
-            if (response.ok) {
-              data = await response.json();
-              console.log(`✅ Succès avec: ${endpoint}`);
-              break;
-            } else {
-              console.warn(`⚠️ ${endpoint} retourné: ${response.status} ${response.statusText}`);
-            }
-          } catch (e) {
-            console.warn(`❌ Erreur avec ${endpoint}:`, e);
-            continue;
-          }
-        }
-
-        if (data) {
-          // Handle different response formats
-          let wilayasList: any[] = [];
-          
-          if (data.success && Array.isArray(data.data)) {
-            wilayasList = data.data;
-          } else if (Array.isArray(data)) {
-            wilayasList = data;
-          } else if (data.data && Array.isArray(data.data)) {
-            wilayasList = data.data;
-          }
-
-          if (wilayasList.length > 0) {
-            console.log(`✅ ${wilayasList.length} wilayas chargées avec succès`);
-            setWilayas(wilayasList);
-          } else {
-            console.warn('⚠️ Aucune wilaya trouvée dans la réponse:', data);
-          }
-        } else {
-          throw new Error(`HTTP ${response?.status || 'unknown'}: ${response?.statusText || 'No response'}`);
-        }
-      } catch (error) {
-        console.error('❌ Erreur lors du chargement des wilayas:', error);
-        console.error('💡 Vérifiez que le backend est démarré et que les wilayas sont dans la base de données');
-        // Keep empty array to show error message
-        setWilayas([]);
-      } finally {
-        setLoadingWilayas(false);
-      }
-    };
-
-    fetchWilayas();
-  }, []);
-
-  useEffect(() => {
-    if (items.length === 0) {
-      router.push(`/${locale}/products`);
+    if (user) {
+      setShippingAddress((prev) => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        // Phone might not be in user object depending on interface, but if it is:
+        // phone: user.phone || '', 
+      }));
     }
-  }, [items.length, router, locale]);
+  }, [user]);
 
-  // Fetch shipping cost
-  useEffect(() => {
-    const wilayaCode = shippingAddress.region; // We store code in region now
-    if (!wilayaCode) {
-      setShippingCost(0);
-      return;
-    }
-    
-    const fetchShippingCost = async () => {
-      try {
-        // Try Next.js proxy first, then direct backend
-        let response: Response | null = null;
-        const endpoints = [
-          `/api/wilayas/${wilayaCode}/shipping-cost`, // Next.js proxy
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/wilayas/${wilayaCode}/shipping-cost`, // Direct backend
-        ];
-
-        for (const endpoint of endpoints) {
-          try {
-            response = await fetch(endpoint, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-            if (response.ok) break;
-          } catch (e) {
-            continue;
-          }
-        }
-
-        if (response && response.ok) {
-          const data = await response.json();
-          if (data.success && data.data?.shippingCost) {
-            setShippingCost(Number(data.data.shippingCost));
-          } else {
-            setShippingCost(600); // Default shipping cost
-          }
-        } else {
-          setShippingCost(600); // Default shipping cost
-        }
-      } catch (error) {
-        console.error('Failed to calculate shipping:', error);
-        setShippingCost(600); // Default shipping cost on error
-      }
-    };
-
-    fetchShippingCost();
-  }, [shippingAddress.region]);
-
-  const handleInputChange = (field: keyof ShippingAddress, value: string) => {
-    setShippingAddress((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user types
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<ShippingAddress> = {};
-    const requiredFields: (keyof ShippingAddress)[] = [
-      'firstName',
-      'lastName',
-      'phone',
-      'street',
-      'city',
-      'region',
-    ];
-
-    requiredFields.forEach((field) => {
-      if (!shippingAddress[field] || !String(shippingAddress[field]).trim()) {
-        newErrors[field] = locale === 'ar' ? 'مطلوب' : 'Requis';
-      }
-    });
-
-    // Phone validation (strict Algerian format)
-    const phoneRegex = /^(\+213|0)[567]\d{8}$/;
-    if (
-      shippingAddress.phone &&
-      !phoneRegex.test(shippingAddress.phone.replace(/\s/g, ''))
-    ) {
-      newErrors.phone =
-        locale === 'ar' ? 'رقم هاتف غير صحيح (05/06/07)' : 'Numéro invalide (05/06/07)';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0 && agreeToTerms;
-  };
+  // ... existing useEffects ...
 
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,36 +73,47 @@ export function ModernCheckoutForm() {
 
     setIsLoading(true);
     try {
-      // Use Next.js proxy to avoid duplicate /api/v1/api/v1
-      const response = await fetch('/api/orders/guest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.price,
-          })),
-          shippingAddress: {
-            street: shippingAddress.street,
-            city: shippingAddress.city,
-            postalCode: shippingAddress.postalCode.trim() || undefined, // Optional postal code
-            region: shippingAddress.region,
-            country: 'Algeria',
-          },
+      const endpoint = user ? '/api/orders' : '/api/orders/guest';
+
+      const basePayload = {
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.price,
+        })),
+        shippingAddress: {
+          street: shippingAddress.street,
+          city: shippingAddress.city,
+          postalCode: shippingAddress.postalCode.trim() || undefined,
+          region: shippingAddress.region,
+          country: 'Algeria',
+        },
+        paymentMethod: 'CASH_ON_DELIVERY',
+        subtotal: total,
+        shippingAmount: shippingCost,
+        totalAmount: finalTotal,
+        currency: 'DZD',
+      };
+
+      const payload = user
+        ? basePayload
+        : {
+          ...basePayload,
           customerInfo: {
             firstName: shippingAddress.firstName.trim(),
             lastName: shippingAddress.lastName.trim(),
             phone: shippingAddress.phone,
-            email: shippingAddress.email?.trim() || undefined, // Optional email
-            profession: shippingAddress.profession?.trim() || undefined, // Optional profession
+            email: shippingAddress.email?.trim() || undefined,
+            profession: shippingAddress.profession?.trim() || undefined,
           },
-          paymentMethod: 'CASH_ON_DELIVERY',
-          subtotal: total,
-          shippingAmount: shippingCost,
-          totalAmount: finalTotal,
-          currency: 'DZD',
-        }),
+        };
+
+      // Use Next.js proxy to avoid duplicate /api/v1/api/v1
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include', // Important for authenticated requests
       });
 
       if (!response.ok) {
@@ -282,29 +122,24 @@ export function ModernCheckoutForm() {
       }
 
       const result = await response.json();
-      
+
       // Use orderNumber for tracking instead of orderId
       const orderNumber = result.data?.order?.orderNumber || result.data?.order?.id;
-      
+
       if (!orderNumber) {
         throw new Error('Order number not received from server');
       }
-      
-      // Navigate to success page FIRST, then clear cart
+
+      // Navigate to success page with clearCart flag
       // Use replace to prevent back navigation to checkout
-      router.replace(`/${locale}/checkout/success?orderNumber=${orderNumber}`);
-      
-      // Clear cart AFTER navigation to prevent redirect to empty cart page
-      setTimeout(() => {
-        clearCart();
-      }, 100);
+      router.replace(`/${locale}/checkout/success?orderNumber=${orderNumber}&clearCart=true`);
     } catch (err) {
       const errorMessage = err instanceof Error
         ? err.message
         : locale === 'ar'
-        ? 'فشل في إنشاء الطلب'
-        : 'Échec de la commande';
-      
+          ? 'فشل في إنشاء الطلب'
+          : 'Échec de la commande';
+
       // Show error in a user-friendly way
       alert(errorMessage);
       console.error('Order creation error:', err);
@@ -406,8 +241,8 @@ export function ModernCheckoutForm() {
                         </option>
                       </select>
                       <p className="text-body-xs text-neutral-500">
-                        {locale === 'ar' 
-                          ? '💡 Cette information nous aide à améliorer nos services' 
+                        {locale === 'ar'
+                          ? '💡 Cette information nous aide à améliorer nos services'
                           : '💡 Cette information nous aide à améliorer nos services'}
                       </p>
                     </div>
@@ -448,22 +283,21 @@ export function ModernCheckoutForm() {
                         <select
                           value={shippingAddress.region}
                           onChange={(e) => handleInputChange('region', e.target.value)}
-                          className={`form-input w-full px-4 py-3 rounded-lg border transition-all ${
-                            loadingWilayas 
-                              ? 'opacity-50 cursor-wait border-neutral-300 bg-neutral-50' 
-                              : wilayas.length === 0 
-                              ? 'border-red-300 bg-red-50' 
+                          className={`form-input w-full px-4 py-3 rounded-lg border transition-all ${loadingWilayas
+                            ? 'opacity-50 cursor-wait border-neutral-300 bg-neutral-50'
+                            : wilayas.length === 0
+                              ? 'border-red-300 bg-red-50'
                               : 'border-neutral-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
-                          }`}
+                            }`}
                           required
                           disabled={loadingWilayas}
                         >
                           <option value="">
-                            {loadingWilayas 
+                            {loadingWilayas
                               ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement des wilayas...')
                               : wilayas.length === 0
-                              ? (locale === 'ar' ? 'لا توجد ولايات متاحة - Rechargez la page' : 'Aucune wilaya disponible - Rechargez la page')
-                              : (locale === 'ar' ? 'اختر ولاية' : 'Sélectionner une wilaya')}
+                                ? (locale === 'ar' ? 'لا توجد ولايات متاحة - Rechargez la page' : 'Aucune wilaya disponible - Rechargez la page')
+                                : (locale === 'ar' ? 'اختر ولاية' : 'Sélectionner une wilaya')}
                           </option>
                           {wilayas.map((w) => {
                             const code = w.code || w.id || '';
@@ -478,8 +312,8 @@ export function ModernCheckoutForm() {
                         {wilayas.length === 0 && !loadingWilayas && (
                           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
                             <p className="text-body-xs text-red-700 font-medium">
-                              {locale === 'ar' 
-                                ? '⚠️ Impossible de charger les wilayas. Vérifiez votre connexion et rechargez la page.' 
+                              {locale === 'ar'
+                                ? '⚠️ Impossible de charger les wilayas. Vérifiez votre connexion et rechargez la page.'
                                 : '⚠️ Impossible de charger les wilayas. Vérifiez votre connexion et rechargez la page.'}
                             </p>
                             <button
@@ -623,8 +457,8 @@ export function ModernCheckoutForm() {
                             ? 'جاري التأكيد...'
                             : 'Confirmation...'
                           : locale === 'ar'
-                          ? 'تأكيد الطلب'
-                          : 'Confirmer la commande'}
+                            ? 'تأكيد الطلب'
+                            : 'Confirmer la commande'}
                       </Button>
 
                       {/* Security Badge */}

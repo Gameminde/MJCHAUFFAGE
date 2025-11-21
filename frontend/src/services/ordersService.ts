@@ -120,6 +120,31 @@ export interface UpdateOrderRequest {
  */
 export const ordersService = {
   /**
+   * Get current user's orders
+   */
+  async getUserOrders(page = 1, limit = 10): Promise<PaginatedOrders> {
+    try {
+      const result = await api.get<{ success: boolean; data: { orders: Order[]; pagination: any } }>(
+        `/orders?page=${page}&limit=${limit}`
+      );
+
+      if (result.success && result.data) {
+        return {
+          orders: result.data.orders || [],
+          total: result.data.pagination?.total || 0,
+          page: result.data.pagination?.page || 1,
+          limit: result.data.pagination?.limit || 10,
+          totalPages: result.data.pagination?.totalPages || 0,
+        };
+      }
+      return { orders: [], total: 0, page: 1, limit: 10, totalPages: 0 };
+    } catch (error) {
+      console.error('Error fetching user orders:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Liste toutes les commandes avec filtres et pagination
    */
   async getOrders(filters?: OrderFilters): Promise<PaginatedOrders> {
@@ -129,14 +154,14 @@ export const ordersService = {
       const result = await api.get<{ success: boolean; data?: { orders?: Order[]; pagination?: any } }>(
         `/admin/orders${qs}`
       );
-      
+
       // Handle response structure
       if (result && typeof result === 'object') {
         // Case 1: { success: true, data: { orders: [...], pagination: {...} } }
         if (result.success && result.data) {
           const orders = result.data.orders || [];
           const pagination = result.data.pagination || {};
-          
+
           return {
             orders: Array.isArray(orders) ? orders : [],
             total: pagination.total || 0,
@@ -145,7 +170,7 @@ export const ordersService = {
             totalPages: pagination.totalPages || 0,
           };
         }
-        
+
         // Case 2: Direct { orders: [...], pagination: {...} } structure
         if ('orders' in result && Array.isArray((result as any).orders)) {
           const directResult = result as any;
@@ -158,9 +183,9 @@ export const ordersService = {
           };
         }
       }
-      
+
       console.warn('[ordersService] Unexpected response structure:', result);
-      
+
       // Fallback
       return {
         orders: [],

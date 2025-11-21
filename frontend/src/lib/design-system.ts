@@ -88,3 +88,4 @@ export function goldenInverse(base: number): number {
 
 
 
+

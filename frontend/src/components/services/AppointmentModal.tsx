@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { X, Calendar, Clock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 // Golden ratio constants
@@ -30,6 +31,9 @@ interface AppointmentForm {
   requestedTime: string;
   priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
   equipmentDetails: string;
+  contactName: string;
+  contactPhone: string;
+  address: string;
 }
 
 const translations = {
@@ -43,6 +47,10 @@ const translations = {
     descriptionPlaceholder: 'Décrivez votre problème en détail...',
     equipmentDetails: 'Détails de l\'équipement (optionnel)',
     equipmentPlaceholder: 'Marque, modèle, âge de l\'équipement...',
+    contactName: 'Nom complet',
+    contactPhone: 'Numéro de téléphone',
+    address: 'Adresse complète',
+    addressPlaceholder: 'Wilaya, Commune, Rue...',
     priority: 'Priorité',
     priorities: {
       LOW: 'Basse',
@@ -55,8 +63,9 @@ const translations = {
     minutes: 'min',
     submit: 'Confirmer le rendez-vous',
     cancel: 'Annuler',
-    success: 'Rendez-vous confirmé !',
-    successMessage: 'Votre demande a été enregistrée. Nous vous contacterons bientôt.',
+    success: 'Merci ! Rendez-vous confirmé',
+    successMessage: 'Votre demande a été enregistrée avec succès. Notre équipe vous contactera bientôt pour confirmer les détails.',
+    close: 'Fermer',
     error: 'Erreur',
     errorMessage: 'Une erreur est survenue. Veuillez réessayer.',
     required: 'Ce champ est requis',
@@ -73,6 +82,10 @@ const translations = {
     descriptionPlaceholder: 'صف مشكلتك بالتفصيل...',
     equipmentDetails: 'تفاصيل المعدات (اختياري)',
     equipmentPlaceholder: 'العلامة التجارية، الطراز، عمر المعدات...',
+    contactName: 'الاسم الكامل',
+    contactPhone: 'رقم الهاتف',
+    address: 'العنوان الكامل',
+    addressPlaceholder: 'الولاية، البلدية، الشارع...',
     priority: 'الأولوية',
     priorities: {
       LOW: 'منخفضة',
@@ -85,8 +98,9 @@ const translations = {
     minutes: 'دقيقة',
     submit: 'تأكيد الموعد',
     cancel: 'إلغاء',
-    success: 'تم تأكيد الموعد!',
-    successMessage: 'تم تسجيل طلبك. سنتصل بك قريباً.',
+    success: 'شكراً! تم تأكيد الموعد',
+    successMessage: 'تم تسجيل طلبك بنجاح. سيتصل بك فريقنا قريباً لتأكيد التفاصيل.',
+    close: 'إغلاق',
     error: 'خطأ',
     errorMessage: 'حدث خطأ. يرجى المحاولة مرة أخرى.',
     required: 'هذا الحقل مطلوب',
@@ -112,30 +126,55 @@ export default function AppointmentModal({
     requestedTime: '',
     priority: 'NORMAL',
     equipmentDetails: '',
+    contactName: '',
+    contactPhone: '',
+    address: '',
   });
 
+  const [fetchedServices, setFetchedServices] = useState<Service[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === 'authenticated';
 
-  // Check authentication status
+  // Pre-fill user data if available
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-          credentials: 'include',
-        });
-        setIsAuthenticated(response.ok);
-      } catch {
-        setIsAuthenticated(false);
+    if (session?.user) {
+      setFormData(prev => ({
+        ...prev,
+        contactName: prev.contactName || `${session.user.name || ''}`,
+        contactPhone: prev.contactPhone || (session.user as any).phone || '',
+        address: prev.address || (session.user as any).address || '',
+      }));
+    }
+  }, [session]);
+
+  // Fetch services if not provided
+  useEffect(() => {
+    const fetchServices = async () => {
+      if (services.length === 0) {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/types`);
+          if (response.ok) {
+            const data = await response.json();
+            // Handle both array response and object with data property
+            const servicesList = Array.isArray(data) ? data : (data.data || []);
+            setFetchedServices(servicesList);
+          }
+        } catch (error) {
+          console.error('Failed to fetch services:', error);
+        }
       }
     };
-    
+
     if (isOpen) {
-      checkAuth();
+      fetchServices();
     }
-  }, [isOpen]);
+  }, [isOpen, services.length]);
+
+  // Merge passed services with fetched services, ensuring display of valid options
+  const displayServices = services.length > 0 ? services : fetchedServices;
 
   // Update service when selectedService changes
   useEffect(() => {
@@ -155,6 +194,9 @@ export default function AppointmentModal({
           requestedTime: '',
           priority: 'NORMAL',
           equipmentDetails: '',
+          contactName: '',
+          contactPhone: '',
+          address: '',
         });
         setErrors({});
         setSubmitStatus('idle');
@@ -162,7 +204,7 @@ export default function AppointmentModal({
     }
   }, [isOpen]);
 
-  const selectedServiceData = services.find(s => s.id === formData.serviceTypeId);
+  const selectedServiceData = displayServices.find(s => s.id === formData.serviceTypeId);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -179,6 +221,15 @@ export default function AppointmentModal({
     if (!formData.requestedTime) {
       newErrors.requestedTime = t.required;
     }
+    if (!formData.contactName) {
+      newErrors.contactName = t.required;
+    }
+    if (!formData.contactPhone) {
+      newErrors.contactPhone = t.required;
+    }
+    if (!formData.address) {
+      newErrors.address = t.required;
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -187,10 +238,6 @@ export default function AppointmentModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Allow guest request if not authenticated
-    // Authentication check is now handled by the backend if it strictly requires auth
-    // But we want to support guest bookings
-    
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -206,21 +253,64 @@ export default function AppointmentModal({
         requestedDate: requestedDateTime.toISOString(),
         priority: formData.priority,
         equipmentDetails: formData.equipmentDetails || undefined,
-        // Guest info - In a real implementation, add guest fields to form
-        // For now, we assume logged in OR handle guest on backend if implemented
+        contactName: formData.contactName,
+        contactPhone: formData.contactPhone,
+        address: formData.address,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/requests`, {
-        method: 'POST',
-        headers: {
+      const submitRequest = async () => {
+        const headers: HeadersInit = {
           'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
+        };
+
+        // Add Authorization header if we have a session access token
+        const accessToken = (session?.user as any)?.accessToken;
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        return await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/requests`, {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+      };
+
+      let response = await submitRequest();
+
+      if (response.status === 401) {
+        // Access token might be expired, try to refresh
+        try {
+          const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include',
+          });
+
+          if (refreshRes.ok) {
+            // Retry original request
+            response = await submitRequest();
+          }
+        } catch (e) {
+          console.error('Token refresh failed', e);
+        }
+      }
 
       if (!response.ok) {
-        throw new Error('Failed to create appointment');
+        if (response.status === 401) {
+          // Redirect to login if still unauthorized
+          window.location.href = `/${locale}/auth/login`;
+          return;
+        }
+        const errorData = await response.json();
+        
+        // Handle express-validator errors array
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          const messages = errorData.errors.map((e: any) => e.msg).join('. ');
+          throw new Error(messages);
+        }
+        
+        throw new Error(errorData.message || 'Failed to create appointment');
       }
 
       setSubmitStatus('success');
@@ -278,8 +368,79 @@ export default function AppointmentModal({
 
         {/* Content - Scrollable form area */}
         <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: 'calc(90vh - 180px)' }}>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Service Selection */}
+          {submitStatus === 'success' ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t.success}</h3>
+              <p className="text-gray-600 max-w-md mb-8">{t.successMessage}</p>
+              <button
+                onClick={onClose}
+                className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                {t.close}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Contact Information */}
+              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                <h3 className="font-medium text-gray-900 border-b pb-2">Informations de contact</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {t.contactName} <span className="text-orange-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.contactName}
+                      onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                        errors.contactName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.contactName && (
+                      <p className="mt-1 text-sm text-red-500">{errors.contactName}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {t.contactPhone} <span className="text-orange-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.contactPhone}
+                      onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                        errors.contactPhone ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.contactPhone && (
+                      <p className="mt-1 text-sm text-red-500">{errors.contactPhone}</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t.address} <span className="text-orange-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder={t.addressPlaceholder}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                      errors.address ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.address && (
+                    <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Service Selection */}
             {!selectedService && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -293,9 +454,9 @@ export default function AppointmentModal({
                   }`}
                 >
                   <option value="">{t.selectServicePlaceholder}</option>
-                  {services.map((service) => (
+                  {displayServices.map((service) => (
                     <option key={service.id} value={service.id}>
-                      {service.name} - {service.price.toLocaleString(locale)} DZD
+                      {service.name}
                     </option>
                   ))}
                 </select>
@@ -314,9 +475,6 @@ export default function AppointmentModal({
                     <p className="text-sm text-gray-600 mt-1">{selectedServiceData.description}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-orange-600">
-                      {selectedServiceData.price.toLocaleString(locale)} DZD
-                    </p>
                     <p className="text-xs text-gray-500">
                       {selectedServiceData.duration} {t.minutes}
                     </p>
@@ -427,17 +585,6 @@ export default function AppointmentModal({
               </div>
             </div>
 
-            {/* Success Message */}
-            {submitStatus === 'success' && (
-              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-green-900">{t.success}</p>
-                  <p className="text-sm text-green-700">{t.successMessage}</p>
-                </div>
-              </div>
-            )}
-
             {/* Error Messages */}
             {submitStatus === 'error' && (
               <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -451,9 +598,11 @@ export default function AppointmentModal({
               </div>
             )}
           </form>
+          )}
         </div>
 
         {/* Footer - Actions */}
+        {submitStatus !== 'success' && (
         <div className="border-t border-gray-200 px-8 py-4 bg-gray-50 flex flex-col-reverse sm:flex-row gap-3 justify-end">
           <button
             type="button"
@@ -478,6 +627,7 @@ export default function AppointmentModal({
             )}
           </button>
         </div>
+        )}
       </div>
 
       <style jsx>{`

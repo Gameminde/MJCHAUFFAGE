@@ -494,6 +494,11 @@ model ServiceRequest {
   priority         String              @default("NORMAL") // String instead of enum
   status           String              @default("PENDING") // String instead of enum
   
+  // Contact Information (Snapshot)
+  contactName      String?             @map("contact_name")
+  contactPhone     String?             @map("contact_phone")
+  address          String?
+  
   // Scheduling
   requestedDate    DateTime            @map("requested_date")
   scheduledDate    DateTime?           @map("scheduled_date")

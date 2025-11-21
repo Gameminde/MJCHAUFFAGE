@@ -33,6 +33,9 @@ export interface ServiceRequestCreateData {
   priority?: ServicePriority;
   equipmentDetails?: any;
   estimatedCost?: number;
+  contactName?: string;
+  contactPhone?: string;
+  address?: string;
 }
 
 export class ServiceService {
@@ -93,6 +96,9 @@ export class ServiceService {
         status: 'PENDING',
         equipmentDetails: data.equipmentDetails ? JSON.stringify(data.equipmentDetails) : null,
         estimatedCost: data.estimatedCost || null,
+        contactName: data.contactName || null,
+        contactPhone: data.contactPhone || null,
+        address: data.address || null,
       },
       include: {
         customer: {

@@ -20,6 +20,10 @@ interface ServiceRequest {
   description?: string
   notes?: string
   createdAt: string
+  contactName?: string
+  contactPhone?: string
+  address?: string
+  equipmentDetails?: string
 }
 
 const statusColors: Record<ServiceRequest['status'], string> = {
@@ -53,6 +57,7 @@ export function ServicesManagement() {
   const [selectedPriority, setSelectedPriority] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showAssignModal, setShowAssignModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
   const [selectedService, setSelectedService] = useState<ServiceRequest | null>(null)
   const [technicians, setTechnicians] = useState<any[]>([])
   const [assignFormData, setAssignFormData] = useState({
@@ -71,7 +76,19 @@ export function ServicesManagement() {
     try {
       const result: any = await api.get('/admin/services')
       const responseData = result.data || result
-      setServices(responseData.serviceRequests || responseData.services || [])
+      // Transform data to match ServiceRequest interface
+      const rawRequests = responseData.serviceRequests || responseData.services || []
+      const formattedRequests = rawRequests.map((req: any) => ({
+        ...req,
+        customerName: req.customer?.user?.firstName 
+          ? `${req.customer.user.firstName} ${req.customer.user.lastName}`
+          : req.contactName || 'N/A',
+        serviceTypeName: req.serviceType?.name || 'N/A',
+        technicianName: req.technician?.user 
+          ? `${req.technician.user.firstName} ${req.technician.user.lastName}` 
+          : null
+      }))
+      setServices(formattedRequests)
     } catch (err: any) {
       setError(err.message || 'Failed to fetch service requests')
       console.error('Error fetching services:', err)
@@ -235,7 +252,7 @@ export function ServicesManagement() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {service.customerName || 'N/A'}
+                          {service.contactName || service.customerName || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {service.serviceTypeName || 'N/A'}
@@ -271,6 +288,15 @@ export function ServicesManagement() {
                           <button
                             onClick={() => {
                               setSelectedService(service)
+                              setShowViewModal(true)
+                            }}
+                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedService(service)
                               setShowAssignModal(true)
                             }}
                             className="text-primary-600 hover:text-primary-900"
@@ -287,6 +313,104 @@ export function ServicesManagement() {
           )}
         </div>
       </div>
+
+      {/* View Details Modal */}
+      {showViewModal && selectedService && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6 border-b pb-4">
+                <h3 className="text-lg font-semibold">Service Request Details</h3>
+                <button
+                  onClick={() => {
+                    setShowViewModal(false)
+                    setSelectedService(null)
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Request Info</h4>
+                    <p className="text-sm text-gray-900"><span className="font-medium">ID:</span> {selectedService.requestNumber || selectedService.id}</p>
+                    <p className="text-sm text-gray-900"><span className="font-medium">Date:</span> {new Date(selectedService.createdAt).toLocaleString()}</p>
+                    <p className="text-sm text-gray-900"><span className="font-medium">Status:</span> {selectedService.status}</p>
+                    <p className="text-sm text-gray-900"><span className="font-medium">Priority:</span> {selectedService.priority}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Service Type</h4>
+                    <p className="text-sm text-gray-900 font-medium">{selectedService.serviceTypeName}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3 border-b pb-2">Contact Information (From Form)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Contact Name</p>
+                      <p className="text-sm font-medium">{selectedService.contactName || selectedService.customerName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Contact Phone</p>
+                      <p className="text-sm font-medium">{selectedService.contactPhone || 'N/A'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-gray-500">Address</p>
+                      <p className="text-sm font-medium">{selectedService.address || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Description</h4>
+                  <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 whitespace-pre-wrap">
+                    {selectedService.description}
+                  </div>
+                </div>
+
+                {selectedService.equipmentDetails && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Equipment Details</h4>
+                    <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 whitespace-pre-wrap">
+                      {selectedService.equipmentDetails}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Scheduling</h4>
+                    <p className="text-sm text-gray-900"><span className="font-medium">Requested:</span> {new Date(selectedService.scheduledDate || '').toLocaleString()}</p>
+                    {selectedService.scheduledDate && (
+                      <p className="text-sm text-gray-900"><span className="font-medium">Scheduled:</span> {new Date(selectedService.scheduledDate).toLocaleString()}</p>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Technician</h4>
+                    <p className="text-sm text-gray-900">{selectedService.technicianName || 'Unassigned'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
+                <button
+                  onClick={() => {
+                    setShowViewModal(false)
+                    setSelectedService(null)
+                  }}
+                  className="btn-secondary"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Assign Technician Modal */}
       {showAssignModal && selectedService && (
@@ -325,7 +449,7 @@ export function ServicesManagement() {
                     <option value="">Select a technician</option>
                     {technicians.map(tech => (
                       <option key={tech.id} value={tech.id}>
-                        {tech.firstName} {tech.lastName} - {tech.specialties?.join(', ')}
+                        {tech.firstName} {tech.lastName} - {Array.isArray(tech.specialties) ? tech.specialties.join(', ') : tech.specialties || ''}
                       </option>
                     ))}
                   </select>

@@ -200,6 +200,18 @@ export default function ModernServicesPage({ services, locale }: ModernServicesP
         </div>
       </section>
 
+      {/* Location Restriction Notice */}
+      <div className="bg-yellow-50 border-b border-yellow-100">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-center text-center">
+          <MapPin className="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0" />
+          <p className="text-yellow-800 font-medium">
+            {isArabic 
+              ? 'خدمات التركيب والإصلاح متوفرة حالياً فقط في الجزائر العاصمة، البليدة، وبومرداس' 
+              : 'Les services de réparation et d\'installation sont actuellement disponibles uniquement à Alger, Blida et Boumerdes'}
+          </p>
+        </div>
+      </div>
+
       {/* Services Grid - Fibonacci Gap */}
       <section className="max-w-7xl mx-auto px-4 py-16 lg:py-24">
         <div className="text-center mb-16">

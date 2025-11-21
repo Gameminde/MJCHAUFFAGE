@@ -60,6 +60,41 @@ router.post('/register',
 
 /**
  * @swagger
+ * /api/auth/social-login:
+ *   post:
+ *     summary: Social login (Google/Facebook)
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       400:
+ *         description: Missing email
+ */
+router.post('/social-login',
+  authRateLimit,
+  AuthController.socialLogin
+);
+
+/**
+ * @swagger
  * /api/auth/login:
  *   post:
  *     summary: Login user
@@ -211,8 +246,6 @@ router.put('/profile',
  *   post:
  *     summary: Change user password
  *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -312,4 +345,5 @@ router.post(
   AuthController.resetPassword
 );
 
+console.log('✅ Auth routes loaded');
 export default router;

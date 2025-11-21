@@ -46,13 +46,15 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3002',
   config.frontend.url,
-  ...(config.env === 'development' ? ['http://localhost:*'] : [])
+  // Add specific IPs if needed or use environment variable for more flexibility
+  ...(config.env === 'development' ? [/^http:\/\/localhost:\d+$/] : []) 
 ];
 
 const io = new SocketServer(server, {
   cors: {
     origin: allowedOrigins,
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 
@@ -61,6 +63,35 @@ app.use(compression());
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// CORS Middleware (Manual implementation to handle dynamic origins and credentials)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  if (origin) {
+    // Check if origin is allowed
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed instanceof RegExp) return allowed.test(origin);
+      return allowed === origin;
+    });
+
+    if (isAllowed) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
+    }
+  }
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+
+  next();
+});
+
 app.use(cookieParser());
 
 // Security middleware (after cookieParser to access req.cookies)

@@ -7,6 +7,7 @@ import { Menu, X, User, Search, Flame, ShoppingBag } from 'lucide-react'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { MiniCart } from '@/components/cart/MiniCart'
 import { useMobile, useTouchDevice } from '@/hooks/useMobile'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface HeaderProps {
   locale: string
@@ -22,6 +23,7 @@ export function Header({ locale }: HeaderProps) {
   const isRTL = locale === 'ar'
   const menuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const { user, logout } = useAuth()
 
   // Handle scroll effect for modern header
   useEffect(() => {
@@ -79,11 +81,10 @@ export function Header({ locale }: HeaderProps) {
   return (
     <header
       id="navigation"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/95 backdrop-blur-lg shadow-card border-b border-neutral-200/50'
-          : 'bg-white/80 backdrop-blur-sm border-b border-transparent'
-      } ${isRTL ? 'rtl' : 'ltr'}`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-white/95 backdrop-blur-lg shadow-card border-b border-neutral-200/50'
+        : 'bg-white/80 backdrop-blur-sm border-b border-transparent'
+        } ${isRTL ? 'rtl' : 'ltr'}`}
       style={{ WebkitTransform: 'translateZ(0)' }}
     >
       <div className="container-modern">
@@ -133,7 +134,7 @@ export function Header({ locale }: HeaderProps) {
             <button className="w-11 h-11 rounded-xl flex items-center justify-center text-neutral-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 interactive-scale">
               <Search className="h-5 w-5" />
             </button>
-            
+
             {/* Cart */}
             <div className="relative">
               <MiniCart locale={locale} />
@@ -146,18 +147,38 @@ export function Header({ locale }: HeaderProps) {
 
             {/* Auth Actions */}
             <div className="flex items-center space-x-3 pl-3 border-l border-neutral-200">
-              <Link
-                href={`/${locale}/auth/login`}
-                className="text-body-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-primary-50"
-              >
-                {t('login')}
-              </Link>
-              <Link
-                href={`/${locale}/auth/register`}
-                className="btn btn-primary btn-sm"
-              >
-                {t('register')}
-              </Link>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={user.role === 'ADMIN' ? '/admin/dashboard' : `/${locale}/account`}
+                    className="flex items-center gap-2 text-body-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-primary-50"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>{user.firstName || 'Mon Compte'}</span>
+                  </Link>
+                  <button
+                    onClick={() => logout()}
+                    className="text-body-sm font-medium text-neutral-500 hover:text-error-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-error-50"
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href={`/${locale}/auth/login`}
+                    className="text-body-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-primary-50"
+                  >
+                    {t('login')}
+                  </Link>
+                  <Link
+                    href={`/${locale}/auth/register`}
+                    className="btn btn-primary btn-sm"
+                  >
+                    {t('register')}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -165,7 +186,7 @@ export function Header({ locale }: HeaderProps) {
           <div className="lg:hidden flex items-center gap-3">
             {/* Mobile Search - Quick access */}
             <button
-              onClick={() => {/* TODO: Open mobile search */}}
+              onClick={() => {/* TODO: Open mobile search */ }}
               className="w-11 h-11 rounded-xl flex items-center justify-center text-neutral-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 relative z-10"
               aria-label="Rechercher"
             >
@@ -187,9 +208,8 @@ export function Header({ locale }: HeaderProps) {
                   return newState;
                 });
               }}
-              className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-200 relative z-[100] touch-manipulation active:scale-95 border-2 bg-red-500 text-white font-bold ${
-                isMobileMenuOpen ? 'bg-red-700' : 'bg-red-500'
-              }`}
+              className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-200 relative z-[100] touch-manipulation active:scale-95 border-2 bg-red-500 text-white font-bold ${isMobileMenuOpen ? 'bg-red-700' : 'bg-red-500'
+                }`}
               aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
               aria-expanded={isMobileMenuOpen}
               type="button"
@@ -242,58 +262,84 @@ export function Header({ locale }: HeaderProps) {
                 </div>
               </div>
 
-            <div className="border-t border-neutral-200/50 py-6 px-4">
-              {/* Language Switcher Mobile */}
-              <div className="mb-6">
-                <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
-                  Langue
+              <div className="border-t border-neutral-200/50 py-6 px-4">
+                {/* Language Switcher Mobile */}
+                <div className="mb-6">
+                  <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
+                    Langue
+                  </div>
+                  <div className="px-2">
+                    <LanguageSwitcher />
+                  </div>
                 </div>
-                <div className="px-2">
-                  <LanguageSwitcher />
-                </div>
-              </div>
 
-              {/* Search Bar Mobile */}
-              <div className="mb-6">
-                <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
-                  Recherche
+                {/* Search Bar Mobile */}
+                <div className="mb-6">
+                  <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
+                    Recherche
+                  </div>
+                  <div className="px-2">
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                      <input
+                        type="text"
+                        placeholder={isRTL ? "...البحث عن المنتجات" : "Rechercher un produit..."}
+                        className="w-full pl-12 pr-4 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="px-2">
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
-                    <input
-                      type="text"
-                      placeholder={isRTL ? "...البحث عن المنتجات" : "Rechercher un produit..."}
-                      className="w-full pl-12 pr-4 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                    />
+
+                {/* Mobile Auth Actions */}
+                <div className="space-y-3">
+                  <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
+                    Compte
+                  </div>
+                  <div className="px-2 space-y-3">
+                    {user ? (
+                      <>
+                        <Link
+                          href={user.role === 'ADMIN' ? '/admin/dashboard' : `/${locale}/account`}
+                          className="block w-full text-center py-4 px-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-amber-700 transition-all duration-200 active:scale-95 shadow-lg"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <User className="w-5 h-5" />
+                            <span>{user.firstName || 'Mon Compte'}</span>
+                          </div>
+                        </Link>
+                        <button
+                          onClick={() => {
+                            logout()
+                            setIsMobileMenuOpen(false)
+                          }}
+                          className="block w-full text-center py-4 px-4 border-2 border-neutral-200 text-neutral-600 font-semibold rounded-xl hover:bg-neutral-50 hover:text-error-600 transition-all duration-200 active:scale-95"
+                        >
+                          Déconnexion
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href={`/${locale}/auth/login`}
+                          className="block w-full text-center py-4 px-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-amber-700 transition-all duration-200 active:scale-95 shadow-lg"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {t('login')}
+                        </Link>
+                        <Link
+                          href={`/${locale}/auth/register`}
+                          className="block w-full text-center py-4 px-4 border-2 border-orange-500 text-orange-600 font-semibold rounded-xl hover:bg-orange-500 hover:text-white transition-all duration-200 active:scale-95"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {t('register')}
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-
-              {/* Mobile Auth Actions */}
-              <div className="space-y-3">
-                <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
-                  Compte
-                </div>
-                <div className="px-2 space-y-3">
-                  <Link
-                    href={`/${locale}/auth/login`}
-                    className="block w-full text-center py-4 px-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-amber-700 transition-all duration-200 active:scale-95 shadow-lg"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {t('login')}
-                  </Link>
-                  <Link
-                    href={`/${locale}/auth/register`}
-                    className="block w-full text-center py-4 px-4 border-2 border-orange-500 text-orange-600 font-semibold rounded-xl hover:bg-orange-500 hover:text-white transition-all duration-200 active:scale-95"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {t('register')}
-                  </Link>
-                </div>
-              </div>
             </div>
-          </div>
           </>
         )}
       </div>

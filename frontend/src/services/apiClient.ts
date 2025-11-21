@@ -1,6 +1,5 @@
-import axios, { AxiosInstance } from 'axios'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+import axios, { AxiosInstance } from 'axios';
+import { config } from '@/lib/config';
 
 /**
  * Create axios instance with auth interceptor
@@ -57,21 +56,21 @@ function createApiClient(baseURL: string): AxiosInstance {
  */
 export const apiClient = {
   // Main API client (general purpose) - API v1
-  main: createApiClient(`${API_BASE_URL}/api/v1`),
+  main: createApiClient(config.api.baseURL),
 
   // Public endpoints (no auth required) - API v1
   public: {
-    products: createApiClient(`${API_BASE_URL}/api/v1/products`),
-    categories: createApiClient(`${API_BASE_URL}/api/v1/categories`),
+    products: createApiClient(`${config.api.baseURL}/products`),
+    categories: createApiClient(`${config.api.baseURL}/categories`),
   },
 
   // Admin endpoints (auth required) - API v1
   admin: {
-    dashboard: createApiClient(`${API_BASE_URL}/api/v1/admin/dashboard`),
-    products: createApiClient(`${API_BASE_URL}/api/v1/admin/products`),
-    orders: createApiClient(`${API_BASE_URL}/api/v1/admin/orders`),
-    customers: createApiClient(`${API_BASE_URL}/api/v1/admin/customers`),
-    analytics: createApiClient(`${API_BASE_URL}/api/v1/admin/analytics`),
+    dashboard: createApiClient(`${config.api.baseURL}/admin/dashboard`),
+    products: createApiClient(`${config.api.baseURL}/admin/products`),
+    orders: createApiClient(`${config.api.baseURL}/admin/orders`),
+    customers: createApiClient(`${config.api.baseURL}/admin/customers`),
+    analytics: createApiClient(`${config.api.baseURL}/admin/analytics`),
   },
 }
 

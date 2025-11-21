@@ -86,10 +86,10 @@ export class OrderService {
         items: {
           include: {
             product: {
-              select: { 
-                id: true, 
-                name: true, 
-                sku: true, 
+              select: {
+                id: true,
+                name: true,
+                sku: true,
                 images: { take: 1, select: { url: true, altText: true } }
               }
             }
@@ -128,7 +128,7 @@ export class OrderService {
 
       // Use real email if provided, otherwise create temporary email
       const userEmail = data.customerInfo.email || `guest_${Date.now()}_${Math.random().toString(36).substring(7)}@guest.mjchauffage.com`;
-      
+
       // Create temporary guest user (required for Customer relation)
       // Use real firstName/lastName from form
       const guestUser = await tx.user.create({
@@ -349,6 +349,11 @@ export class OrderService {
         timestamp: new Date(),
       });
 
+      // Clear customer's cart
+      await tx.cartItem.deleteMany({
+        where: { customerId: data.customerId }
+      });
+
       return order;
     });
   }
@@ -441,7 +446,7 @@ export class OrderService {
    */
   static async getOrderById(id: string, customerId?: string) {
     const where: any = { id };
-    
+
     // If customerId is provided, ensure user can only access their own orders
     if (customerId) {
       where.customerId = customerId;
@@ -461,10 +466,10 @@ export class OrderService {
         items: {
           include: {
             product: {
-              select: { 
-                id: true, 
-                name: true, 
-                sku: true, 
+              select: {
+                id: true,
+                name: true,
+                sku: true,
                 images: { take: 1, select: { url: true, altText: true } }
               }
             }
@@ -542,7 +547,7 @@ export class OrderService {
   static async cancelOrder(id: string, reason?: string, customerId?: string) {
     return prisma.$transaction(async (tx: any) => {
       const where: any = { id };
-      
+
       // If customerId is provided, ensure user can only cancel their own orders
       if (customerId) {
         where.customerId = customerId;
@@ -693,7 +698,7 @@ export class OrderService {
         customerEmail: customerInfo.email,
       });
       return;
-      
+
       /* DISABLED CODE - To be fixed with correct Prisma relations
       // Fetch order items with product details
       const orderWithItems = await prisma.order.findUnique({
@@ -710,7 +715,7 @@ export class OrderService {
         }
       });
       */
-      
+
       /*
       if (!orderWithItems) {
         logger.error('Order not found for email confirmation', { orderId: order.id });

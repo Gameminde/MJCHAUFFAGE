@@ -95,6 +95,9 @@ export class ServiceRequestController {
         priority: req.body.priority,
         equipmentDetails: req.body.equipmentDetails,
         estimatedCost: req.body.estimatedCost,
+        contactName: req.body.contactName,
+        contactPhone: req.body.contactPhone,
+        address: req.body.address,
       };
 
       const serviceRequest = await ServiceService.createServiceRequest(requestData);

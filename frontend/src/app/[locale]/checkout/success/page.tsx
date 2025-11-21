@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useCart } from '@/hooks/useCart'
 import { useLocale } from 'next-intl'
 import { CheckCircle, Package, Truck, Phone, MapPin, Calendar } from 'lucide-react'
 import { Suspense, useEffect, useState } from 'react'
@@ -27,7 +28,9 @@ function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const locale = useLocale()
+  const { clearCart } = useCart()
   const orderNumber = searchParams ? searchParams.get('orderNumber') : null
+  const shouldClearCart = searchParams ? searchParams.get('clearCart') === 'true' : false
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -40,10 +43,18 @@ function SuccessContent() {
       return
     }
 
+    // Clear cart if requested
+    if (shouldClearCart) {
+      console.log('🛒 Clearing cart via success page...');
+      clearCart()
+      // Optional: Remove the query param to prevent re-clearing on refresh (though harmless)
+      // router.replace(`/${locale}/checkout/success?orderNumber=${orderNumber}`, { scroll: false })
+    }
+
     // Try to fetch order details if available
     // This is optional - we can show success even without details
     setLoading(false)
-  }, [orderNumber, router])
+  }, [orderNumber, router, shouldClearCart, clearCart])
 
   if (!orderNumber) {
     return null
@@ -71,11 +82,11 @@ function SuccessContent() {
             {locale === 'ar' ? 'شكراً لطلبكم!' : 'Merci pour votre commande !'}
           </h1>
           <p className="text-lg text-neutral-600 mb-6">
-            {locale === 'ar' 
+            {locale === 'ar'
               ? 'تم استلام طلبكم بنجاح. سيتم التواصل معكم قريباً لتأكيد التوصيل.'
               : 'Votre commande a été reçue avec succès. Nous vous contacterons bientôt pour confirmer la livraison.'}
           </p>
-          
+
           {/* Order Number */}
           <div className="bg-gradient-to-r from-primary-50 to-primary-100 border-2 border-primary-200 rounded-xl p-6 mb-6">
             <p className="text-sm text-neutral-600 mb-2">
