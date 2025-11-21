@@ -45,6 +45,8 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "vitest.config.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "jest.config.ts",
+    "jest.config.js"
   ]
 }
