@@ -170,6 +170,11 @@ if (process.env.NODE_ENV !== 'production') {
     const { authenticateToken, requireRole } = require('../middleware/auth');
     const { AnalyticsController } = require('../controllers/analyticsController');
     
+    // Public tracking endpoints (MUST BE BEFORE AUTH MIDDLEWARE)
+    router.post('/track', AnalyticsTrackingController.trackEvent);
+    router.post('/events', AnalyticsTrackingController.trackEvent); // Alias pour /events
+
+    // Protected routes middleware
     router.use(authenticateToken);
     router.use(requireRole(['ADMIN', 'SUPER_ADMIN']));
     
@@ -204,15 +209,11 @@ if (process.env.NODE_ENV !== 'production') {
     // Traffic Sources
     router.get('/traffic/sources', AnalyticsController.getTrafficSources);
 
-    // Analytics tracking endpoint (no auth required for tracking)
-    router.post('/track', AnalyticsTrackingController.trackEvent);
-    router.post('/events', AnalyticsTrackingController.trackEvent); // Alias pour /events
-
     // Real-time metrics (authentication required in production)
-    router.get('/realtime', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), AnalyticsTrackingController.getRealTimeMetrics);
+    router.get('/realtime', AnalyticsTrackingController.getRealTimeMetrics);
 
     // Session analytics (authentication required in production)
-    router.get('/session/:sessionId', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), AnalyticsTrackingController.getSessionAnalytics);
+    router.get('/session/:sessionId', AnalyticsTrackingController.getSessionAnalytics);
     
   } catch (error) {
     console.error('Failed to set up production analytics routes:', error);
