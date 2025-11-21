@@ -1,8 +1,11 @@
 [build]
   base = "frontend"
-  command = "npm run build"
   publish = ".next"
+  command = "npm run build"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[context.production.environment]
+  NODE_ENV = "production"
+  NEXT_PUBLIC_API_URL = "https://mj-chauffage-backend.onrender.com"

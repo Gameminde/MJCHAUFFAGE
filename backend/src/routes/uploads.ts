@@ -7,55 +7,37 @@ import { authenticateToken, requireAdmin } from '@/middleware/auth';
 import { fileUploadSecurity } from '@/middleware/security';
 import { config } from '@/config/environment';
 import { logger } from '@/utils/logger';
+import { StorageService } from '@/services/storageService';
 
 const router = Router();
 
-// Ensure upload directory exists
+// Keep local storage for dev environment fallback OR if R2 config is missing
 const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Allowed mime types from configuration
 const allowedMimeTypes = new Set(config.upload.allowedTypes);
 
-// Sanitize filename to avoid unsafe characters
-function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[^a-zA-Z0-9-_\.]/g, '-')
-    .replace(/-+/g, '-')
-    .toLowerCase();
-}
+// Configure Multer to use MemoryStorage if we want to upload to R2 directly from buffer
+// or DiskStorage if we want to save locally first (or as fallback)
+// For R2 upload via AWS SDK lib-storage, MemoryStorage is easiest but watch out for RAM usage on large files
+const useR2 = !!(config.storage?.accessKeyId && config.storage?.bucketName);
 
-// Map mime type to file extension (fallback to original)
-function extFromMime(mime: string, original: string): string {
-  const map: Record<string, string> = {
-    'image/jpeg': '.jpg',
-    'image/png': '.png',
-    'image/webp': '.webp',
-    'application/pdf': '.pdf',
-  };
-  const fallback = path.extname(original) || '';
-  return map[mime] || fallback || '';
-}
-
-// Build public URL for a stored file (relative path for frontend consumption)
-function toPublicUrl(filename: string): string {
-  return `/files/${encodeURIComponent(filename)}`;
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => {
-    const id = uuidv4();
-    const baseOriginal = path.parse(file.originalname).name;
-    const safeBase = sanitizeFilename(baseOriginal);
-    const ext = extFromMime(file.mimetype, file.originalname);
-    cb(null, `${safeBase}-${id}${ext}`);
-  },
-});
+const storage = useR2 
+  ? multer.memoryStorage() 
+  : multer.diskStorage({
+      destination: (_req, _file, cb) => {
+        cb(null, uploadDir);
+      },
+      filename: (_req, file, cb) => {
+        const id = uuidv4();
+        const ext = path.extname(file.originalname);
+        // Basic sanitization
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+        cb(null, `${safeName}-${id}${ext}`);
+      },
+    });
 
 const upload = multer({
   storage,
@@ -70,8 +52,6 @@ const upload = multer({
 
 /**
  * POST /api/uploads
- * Supports single file via field `image` and multiple via `images`.
- * Requires authentication and admin role.
  */
 router.post(
   '/',
@@ -82,19 +62,15 @@ router.post(
     { name: 'images', maxCount: 10 },
   ]),
   fileUploadSecurity,
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const filesField = (req.files || {}) as Record<string, Express.Multer.File[]>;
-      const allFiles: Express.Multer.File[] = [];
+      const filesToProcess: Express.Multer.File[] = [];
 
-      if (filesField.image && filesField.image.length) {
-        allFiles.push(...filesField.image);
-      }
-      if (filesField.images && filesField.images.length) {
-        allFiles.push(...filesField.images);
-      }
+      if (filesField.image) filesToProcess.push(...filesField.image);
+      if (filesField.images) filesToProcess.push(...filesField.images);
 
-      if (allFiles.length === 0) {
+      if (filesToProcess.length === 0) {
         return res.status(400).json({
           success: false,
           message: 'No files uploaded',
@@ -102,16 +78,31 @@ router.post(
         });
       }
 
-      const results = allFiles.map((f) => ({
-        filename: f.filename,
-        url: toPublicUrl(f.filename),
-        mimeType: f.mimetype,
-        size: f.size,
-      }));
+      const results = [];
+
+      for (const file of filesToProcess) {
+        let publicUrl: string;
+
+        if (useR2) {
+          // Upload to R2
+          publicUrl = await StorageService.uploadFile(file);
+        } else {
+          // Local file fallback (dev mode only usually)
+          publicUrl = `/files/${file.filename}`;
+        }
+
+        results.push({
+          filename: file.originalname, // Return original name or generated key?
+          url: publicUrl,
+          mimeType: file.mimetype,
+          size: file.size,
+        });
+      }
 
       logger.info('Files uploaded', {
         count: results.length,
         userId: req.user?.id,
+        mode: useR2 ? 'R2' : 'Local',
       });
 
       return res.status(201).json({ success: true, files: results });

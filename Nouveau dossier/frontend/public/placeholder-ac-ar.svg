@@ -1,0 +1,14 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#F0F9FF"/>
+  <rect x="80" y="60" width="240" height="180" rx="15" fill="#E0F2FE" stroke="#0284C7" stroke-width="3"/>
+  <circle cx="200" cy="120" r="25" fill="#0EA5E9"/>
+  <path d="M180 120 L190 130 L200 120 L190 110 Z" fill="#0284C7"/>
+  <rect x="190" y="150" width="20" height="6" rx="3" fill="#64748B"/>
+  <circle cx="185" cy="165" r="2" fill="#F59E0B"/>
+  <circle cx="195" cy="165" r="2" fill="#F59E0B"/>
+  <circle cx="205" cy="165" r="2" fill="#F59E0B"/>
+  <circle cx="215" cy="165" r="2" fill="#F59E0B"/>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" dir="rtl">تكييف</text>
+  <text x="200" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#64748B">Air Conditioning</text>
+</svg>
+

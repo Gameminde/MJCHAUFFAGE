@@ -1,0 +1,23 @@
+# MJ CHAUFFAGE - DEPLOYMENT CONFIGURATION GUIDE
+
+## 1. BACKEND (Render.com)
+Set these Environment Variables in your Render Dashboard:
+
+FRONTEND_URL = https://mj-chauffage-frontend.netlify.app
+DATABASE_URL = (Your PostgreSQL URL)
+JWT_SECRET   = (Generate a long random string)
+PORT         = 3001
+
+## 2. FRONTEND (Netlify)
+Set these Environment Variables in your Netlify Site Settings > Build & Deploy > Environment:
+
+NEXT_PUBLIC_API_URL = https://mj-chauffage-backend.onrender.com
+NEXTAUTH_URL        = https://mj-chauffage-frontend.netlify.app
+NEXTAUTH_SECRET     = (Generate a secure random string, use: openssl rand -base64 32)
+
+## 3. DEPLOYMENT STEPS
+1. The backend code has been updated to explicitly allow requests from your Netlify domain.
+2. The Netlify configuration (netlify.toml) has been reset to the root directory.
+3. Pushing these changes to GitHub will trigger a new build on Netlify.
+4. Ensure your backend on Render redeploys with the latest code (you might need to trigger a manual deploy on Render if auto-deploy isn't set).
+

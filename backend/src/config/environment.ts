@@ -164,6 +164,14 @@ export const config: Config = {
     weatherApiKey: process.env.WEATHER_API_KEY || '',
     geminiApiKey: process.env.GEMINI_API_KEY || '',
   },
+
+  storage: {
+    endpoint: process.env.R2_ENDPOINT || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    bucketName: process.env.R2_BUCKET_NAME || 'mj-chauffage-assets',
+    publicUrl: process.env.R2_PUBLIC_URL || '',
+  },
   
   logging: {
     level: process.env.LOG_LEVEL || 'info',

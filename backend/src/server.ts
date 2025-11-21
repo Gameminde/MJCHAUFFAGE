@@ -44,7 +44,9 @@ const server = createServer(app);
 // Define allowed origins for CORS
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
   'http://localhost:3002',
+  'https://mj-chauffage-frontend.netlify.app', // Explicitly allow Netlify frontend
   config.frontend.url,
   // Add specific IPs if needed or use environment variable for more flexibility
   ...(config.env === 'development' ? [/^http:\/\/localhost:\d+$/] : []) 

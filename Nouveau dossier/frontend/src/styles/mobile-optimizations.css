@@ -1,0 +1,246 @@
+/* Mobile Optimizations and Accessibility */
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+
+  .hover\:shadow-card-hover:hover {
+    box-shadow: var(--shadow-card);
+  }
+
+  .hover\:-translate-y-1:hover {
+    transform: translateY(0);
+  }
+}
+
+/* Touch manipulation for better mobile responsiveness */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary: #000000;
+    --color-background: #ffffff;
+    --color-text: #000000;
+  }
+
+  .high-contrast {
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Reduce motion for specific animations */
+  .animate-fade-in-up {
+    animation: none;
+    opacity: 1;
+  }
+
+  .animate-pulse {
+    animation: none;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Ensure minimum touch targets */
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Optimize text for mobile reading */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* Improve tap targets for links */
+  a:not([class]) {
+    padding: 0.5rem;
+    margin: -0.5rem;
+  }
+
+  /* Better focus indicators on mobile */
+  button:focus,
+  a:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 3px solid var(--color-orange-500);
+    outline-offset: 2px;
+  }
+
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Optimize images for mobile */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Better form inputs on mobile */
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Improve modal/dialog positioning */
+  [role="dialog"],
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Intermediate sizing for tablets */
+  button,
+  a,
+  [role="button"],
+  input[type="submit"] {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Dark mode optimizations for mobile */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+  .dark-mode-optimized {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+}
+
+/* Print styles for mobile */
+@media print {
+  /* Hide interactive elements when printing */
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure text is readable when printed */
+  * {
+    color: black !important;
+    background: white !important;
+  }
+}
+
+/* Safe area for devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Improve scrolling on iOS */
+.ios-scroll-fix {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Better focus management for keyboard navigation */
+.focus-visible {
+  outline: 2px solid var(--color-orange-500);
+  outline-offset: 2px;
+}
+
+/* Loading states optimized for mobile */
+.mobile-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Swipe indicators for touch interactions */
+.swipe-indicator {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.7;
+  animation: fade-in-out 2s infinite;
+}
+
+@keyframes fade-in-out {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* Voice over optimizations */
+@media (max-width: 768px) {
+  /* Ensure screen reader content is properly spaced */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background: var(--color-orange-500);
+    color: white;
+    border-radius: 0.25rem;
+    z-index: 9999;
+  }
+}

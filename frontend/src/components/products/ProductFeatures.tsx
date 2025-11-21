@@ -27,3 +27,4 @@ export function ProductFeatures({ features, locale }: ProductFeaturesProps) {
 
 
 
+

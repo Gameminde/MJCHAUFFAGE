@@ -1,0 +1,268 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "filter": "Filter",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close"
+  },
+  "navigation": {
+    "home": "Home",
+    "products": "Products",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "cart": "Cart",
+    "account": "My Account"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "createAccount": "Create Account",
+    "signInLink": "Sign in here",
+    "signUpLink": "Sign up here",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "No account?",
+    "haveAccount": "Already have an account?",
+    "signInDescription": "Sign in to your account",
+    "signUpDescription": "Create a new account to get started",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "phonePlaceholder": "Enter your phone number",
+    "networkError": "Network error. Please check your internet connection."
+  },
+  "home": {
+    "hero": {
+      "title": "Professional Heating Solutions",
+      "subtitle": "Quality boilers, expert installation, and reliable maintenance services",
+      "cta": "Shop Now",
+      "ctaSecondary": "Learn More",
+      "titleLine1": "Spare parts for",
+      "titleLine2": "professional boilers",
+      "description": "Find original and quality parts for all your professional heating needs.",
+      "catalogButton": "View Catalog",
+      "contactButton": "Contact Us"
+    },
+    "features": {
+      "subtitle": "Why choose us",
+      "title": "Reliable solutions for your heating",
+      "originalParts": {
+        "title": "Original Parts",
+        "description": "We only offer certified spare parts from manufacturers."
+      },
+      "fastDelivery": {
+        "title": "Fast Delivery",
+        "description": "Shipping within 24 hours for most orders in Algeria."
+      },
+      "warranty": {
+        "title": "2 Year Warranty",
+        "description": "All our parts are guaranteed for 24 months for your peace of mind."
+      }
+    },
+    "categories": {
+      "title": "Our main categories",
+      "description": "Find the part you need among our many references",
+      "burners": {
+        "title": "Burners and accessories",
+        "description": "All types of burners for oil, gas and multi-fuel boilers."
+      },
+      "pumps": {
+        "title": "Pumps and circulators",
+        "description": "High performance pumps for heating circuits and hot water production."
+      },
+      "safety": {
+        "title": "Safety devices",
+        "description": "Valves, pressure switches, thermostats and other essential safety elements."
+      },
+      "allCategoriesButton": "View all categories"
+    },
+    "testimonials": {
+      "subtitle": "Testimonials",
+      "title": "What our customers say",
+      "jean": {
+        "name": "John Smith",
+        "role": "Professional heating technician",
+        "quote": "Since I order from MJ CHAUFFAGE, I save precious time. The parts are always compliant and delivered quickly."
+      },
+      "marie": {
+        "name": "Mary Johnson",
+        "role": "Building manager",
+        "quote": "Exceptional customer service. They guided me to find the exact part I needed for our collective boiler."
+      },
+      "thomas": {
+        "name": "Thomas Wilson",
+        "role": "Maintenance manager",
+        "quote": "Their catalog is very comprehensive and their prices competitive. I recommend without hesitation to my colleagues in the trade."
+      }
+    },
+    "cta": {
+      "titleLine1": "Ready to order your parts?",
+      "titleLine2": "Our experts are at your disposal.",
+      "description": "Contact us for any specific request or technical advice."
+    }
+  },
+  "products": {
+    "title": "Our Products",
+    "categories": "Categories",
+    "price": "Price",
+    "addToCart": "Add to Cart",
+    "viewDetails": "View Details",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "noProducts": "No products found",
+    "noProductsDescription": "Products created in the admin will appear here",
+    "quantity": "Quantity",
+    "available": "Available",
+    "lowStock": "Low stock",
+    "remaining": "remaining",
+    "inCart": "In cart",
+    "items": "items",
+    "stockError": "Insufficient stock",
+    "maxInCart": "Maximum in cart"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "startShopping": "Start Shopping",
+    "addToCart": "Add to Cart",
+    "adding": "Adding...",
+    "added": "Added!",
+    "error": "Error adding to cart",
+    "sku": "SKU",
+    "maxStock": "Maximum stock reached",
+    "clearing": "Clearing...",
+    "clearAll": "Clear all",
+    "subtotal": "Subtotal",
+    "shippingNote": "Shipping calculated at checkout",
+    "checkout": "Checkout",
+    "continueShopping": "Continue Shopping",
+    "paymentMethods": "Payment methods"
+  },
+  "paymentMethods": {
+    "cashOnDelivery": "Cash on Delivery",
+    "dahabiaCard": "Dahabia Card"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "customers": "Customers",
+    "services": "Services",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "overview": "Overview",
+    "orders": "Orders",
+    "services": "Services",
+    "profile": "Profile",
+    "addresses": "Addresses",
+    "favorites": "Favorites",
+    "myOrders": "My Orders",
+    "orderHistory": "Order History",
+    "serviceRequests": "Service Requests",
+    "accountSettings": "Account Settings",
+    "totalOrders": "Total Orders",
+    "totalSpent": "Total Spent",
+    "recentOrders": "Recent Orders",
+    "upcomingServices": "Upcoming Services",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "manageAddresses": "Manage Addresses",
+    "viewFavorites": "View Favorites",
+    "logout": "Logout",
+    "dashboardSubtitle": "Manage your account and orders",
+    "orderDate": "Order Date",
+    "delivered": "Delivered",
+    "viewAllOrders": "View All Orders",
+    "maintenanceService": "Maintenance Service",
+    "scheduled": "Scheduled",
+    "viewAllServices": "View All Services"
+  },
+  "footer": {
+    "description": "Professional heating solutions for Algeria. Quality equipment, expert installation, and reliable maintenance services.",
+    "products": "Products",
+    "boilers": "Boilers",
+    "radiators": "Radiators",
+    "accessories": "Accessories",
+    "services": "Services",
+    "installation": "Installation",
+    "maintenance": "Maintenance",
+    "repair": "Repair",
+    "contact": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "rights": "All rights reserved"
+  },
+  "ServicesPage": {
+    "metadata": {
+      "title": "Services - MJ CHAUFFAGE",
+      "description": "Discover our professional heating services, installation, maintenance and repair in Algeria."
+    },
+    "hero": {
+      "title": "Professional Heating Services",
+      "description": "Installation, maintenance and repair of heating equipment by qualified experts.",
+      "cta": "Contact Us"
+    },
+    "services": {
+      "title": "Our Services",
+      "hours": "hours"
+    },
+    "process": {
+      "title": "Our Process",
+      "step1": {
+        "title": "Consultation",
+        "description": "Free assessment of your heating needs"
+      },
+      "step2": {
+        "title": "Quote",
+        "description": "Detailed and personalized quote"
+      },
+      "step3": {
+        "title": "Intervention",
+        "description": "Fast and professional service"
+      },
+      "step4": {
+        "title": "Follow-up",
+        "description": "After-service support and warranty"
+      }
+    },
+    "whyChoose": {
+      "title": "Why Choose Us",
+      "quality": {
+        "title": "Superior Quality",
+        "description": "Top quality equipment and materials"
+      },
+      "warranty": {
+        "title": "Warranty",
+        "description": "Warranty on all our services"
+      },
+      "expertise": {
+        "title": "Expertise",
+        "description": "Certified and experienced technicians"
+      }
+    }
+  }
+}
