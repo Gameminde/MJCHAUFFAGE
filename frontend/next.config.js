@@ -1,7 +1,9 @@
 const createNextIntlPlugin = require('next-intl/plugin');
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
+
+// Bundle Analyzer needs to be optional and only loaded if requested
+const withBundleAnalyzer = process.env.ANALYZE === 'true' 
+  ? require('@next/bundle-analyzer')({ enabled: true })
+  : (config) => config;
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
@@ -37,6 +39,14 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
       },
       {
+        protocol: 'https',
+        hostname: 'mj-chauffage-backend.onrender.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pub-b68c5a7939e1ea0b651791359c78326b.r2.dev',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '3001',
@@ -48,11 +58,9 @@ const nextConfig = {
       },
     ],
     unoptimized: process.env.NODE_ENV === 'development',
-    // Optimisations mobiles pour les images
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ['image/webp', 'image/avif'],
-    // Permettre les images locales via proxy
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -67,7 +75,6 @@ const nextConfig = {
   swcMinify: true,
   webpack: (config) => config,
   async rewrites() {
-    // Use afterFiles so local API routes take precedence; proxy unknown API paths to backend
     return {
       beforeFiles: [],
       afterFiles: [
@@ -99,12 +106,10 @@ const nextConfig = {
           source: '/api/:path((?!auth).*)',
           destination: `${BACKEND_ORIGIN}/api/v1/:path*`,
         },
-        // Proxy /files directly to backend (for images)
         {
           source: '/files/:path*',
           destination: `${BACKEND_ORIGIN}/files/:path*`,
         },
-        // Proxy /images alias to backend uploads as well
         {
           source: '/images/:path*',
           destination: `${BACKEND_ORIGIN}/images/:path*`,
@@ -126,7 +131,6 @@ const nextConfig = {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains',
           },
-          // Optimisations mobiles
           {
             key: 'X-Frame-Options',
             value: 'DENY',
@@ -139,14 +143,8 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Préchargement des ressources critiques - désactivé car police non utilisée
-          // {
-          //   key: 'Link',
-          //   value: '</fonts/inter.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
-          // },
         ],
       },
-      // Optimisations spécifiques pour les pages mobiles
       {
         source: '/:locale(fr|ar)/:path*',
         headers: [
