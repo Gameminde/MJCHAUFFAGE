@@ -205,17 +205,8 @@ class AnalyticsService {
   private async flushEvents(synchronous = false) {
     if (this.eventQueue.length === 0) return;
 
-    // Skip if disabled (development)
+    // Skip if disabled (development) or if analytics_events table doesn't exist yet
     if (this.disabled) return;
-
-    const events = [...this.eventQueue];
-    this.eventQueue = [];
-
-    // Respect backoff window if set
-    if (this.backoffUntil && Date.now() < this.backoffUntil) {
-      this.eventQueue.unshift(...events);
-      return;
-    }
 
     try {
       // Map events to database schema
@@ -233,6 +224,13 @@ class AnalyticsService {
         .insert(dbEvents);
 
       if (error) {
+        // Check if error is due to table not existing
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          console.debug('Analytics events table not created yet. Skipping event tracking.');
+          this.eventQueue = []; // Clear queue since table doesn't exist
+          return;
+        }
+
         console.warn('Supabase analytics insert failed:', error);
         // Re-queue events if failed
         this.eventQueue.unshift(...events);
@@ -240,9 +238,9 @@ class AnalyticsService {
         this.backoffUntil = Date.now() + 60_000;
       }
     } catch (error) {
-      console.warn('Failed to send analytics events:', error);
-      // Re-queue events if failed
-      this.eventQueue.unshift(...events);
+      console.debug('Failed to send analytics events (table may not exist):', error);
+      // Don't re-queue if it's a table doesn't exist error
+      this.eventQueue = [];
     }
   }
 

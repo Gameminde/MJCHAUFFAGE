@@ -27,22 +27,11 @@ class PerformanceService {
     }
   }
 
+  // Disabled to prevent errors when analytics_events table doesn't exist
   private async sendToAnalytics(metric: string, value: number) {
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.from('analytics_events').insert({
-        metric,
-        value,
-        url: window.location.pathname,
-        user_agent: navigator.userAgent,
-        timestamp: Date.now(),
-      });
-
-      if (error) throw error;
-    } catch (error) {
-      // Silently fail
-      console.debug('Performance metrics error:', error);
-    }
+    // Analytics event tracking is disabled until analytics_events table is created
+    // This prevents errors when the table doesn't exist yet
+    return;
   }
 
   // Public methods
