@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { cartService } from '@/services/cartService';
 
 export interface CartItem {
   id: string;
@@ -32,16 +33,19 @@ export interface CartState {
   isOpen: boolean;
   isLoading: boolean;
   error: string | null;
+  userId: string | null;
 
-  addItem: (item: AddItemInput) => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
+  addItem: (item: AddItemInput) => Promise<void>;
+  removeItem: (itemId: string) => Promise<void>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   toggleCart: (value?: boolean) => void;
   setItems: (items: CartItem[]) => void;
   setLoading: (value: boolean) => void;
   setError: (message: string | null) => void;
   clearError: () => void;
+  setUserId: (id: string | null) => void;
+  syncWithServer: () => Promise<void>;
 
   getTotalItems: () => number;
   getSubtotal: () => number;
@@ -67,8 +71,53 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       isLoading: false,
       error: null,
+      userId: null,
 
-      addItem: (newItem) => {
+      setUserId: (id) => set({ userId: id }),
+
+      syncWithServer: async () => {
+        const userId = get().userId;
+        if (!userId) return;
+
+        set({ isLoading: true });
+        try {
+          // 1. Push local items to server (optional, or merge)
+          const localItems = get().items;
+          if (localItems.length > 0) {
+            await cartService.syncCart(localItems.map(i => ({
+              id: i.id,
+              productId: i.productId,
+              quantity: i.quantity,
+              price: i.price,
+              name: i.name
+            })), userId);
+          }
+
+          // 2. Fetch latest cart from server
+          const serverCart = await cartService.getCart(userId);
+          if (serverCart) {
+            // Map server items to local items
+            const items = serverCart.items.map(item => ({
+              id: item.id,
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+              sku: item.sku || '',
+              maxStock: item.maxStock || 100 // Default if not provided
+            }));
+            set({ items });
+          }
+        } catch (error) {
+          console.error(error);
+          set({ error: 'Failed to sync cart' });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      addItem: async (newItem) => {
         set((state) => {
           const items = state.items;
           const existingIndex = items.findIndex(
@@ -124,15 +173,39 @@ export const useCartStore = create<CartState>()(
             error,
           };
         });
+
+        // Sync with server
+        const userId = get().userId;
+        if (userId) {
+          cartService.addToCart({
+            userId,
+            productId: newItem.productId,
+            quantity: newItem.quantity ?? 1
+          }).catch(console.error);
+        }
       },
 
-      removeItem: (itemId) => {
+      removeItem: async (itemId) => {
+        // Get item to find productId/cartItemId for server
+        const itemToRemove = get().items.find(i => i.id === itemId);
+
         set((state) => ({
           items: state.items.filter((item) => item.id !== itemId),
         }));
+
+        const userId = get().userId;
+        if (userId && itemToRemove) {
+          // Note: cartService.removeCartItem expects cart_item id. 
+          // If local id is different from server id, this might fail.
+          // Ideally, we should use the id from the server.
+          // For now, assuming id matches or we need to find it.
+          // Actually, cartService.removeCartItem takes cart_item id.
+          // If we synced, local items should have server ids.
+          cartService.removeCartItem(itemId, userId).catch(console.error);
+        }
       },
 
-      updateQuantity: (itemId, quantity) => {
+      updateQuantity: async (itemId, quantity) => {
         set((state) => {
           if (quantity <= 0) {
             return {
@@ -147,7 +220,7 @@ export const useCartStore = create<CartState>()(
               return item;
             }
 
-          const nextQuantity = Math.min(quantity, item.maxStock);
+            const nextQuantity = Math.min(quantity, item.maxStock);
             if (quantity > item.maxStock) {
               error = 'Stock insuffisant pour ce produit';
             }
@@ -160,9 +233,24 @@ export const useCartStore = create<CartState>()(
 
           return { items, error };
         });
+
+        const userId = get().userId;
+        if (userId) {
+          if (quantity <= 0) {
+            cartService.removeCartItem(itemId, userId).catch(console.error);
+          } else {
+            cartService.updateCartItem({ itemId, quantity }, userId).catch(console.error);
+          }
+        }
       },
 
-      clearCart: () => set({ items: [], error: null }),
+      clearCart: async () => {
+        set({ items: [], error: null });
+        const userId = get().userId;
+        if (userId) {
+          cartService.clearCart(userId).catch(console.error);
+        }
+      },
 
       toggleCart: (value) =>
         set((state) => ({
@@ -199,6 +287,8 @@ export const useCartStore = create<CartState>()(
         typeof window !== 'undefined'
           ? createJSONStorage(() => window.localStorage)
           : undefined,
+      partialize: (state) => ({ items: state.items, isOpen: state.isOpen }),
     },
   ),
 );
+

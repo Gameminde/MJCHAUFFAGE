@@ -4,7 +4,7 @@ import { ModernCheckoutForm as CheckoutForm } from '@/components/checkout/Modern
 import { useCart } from '@/hooks/useCart'
 import { Metadata } from 'next'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Props {
   params: { locale: string }
@@ -13,14 +13,23 @@ interface Props {
 export default function CheckoutPage({ params: { locale } }: Props) {
   const { items, itemCount } = useCart()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Redirect to cart if empty (but allow navigation to success page)
   useEffect(() => {
-    // Don't redirect if we're navigating to success page
-    if (itemCount === 0 && !window.location.pathname.includes('/checkout/success')) {
+    if (mounted && itemCount === 0 && !window.location.pathname.includes('/checkout/success')) {
       router.push(`/${locale}/cart`)
     }
-  }, [itemCount, router, locale])
+  }, [mounted, itemCount, router, locale])
+
+  // Show nothing or loading state during SSR/Hydration to avoid mismatch
+  if (!mounted) {
+    return <div className="min-h-screen bg-gray-50" />
+  }
 
   if (itemCount === 0) {
     return (

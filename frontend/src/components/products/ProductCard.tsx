@@ -31,7 +31,7 @@ export function ProductCard({
   const numberLocale = isArabic ? 'ar-DZ' : 'fr-DZ'
 
   // Calculate discount percentage
-  const discountPercentage = product.salePrice 
+  const discountPercentage = product.salePrice
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0
 
@@ -56,10 +56,10 @@ export function ProductCard({
   const productName = product.name
 
   // Get main product image - handle both string and object formats
-  const mainImage = product.images?.[0] 
-    ? (typeof product.images[0] === 'string' 
-        ? { url: product.images[0], altText: productName }
-        : product.images[0])
+  const mainImage = product.images?.[0]
+    ? (typeof product.images[0] === 'string'
+      ? { url: product.images[0], altText: productName }
+      : product.images[0])
     : null
 
   // Modern 2025 variant-specific classes
@@ -104,11 +104,10 @@ export function ProductCard({
           {showWishlist && (
             <button
               onClick={handleWishlistToggle}
-              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 interactive-scale ${
-                isWishlisted
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 interactive-scale ${isWishlisted
                   ? 'bg-gradient-to-r from-error-500 to-error-600 text-white shadow-glow-accent'
                   : 'glass-effect text-neutral-600 hover:bg-white/90 hover:text-error-500 hover:shadow-card'
-              }`}
+                }`}
               aria-label={isArabic ? 'إضافة للمفضلة' : 'Ajouter aux favoris'}
             >
               <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
@@ -142,7 +141,7 @@ export function ProductCard({
           />
         ) : (
           <Image
-            src="/screenshots/desktop.png"
+            src="/placeholder-product.svg"
             alt={productName}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -187,9 +186,8 @@ export function ProductCard({
         </div>
 
         {/* Product Name */}
-        <h3 className={`font-display font-bold text-neutral-900 mb-3 group-hover:text-primary-600 transition-colors duration-200 line-clamp-2 ${
-          variant === 'featured' ? 'text-heading-lg' : variant === 'compact' ? 'text-heading-sm' : 'text-heading-md'
-        }`}>
+        <h3 className={`font-display font-bold text-neutral-900 mb-3 group-hover:text-primary-600 transition-colors duration-200 line-clamp-2 ${variant === 'featured' ? 'text-heading-lg' : variant === 'compact' ? 'text-heading-sm' : 'text-heading-md'
+          }`}>
           <Link href={`/${locale}/products/${product.slug}`} className="hover:underline decoration-2 underline-offset-2">
             {productName}
           </Link>
@@ -227,11 +225,10 @@ export function ProductCard({
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`h-4 w-4 transition-colors ${
-                  i < Math.floor((product as any).averageRating || 0)
+                className={`h-4 w-4 transition-colors ${i < Math.floor((product as any).averageRating || 0)
                     ? 'text-yellow-400 fill-current'
                     : 'text-neutral-300'
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -247,9 +244,8 @@ export function ProductCard({
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-baseline gap-2 mb-1">
-              <span className={`font-display font-bold text-neutral-900 ${
-                variant === 'featured' ? 'text-display-md' : 'text-heading-lg'
-              }`}>
+              <span className={`font-display font-bold text-neutral-900 ${variant === 'featured' ? 'text-display-md' : 'text-heading-lg'
+                }`}>
                 {formatPrice(currentPrice)}
               </span>
               {originalPrice && (
@@ -264,11 +260,10 @@ export function ProductCard({
               </div>
             )}
           </div>
-          <span className={`text-body-xs px-3 py-2 rounded-xl font-semibold border ${
-            product.stockQuantity > 0
+          <span className={`text-body-xs px-3 py-2 rounded-xl font-semibold border ${product.stockQuantity > 0
               ? 'bg-green-50 text-green-700 border-green-200'
               : 'bg-red-50 text-red-700 border-red-200'
-          }`}>
+            }`}>
             {product.stockQuantity > 0
               ? (isArabic ? 'متوفر' : 'En stock')
               : (isArabic ? 'غير متوفر' : 'Rupture de stock')

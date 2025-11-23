@@ -19,7 +19,7 @@ export function LoginForm({ callbackUrl = '/', hideGoogleButton = false }: Login
   const [googleLoading, setGoogleLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
-  const { login, loading, error, user } = useAuth()
+  const { login, loginWithGoogle, loading, error, user } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,9 +45,8 @@ export function LoginForm({ callbackUrl = '/', hideGoogleButton = false }: Login
     setErrors({})
 
     try {
-      // Google OAuth not implemented yet
-      setErrors({ general: 'Google sign-in coming soon' })
-      setGoogleLoading(false)
+      await loginWithGoogle()
+      // Redirect is handled by Supabase OAuth flow
     } catch (error) {
       setErrors({ general: 'Google sign-in failed' })
       setGoogleLoading(false)

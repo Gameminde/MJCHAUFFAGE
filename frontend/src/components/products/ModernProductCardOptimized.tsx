@@ -35,13 +35,6 @@ export const ModernProductCardOptimized = React.memo(function ModernProductCardO
   const productImage = getProductImageUrl(product);
   const displayPrice = (product.salePrice && product.salePrice > 0) ? product.salePrice : product.price;
 
-  // Debug: Log product images for debugging
-  if (process.env.NODE_ENV === 'development') {
-    if (!product.images?.length) {
-      console.log(`Produit ${product.id} (${product.name}) : pas d'images`, product);
-    }
-    console.log(`Produit ${product.id} - Image URL:`, productImage);
-  }
   const hasDiscount = product.salePrice && product.salePrice > 0 && product.salePrice < product.price;
   const discountPercent = hasDiscount
     ? Math.round(((product.price - product.salePrice!) / product.price) * 100)

@@ -6,6 +6,7 @@ import type { AddItemInput } from '@/hooks/useCart'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useAnalyticsContext } from '../analytics/AnalyticsProvider'
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 interface AddToCartButtonProps {
   product: {
@@ -39,6 +40,7 @@ export function AddToCartButton({
   const { addItem, items, formatPrice } = useCart()
   const { t, locale } = useLanguage()
   const { trackAddToCart } = useAnalyticsContext()
+  const supabase = createClient()
 
   // Check if item is already in cart
   const cartItem = items.find(item => item.productId === product.id)
@@ -54,20 +56,22 @@ export function AddToCartButton({
 
     try {
       // Validate stock before adding by fetching latest product data
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/products/${product.id}`)
+      const { data: productData, error: productError } = await supabase
+        .from('products')
+        .select('stock_quantity')
+        .eq('id', product.id)
+        .single()
+
       let currentStock = product.stockQuantity
-      
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success && result.data.product) {
-          currentStock = result.data.product.stockQuantity
-        }
+
+      if (!productError && productData) {
+        currentStock = productData.stock_quantity
       }
 
       // Check if we have enough stock
       const currentCartQuantity = cartItem?.quantity || 0
       const totalRequestedQuantity = currentCartQuantity + quantity
-      
+
       if (totalRequestedQuantity > currentStock) {
         setError(`Stock insuffisant. Disponible: ${currentStock - currentCartQuantity}`)
         setTimeout(() => setError(''), 3000)
@@ -226,9 +230,8 @@ export function AddToCartButton({
       <button
         onClick={handleAddToCart}
         disabled={isAdding || justAdded}
-        className={`${variantClasses[variant]} ${sizeClasses[size]} w-full flex items-center justify-center space-x-2 transition-all duration-200 ${
-          justAdded ? 'bg-green-600 hover:bg-green-600' : ''
-        }`}
+        className={`${variantClasses[variant]} ${sizeClasses[size]} w-full flex items-center justify-center space-x-2 transition-all duration-200 ${justAdded ? 'bg-green-600 hover:bg-green-600' : ''
+          }`}
       >
         {justAdded ? (
           <>
@@ -244,7 +247,7 @@ export function AddToCartButton({
           <>
             <ShoppingCart className="h-5 w-5" />
             <span>
-              {showQuantitySelector 
+              {showQuantitySelector
                 ? `Ajouter au panier - ${formatPrice(product.price * quantity)}`
                 : 'Ajouter au panier'
               }

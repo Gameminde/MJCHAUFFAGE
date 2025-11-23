@@ -10,7 +10,6 @@ beforeAll(async () => {
 
   // Set test environment variables
   process.env.NODE_ENV = 'test';
-  process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3001';
   process.env.FRONTEND_URL = 'http://localhost:3000';
 
   // Mock localStorage

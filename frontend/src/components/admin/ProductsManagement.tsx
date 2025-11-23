@@ -3,86 +3,40 @@
 import { useState, useRef, useEffect } from 'react'
 import { Upload, Image as ImageIcon, X, Plus, Edit, Trash2, Search, Filter, Eye } from 'lucide-react'
 import NextImage from 'next/image'
-import { useProductRealtime } from '@/hooks/useRealtime'
+import { createClient } from '@/lib/supabase/client'
+import { getImageUrl } from '@/lib/images'
 
+// Types matching Supabase schema
 interface Product {
   id: string
   name: string
+  slug: string
+  sku: string
   description: string | null
   price: number
-  originalPrice?: number
-  category: string
-  brand: string
-  images: string[]
-  inStock: boolean
-  stockQuantity: number
+  sale_price: number | null
+  stock_quantity: number
+  is_active: boolean
+  is_featured: boolean
+  created_at: string
+  category: { id: string; name: string } | null
+  manufacturer: { id: string; name: string } | null
+  product_images: { id: string; url: string; alt_text: string | null; sort_order: number }[]
   features: string[]
   specifications: Record<string, string>
-  isActive: boolean
-  isFeatured: boolean
-  createdAt: string
 }
-
-// Import the real product service
-import ProductService from '@/services/productService'
-import { getImageUrl } from '@/lib/images'
-
-// Convert the backend Product interface to match frontend needs
-interface FrontendProduct {
-  id: string
-  name: string
-  sku?: string
-  description: string | null
-  price: number
-  originalPrice?: number
-  category: string
-  categoryId?: string // Add category ID
-  brand: string
-  manufacturerId?: string // Add manufacturer ID
-  images: string[]
-  inStock: boolean
-  stockQuantity: number
-  features: string[]
-  specifications: Record<string, string>
-  isActive: boolean
-  isFeatured: boolean
-  createdAt: string
-}
-
-// Convert backend product to frontend product
-const convertProduct = (product: any): FrontendProduct => ({
-  id: product.id,
-  sku: product.sku,
-  name: product.name,
-  description: product.description,
-  price: product.price,
-  originalPrice: product.salePrice || undefined,
-  category: product.category?.name || '',
-  categoryId: product.category?.id || '', // Store actual category ID
-  brand: product.manufacturer?.name || '',
-  manufacturerId: product.manufacturer?.id || '', // Store actual manufacturer ID
-  images: product.images?.map((img: any) => img.url) || [],
-  inStock: product.stockQuantity > 0,
-  stockQuantity: product.stockQuantity,
-  features: product.features || [],
-  specifications: product.specifications || {},
-  isActive: product.isActive,
-  isFeatured: product.isFeatured,
-  createdAt: product.createdAt
-})
 
 export function ProductsManagement() {
-  const [products, setProducts] = useState<FrontendProduct[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
-  const [showImageUpload, setShowImageUpload] = useState(false)
-  const [uploadedImages, setUploadedImages] = useState<string[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedManufacturer, setSelectedManufacturer] = useState('')
 
+  // Form State
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -90,7 +44,7 @@ export function ProductsManagement() {
     salePrice: '',
     categoryId: '',
     manufacturerId: '',
-    sku: '', // Add SKU field
+    sku: '',
     stockQuantity: '',
     features: [''],
     specifications: {} as Record<string, string>,
@@ -98,233 +52,71 @@ export function ProductsManagement() {
     isFeatured: false
   })
 
-  const [realCategories, setRealCategories] = useState<any[]>([])
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Data for dropdowns
+  const [categories, setCategories] = useState<any[]>([])
   const [manufacturers, setManufacturers] = useState<any[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
   const [loadingManufacturers, setLoadingManufacturers] = useState(false)
-  const [manufacturerInput, setManufacturerInput] = useState('')
-  const [showManufacturerSuggestions, setShowManufacturerSuggestions] = useState(false)
 
-  // Real-time updates
-  const { 
-    onProductCreated, 
-    onProductUpdated, 
-    onProductDeleted, 
-    notifyProductChange,
-    isConnected,
-    cleanup 
-  } = useProductRealtime()
+  const supabase = createClient()
+
+  // Fetch Data
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      // Fetch Products
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(id, name),
+          manufacturer:manufacturers(id, name),
+          product_images(*)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (productsError) throw productsError
+      setProducts(productsData || [])
+
+      // Fetch Categories
+      setLoadingCategories(true)
+      const { data: catsData, error: catsError } = await supabase
+        .from('categories')
+        .select('id, name')
+        .order('name')
+
+      if (catsError) throw catsError
+      setCategories(catsData || [])
+      setLoadingCategories(false)
+
+      // Fetch Manufacturers
+      setLoadingManufacturers(true)
+      const { data: mansData, error: mansError } = await supabase
+        .from('manufacturers')
+        .select('id, name')
+        .order('name')
+
+      if (mansError) throw mansError
+      setManufacturers(mansData || [])
+      setLoadingManufacturers(false)
+
+    } catch (err: any) {
+      console.error('Error fetching data:', err)
+      setError(err.message || 'Failed to fetch data')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        // Fetch products
-        const backendProducts = await ProductService.getProducts()
-        const frontendProducts = backendProducts
-          .filter(product => product && product.id) // Filter out undefined/null products
-          .map(convertProduct)
-        setProducts(frontendProducts)
-        
-        // Fetch categories
-        setLoadingCategories(true)
-        try {
-          const categoriesData = await ProductService.getCategories()
-          setRealCategories(categoriesData)
-        } catch (catErr) {
-          console.error('Error fetching categories:', catErr)
-        } finally {
-          setLoadingCategories(false)
-        }
-        
-        // Fetch manufacturers
-        setLoadingManufacturers(true)
-        try {
-          const manufacturersData = await ProductService.getManufacturers()
-          setManufacturers(manufacturersData)
-        } catch (manErr) {
-          console.error('Error fetching manufacturers:', manErr)
-        } finally {
-          setLoadingManufacturers(false)
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch products')
-        console.error('Error fetching products:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchData()
   }, [])
 
-  // Set up real-time listeners
-  useEffect(() => {
-    onProductCreated((newProduct: any) => {
-      const frontendProduct = convertProduct(newProduct)
-      setProducts(prev => [frontendProduct, ...prev])
-    })
-
-    onProductUpdated((updatedProduct: any) => {
-      const frontendProduct = convertProduct(updatedProduct)
-      setProducts(prev => prev.map(p => p.id === frontendProduct.id ? frontendProduct : p))
-    })
-
-    onProductDeleted((productId: string) => {
-      setProducts(prev => prev.filter(p => p.id !== productId))
-    })
-
-    return cleanup
-  }, [onProductCreated, onProductUpdated, onProductDeleted, cleanup])
-
-  // ✅ NO MOCK DATA: Force utilisation des vraies données API
-  const categories = realCategories.map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    value: cat.id,
-    label: cat.name
-  }))
-
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesCategory = !selectedCategory || product.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files) {
-      for (const file of Array.from(files)) {
-        try {
-          // Upload file to backend
-          const formData = new FormData()
-          formData.append('image', file)
-
-          // ✅ FIX: Get auth token from localStorage and include in headers
-          const token = localStorage.getItem('authToken')
-          if (!token) {
-            alert('Vous devez être connecté pour uploader des images')
-            return
-          }
-
-          const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
-          const uploadResponse = await fetch(`${API_BASE_URL}/uploads`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-            body: formData,
-            credentials: 'include'
-          })
-
-          if (uploadResponse.ok) {
-            const uploadData = await uploadResponse.json()
-            if (uploadData.success && uploadData.files && uploadData.files.length > 0) {
-              // Use the URL from the first uploaded file
-              setUploadedImages(prev => [...prev, uploadData.files[0].url])
-            }
-          } else {
-            const errorData = await uploadResponse.json().catch(() => ({ message: 'Unknown error' }))
-            console.error('Failed to upload image:', errorData)
-            alert(`Erreur lors du téléchargement de l\'image: ${errorData.message || 'Unknown error'}`)
-          }
-        } catch (error) {
-          console.error('Error uploading image:', error)
-          alert('Erreur lors du téléchargement de l\'image')
-        }
-      }
-    }
-  }
-
-  const removeImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const handleAddFeature = () => {
-    setFormData(prev => ({
-      ...prev,
-      features: [...prev.features, '']
-    }))
-  }
-
-  const handleRemoveFeature = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.filter((_, i) => i !== index)
-    }))
-  }
-
-  const handleFeatureChange = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.map((feature, i) => i === index ? value : feature)
-    }))
-  }
-
-  const handleAddSpecification = () => {
-    setFormData(prev => ({
-      ...prev,
-      specifications: { ...prev.specifications, '': '' }
-    }))
-  }
-
-  const handleSpecificationChange = (oldKey: string, newKey: string, value: string) => {
-    setFormData(prev => {
-      const newSpecs = { ...prev.specifications } as Record<string, string>
-      if (oldKey !== newKey) {
-        delete newSpecs[oldKey]
-      }
-      newSpecs[newKey] = value
-      return { ...prev, specifications: newSpecs }
-    })
-  }
-
-  // ✅ FIX 6: Ajouter validation dans ProductsManagement.tsx
-  const validateProductForm = (): { valid: boolean; errors: string[] } => {
-    const errors: string[] = [];
-
-    // ✅ Validation nom
-    if (!formData.name || formData.name.trim().length < 3) {
-      errors.push('Le nom du produit doit contenir au moins 3 caractères');
-    }
-
-    // ✅ Validation prix
-    const price = parseFloat(formData.price);
-    if (isNaN(price) || price <= 0) {
-      errors.push('Le prix doit être un nombre positif');
-    }
-
-    // ✅ Validation prix de vente
-    if (formData.salePrice) {
-      const salePrice = parseFloat(formData.salePrice);
-      if (isNaN(salePrice) || salePrice <= 0) {
-        errors.push('Le prix de vente doit être un nombre positif');
-      }
-      if (salePrice >= price) {
-        errors.push('Le prix de vente doit être inférieur au prix normal');
-      }
-    }
-
-    // ✅ Validation stock
-    const stock = parseInt(formData.stockQuantity);
-    if (isNaN(stock) || stock < 0) {
-      errors.push('La quantité en stock doit être un nombre positif ou zéro');
-    }
-
-    // ✅ Validation catégorie
-    if (!formData.categoryId) {
-      errors.push('Veuillez sélectionner une catégorie');
-    }
-
-    // ✅ Validation SKU
-    if (!formData.sku || formData.sku.trim().length < 3) {
-      errors.push('La référence (SKU) doit contenir au moins 3 caractères');
-    }
-
-    return { valid: errors.length === 0, errors };
-  };
-
+  // Form Handlers
   const resetForm = () => {
     setFormData({
       name: '',
@@ -333,215 +125,173 @@ export function ProductsManagement() {
       salePrice: '',
       categoryId: '',
       manufacturerId: '',
-      sku: '', // Reset SKU field
+      sku: '',
       stockQuantity: '',
       features: [''],
-      specifications: {} as Record<string, string>,
+      specifications: {},
       isActive: true,
       isFeatured: false
     })
-    setManufacturerInput('')
-    setShowManufacturerSuggestions(false)
     setUploadedImages([])
     setEditingProduct(null)
     setShowAddForm(false)
   }
 
-  // Helper function to generate slug from name
-  const generateSlug = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-  }
-
-  // Helper function to generate SKU
-  const generateSKU = (name: string, categoryId: string): string => {
-    if (!name || !categoryId) return ''
-    const namePrefix = name.substring(0, 3).toUpperCase()
-    const categoryPrefix = categoryId.substring(0, 3).toUpperCase()
-    const timestamp = Date.now().toString().slice(-4)
-    return `${namePrefix}-${categoryPrefix}-${timestamp}`
-  }
-
-  // Auto-generate SKU when name or category changes
-  useEffect(() => {
-    if (formData.name && formData.categoryId && !editingProduct) {
-      const autoSKU = generateSKU(formData.name, formData.categoryId)
-      if (autoSKU && autoSKU !== formData.sku) {
-        setFormData(prev => ({ ...prev, sku: autoSKU }))
-      }
-    }
-  }, [formData.name, formData.categoryId, editingProduct])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      // ✅ Valider avant de soumettre
-      const validation = validateProductForm();
-      if (!validation.valid) {
-        alert('Erreurs de validation:\n' + validation.errors.join('\n'));
-        return;
-      }
-
-      // Generate slug and use SKU from form (auto-generated if empty)
-      const slug = generateSlug(formData.name)
-      const sku = formData.sku || generateSKU(formData.name, formData.categoryId)
-
-      // Prepare data for API (match backend expectations exactly)
-      const productData: any = {
-        name: formData.name,
-        slug: slug,
-        sku: sku,
-        categoryId: formData.categoryId,
-        price: parseFloat(formData.price),
-        stockQuantity: parseInt(formData.stockQuantity),
-        isActive: formData.isActive,
-        isFeatured: formData.isFeatured,
-      }
-
-      // Add optional fields only if they have values
-      if (formData.description) {
-        productData.description = formData.description
-      }
-      
-      if (formData.salePrice) {
-        productData.salePrice = parseFloat(formData.salePrice)
-      }
-      
-      // Handle manufacturer - send the name directly, backend will handle creation
-      if (manufacturerInput && manufacturerInput.trim() !== '') {
-        productData.manufacturerId = manufacturerInput.trim()
-      } else {
-        // Explicitly set to null if no manufacturer is selected
-        productData.manufacturerId = null
-      }
-      
-      if (formData.features && formData.features.length > 0) {
-        // Convert array to comma-separated string for SQLite
-        productData.features = formData.features.filter(f => f.trim() !== '').join(',')
-      }
-      
-      if (formData.specifications && Object.keys(formData.specifications).length > 0) {
-        // Convert object to JSON string for SQLite
-        productData.specifications = JSON.stringify(formData.specifications)
-      }
-
-      // Add uploaded images
-      if (uploadedImages.length > 0) {
-        productData.images = uploadedImages.map((url, index) => ({
-          url: url,
-          altText: formData.name,
-          sortOrder: index
-        }))
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.debug('📦 Sending product data to backend:', JSON.stringify(productData, null, 2));
-      }
-
-      if (editingProduct) {
-        // Update existing product
-        const updatedProduct = await ProductService.updateProduct(editingProduct.id, productData)
-        notifyProductChange('updated', editingProduct.id, updatedProduct)
-        alert('Produit mis à jour avec succès!')
-      } else {
-        // Create new product
-        const newProduct = await ProductService.createProduct(productData)
-        notifyProductChange('created', newProduct.id, newProduct)
-        alert('Produit créé avec succès!')
-      }
-      
-      resetForm()
-      
-      // Refresh products list
-      const backendProducts = await ProductService.getProducts()
-      const frontendProducts = backendProducts
-        .filter(product => product && product.id) // Filter out undefined/null products
-        .map(convertProduct)
-      setProducts(frontendProducts)
-    } catch (err) {
-      console.error('Error saving product:', err)
-      // Log detailed error info
-      if (err instanceof Error) {
-        console.error('Error name:', err.name)
-        console.error('Error message:', err.message)
-        if ((err as any).response) {
-          console.error('Response data:', (err as any).response)
-        }
-      }
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save product'
-      alert(`Erreur: ${errorMessage}`)
-    }
-  }
-
-  const handleEdit = (product: FrontendProduct) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product)
     setFormData({
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
-      salePrice: product.originalPrice?.toString() || '',
-      categoryId: product.categoryId || '', // Use actual category ID
-      manufacturerId: product.manufacturerId || '', // Use actual manufacturer ID
+      salePrice: product.sale_price?.toString() || '',
+      categoryId: product.category?.id || '',
+      manufacturerId: product.manufacturer?.id || '',
       sku: product.sku || '',
-      stockQuantity: product.stockQuantity.toString(),
-      features: product.features,
-      specifications: product.specifications,
-      isActive: product.isActive,
-      isFeatured: product.isFeatured
+      stockQuantity: product.stock_quantity.toString(),
+      features: product.features || [''],
+      specifications: product.specifications || {},
+      isActive: product.is_active,
+      isFeatured: product.is_featured
     })
-    setManufacturerInput(product.brand || '') // Set the manufacturer name for editing
-    setUploadedImages(product.images)
+    setUploadedImages(product.product_images?.map(img => img.url) || [])
     setShowAddForm(true)
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-      try {
-        await ProductService.deleteProduct(id)
-        notifyProductChange('deleted', id)
-        alert('Produit supprimé avec succès!')
-        
-        // Refresh products list
-        const backendProducts = await ProductService.getProducts()
-        const frontendProducts = backendProducts
-        .filter(product => product && product.id) // Filter out undefined/null products
-        .map(convertProduct)
-        setProducts(frontendProducts)
-      } catch (err) {
-        console.error('Error deleting product:', err)
-        const errorMessage = err instanceof Error ? err.message : 'Failed to delete product'
-        alert(`Erreur: ${errorMessage}`)
-      }
-    }
-  }
+    if (!confirm('Are you sure you want to delete this product?')) return
 
-  const toggleProductStatus = async (id: string, field: 'isActive' | 'isFeatured') => {
     try {
-      // Find the current product to get its current status
-      const currentProduct = products.find(p => p.id === id)
-      if (!currentProduct) return
+      const { error } = await supabase.from('products').delete().eq('id', id)
+      if (error) throw error
 
-      // Update the product with the new status
-      const updateData = {
-        [field]: !currentProduct[field]
-      }
-      
-      await ProductService.updateProduct(id, updateData)
-      
-      // Refresh products list
-      const backendProducts = await ProductService.getProducts()
-      const frontendProducts = backendProducts
-        .filter(product => product && product.id) // Filter out undefined/null products
-        .map(convertProduct)
-      setProducts(frontendProducts)
-    } catch (err) {
-      console.error('Error updating product status:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update product status'
-      alert(`Erreur: ${errorMessage}`)
+      setProducts(prev => prev.filter(p => p.id !== id))
+      alert('Product deleted successfully')
+    } catch (err: any) {
+      console.error('Error deleting product:', err)
+      alert('Failed to delete product: ' + err.message)
     }
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        sale_price: formData.salePrice ? parseFloat(formData.salePrice) : null,
+        category_id: formData.categoryId,
+        manufacturer_id: formData.manufacturerId || null,
+        sku: formData.sku,
+        stock_quantity: parseInt(formData.stockQuantity),
+        features: formData.features.filter(f => f.trim() !== ''),
+        specifications: formData.specifications,
+        is_active: formData.isActive,
+        is_featured: formData.isFeatured,
+        // Generate slug from name if not provided (simple version)
+        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString().slice(-4)
+      }
+
+      let productId = editingProduct?.id
+
+      if (editingProduct) {
+        // Update
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id)
+
+        if (error) throw error
+      } else {
+        // Create
+        const { data, error } = await supabase
+          .from('products')
+          .insert(productData)
+          .select()
+          .single()
+
+        if (error) throw error
+        productId = data.id
+      }
+
+      // Handle Images (Simple URL storage for now, assuming uploadedImages are URLs)
+      // In a real app, we'd upload to Storage bucket first.
+      // For this migration, we'll just delete old images and insert new ones for simplicity
+      if (productId) {
+        // Delete existing images
+        await supabase.from('product_images').delete().eq('product_id', productId)
+
+        // Insert new images
+        if (uploadedImages.length > 0) {
+          const imagesToInsert = uploadedImages.map((url, index) => ({
+            product_id: productId,
+            url: url,
+            alt_text: formData.name,
+            sort_order: index
+          }))
+
+          const { error: imgError } = await supabase.from('product_images').insert(imagesToInsert)
+          if (imgError) console.error('Error saving images:', imgError)
+        }
+      }
+
+      alert(editingProduct ? 'Product updated!' : 'Product created!')
+      resetForm()
+      fetchData()
+
+    } catch (err: any) {
+      console.error('Error saving product:', err)
+      alert('Failed to save product: ' + err.message)
+    }
+  }
+
+  const [uploading, setUploading] = useState(false)
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    try {
+      const newImages: string[] = []
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath)
+
+        newImages.push(publicUrl)
+      }
+
+      setUploadedImages(prev => [...prev, ...newImages])
+    } catch (error: any) {
+      console.error('Error uploading image:', error)
+      alert('Error uploading image: ' + error.message)
+    } finally {
+      setUploading(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.sku && product.sku.toLowerCase().includes(searchQuery.toLowerCase()))
+    const matchesCategory = !selectedCategory || product.category?.id === selectedCategory
+    const matchesManufacturer = !selectedManufacturer || product.manufacturer?.id === selectedManufacturer
+    return matchesSearch && matchesCategory && matchesManufacturer
+  })
 
   return (
     <div className="space-y-6">
@@ -553,23 +303,33 @@ export function ProductsManagement() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Rechercher produits..."
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="form-input pl-10 w-64"
             />
           </div>
-          <select 
+          <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="form-input w-auto"
           >
             <option value="">Toutes catégories</option>
-            {categories && categories.length > 0 && categories.map(cat => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
-          <button 
+          <select
+            value={selectedManufacturer}
+            onChange={(e) => setSelectedManufacturer(e.target.value)}
+            className="form-input w-auto"
+          >
+            <option value="">Toutes marques</option>
+            {manufacturers.map(man => (
+              <option key={man.id} value={man.id}>{man.name}</option>
+            ))}
+          </select>
+          <button
             onClick={() => setShowAddForm(true)}
             className="btn-primary flex items-center gap-2"
           >
@@ -579,517 +339,203 @@ export function ProductsManagement() {
         </div>
       </div>
 
-      {/* Add/Edit Product Form */}
+      {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-semibold">
-              {editingProduct ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit'}
-            </h3>
-            <button 
-              onClick={resetForm}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-5 w-5" />
-            </button>
+        <div className="card p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold">{editingProduct ? 'Modifier Produit' : 'Nouveau Produit'}</h3>
+            <button onClick={resetForm}><X className="h-5 w-5" /></button>
           </div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="form-label">Nom du produit *</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="form-input"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Référence (SKU)</label>
-                  <input
-                    type="text"
-                    value={formData.sku}
-                    onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
-                    className="form-input"
-                    placeholder="Auto-généré ou personnalisé"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Laissez vide pour auto-génération</p>
-                </div>
-                <div className="relative">
-                  <label className="form-label">Fabricant (optionnel)</label>
-                  <input
-                    type="text"
-                    value={manufacturerInput}
-                    onChange={(e) => {
-                      setManufacturerInput(e.target.value)
-                      setShowManufacturerSuggestions(e.target.value.length > 0)
-                    }}
-                    onFocus={() => setShowManufacturerSuggestions(manufacturerInput.length > 0)}
-                    onBlur={() => setTimeout(() => setShowManufacturerSuggestions(false), 200)}
-                    className="form-input"
-                    placeholder="Tapez le nom du fabricant..."
-                  />
-                  {loadingManufacturers && <p className="text-sm text-gray-500 mt-1">Chargement des fabricants...</p>}
-                  {!loadingManufacturers && manufacturers.length === 0 && (
-                    <p className="text-sm text-green-600 mt-1">💡 Tapez un nom pour créer automatiquement un nouveau fabricant</p>
-                  )}
-                  {!loadingManufacturers && manufacturers.length > 0 && (
-                    <p className="text-sm text-blue-600 mt-1">💡 Tapez pour voir les suggestions ou créer un nouveau fabricant</p>
-                  )}
-
-                  {/* Suggestions dropdown */}
-                  {showManufacturerSuggestions && manufacturers.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                      {manufacturers
-                        .filter(man =>
-                          man.name.toLowerCase().includes(manufacturerInput.toLowerCase())
-                        )
-                        .slice(0, 5)
-                        .map(man => (
-                          <div
-                            key={man.id}
-                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                            onClick={() => {
-                              setManufacturerInput(man.name)
-                              setShowManufacturerSuggestions(false)
-                            }}
-                          >
-                            <span className="text-sm">{man.name}</span>
-                          </div>
-                        ))}
-                      {manufacturers.filter(man =>
-                        man.name.toLowerCase().includes(manufacturerInput.toLowerCase())
-                      ).length === 0 && manufacturerInput.trim() !== '' && (
-                        <div className="px-3 py-2 text-sm text-green-600 bg-green-50 border-t">
-                          ✨ Nouveau fabricant: "{manufacturerInput}"
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Description *</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="form-input h-24 resize-none"
-                  required
-                />
+                <label className="form-label">Nom</label>
+                <input type="text" className="form-input" required
+                  value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
               </div>
-
-              {/* Pricing and Category */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="form-label">Prix (DA) *</label>
-                  <input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                    className="form-input"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Prix de vente (DA)</label>
-                  <input
-                    type="number"
-                    value={formData.salePrice}
-                    onChange={(e) => setFormData(prev => ({ ...prev, salePrice: e.target.value }))}
-                    className="form-input"
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Catégorie *</label>
-                  <select
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
-                    className="form-input"
-                    required
-                  >
-                    <option value="">Sélectionner...</option>
-                    {categories && categories.length > 0 ? (
-                      categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.label}</option>
-                      ))
-                    ) : (
-                      <option value="boilers">Chaudières</option>
-                    )}
-                  </select>
-                  {loadingCategories && <p className="text-sm text-gray-500 mt-1">Chargement des catégories...</p>}
-                </div>
-              </div>
-
-              {/* Stock */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="form-label">Quantité en stock *</label>
-                  <input
-                    type="number"
-                    value={formData.stockQuantity}
-                    onChange={(e) => setFormData(prev => ({ ...prev, stockQuantity: e.target.value }))}
-                    className="form-input"
-                    required
-                  />
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                    className="form-checkbox"
-                  />
-                  <label htmlFor="isActive" className="ml-2 text-sm font-medium text-gray-700">
-                    Produit actif
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isFeatured"
-                    checked={formData.isFeatured}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
-                    className="form-checkbox"
-                  />
-                  <label htmlFor="isFeatured" className="ml-2 text-sm font-medium text-gray-700">
-                    Produit vedette
-                  </label>
-                </div>
-              </div>
-
-              {/* Image Upload */}
               <div>
-                <label className="form-label">Images du produit</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                  <div className="text-center">
-                    <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="mt-4">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="btn-primary"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Télécharger images
-                      </button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </div>
-                    <p className="mt-2 text-sm text-gray-500">
-                      PNG, JPG, GIF jusqu'à 10MB chacune
-                    </p>
-                  </div>
-                  
-                  {/* Image Preview */}
-                  {uploadedImages.length > 0 && (
-                    <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {uploadedImages.map((image, index) => (
-                        <div key={index} className="relative group h-24">
-                          <NextImage
-                            src={getImageUrl(image)}
-                            alt={`Preview ${index + 1}`}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 200px"
-                            className="object-cover rounded-lg"
-                            priority={false}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <label className="form-label">SKU</label>
+                <input type="text" className="form-input" required
+                  value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} />
               </div>
+            </div>
 
-              {/* Features */}
+            <div>
+              <label className="form-label">Description</label>
+              <textarea className="form-input h-24"
+                value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="form-label">Caractéristiques</label>
-                <div className="space-y-2">
-                  {formData.features.map((feature, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={feature}
-                        onChange={(e) => handleFeatureChange(index, e.target.value)}
-                        placeholder="Caractéristique..."
-                        className="form-input flex-1"
-                      />
-                      {formData.features.length > 1 && (
+                <label className="form-label">Prix</label>
+                <input type="number" className="form-input" required min="0" step="0.01"
+                  value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} />
+              </div>
+              <div>
+                <label className="form-label">Prix Promo</label>
+                <input type="number" className="form-input" min="0" step="0.01"
+                  value={formData.salePrice} onChange={e => setFormData({ ...formData, salePrice: e.target.value })} />
+              </div>
+              <div>
+                <label className="form-label">Stock</label>
+                <input type="number" className="form-input" required min="0"
+                  value={formData.stockQuantity} onChange={e => setFormData({ ...formData, stockQuantity: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="form-label">Catégorie</label>
+                <select className="form-input" required
+                  value={formData.categoryId} onChange={e => setFormData({ ...formData, categoryId: e.target.value })}>
+                  <option value="">Sélectionner...</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="form-label">Fabricant</label>
+                <select className="form-input"
+                  value={formData.manufacturerId} onChange={e => setFormData({ ...formData, manufacturerId: e.target.value })}>
+                  <option value="">Aucun</option>
+                  {manufacturers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Image Upload Section */}
+            <div>
+              <label className="form-label mb-2">Images du produit</label>
+              <div className="flex flex-col gap-4">
+                <label className={`btn-secondary cursor-pointer inline-flex items-center w-fit ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploading ? 'Téléchargement...' : 'Ajouter des images'}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                  />
+                </label>
+
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {uploadedImages.map((url, idx) => (
+                      <div key={idx} className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                        <NextImage
+                          src={getImageUrl(url)}
+                          alt={`Image ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                        />
                         <button
                           type="button"
-                          onClick={() => handleRemoveFeature(index)}
-                          className="p-2 text-red-500 hover:text-red-700"
+                          onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="w-3 h-3" />
                         </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleAddFeature}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
-                    + Ajouter caractéristique
-                  </button>
-                </div>
-              </div>
-
-              {/* Specifications */}
-              <div>
-                <label className="form-label">Spécifications techniques</label>
-                <div className="space-y-2">
-                  {Object.entries(formData.specifications).length === 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        placeholder="Nom de la spécification..."
-                        className="form-input"
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            setFormData(prev => ({
-                              ...prev,
-                              specifications: { [e.target.value]: '' }
-                            }))
-                          }
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Valeur..."
-                        className="form-input"
-                        disabled
-                      />
-                    </div>
-                  ) : (
-                    Object.entries(formData.specifications).map(([key, value], index) => (
-                      <div key={index} className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          value={key}
-                          onChange={(e) => handleSpecificationChange(key, e.target.value, value)}
-                          placeholder="Nom de la spécification..."
-                          className="form-input"
-                        />
-                        <input
-                          type="text"
-                          value={value}
-                          onChange={(e) => handleSpecificationChange(key, key, e.target.value)}
-                          placeholder="Valeur..."
-                          className="form-input"
-                        />
+                        {idx === 0 && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 text-center">
+                            Principale
+                          </div>
+                        )}
                       </div>
-                    ))
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleAddSpecification}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
-                    + Ajouter spécification
-                  </button>
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* Form Actions */}
-              <div className="flex justify-end space-x-4 pt-6 border-t">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="btn-secondary"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                >
-                  {editingProduct ? 'Mettre à jour' : 'Créer le produit'}
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} />
+                Actif
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={formData.isFeatured} onChange={e => setFormData({ ...formData, isFeatured: e.target.checked })} />
+                Mis en avant
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={resetForm} className="btn-secondary">Annuler</button>
+              <button type="submit" className="btn-primary" disabled={uploading}>
+                {uploading ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Products List */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-lg font-semibold">Liste des Produits ({filteredProducts.length})</h3>
-        </div>
-        <div className="card-body p-0">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12 bg-red-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-red-700">Erreur de chargement</h3>
-              <p className="text-red-500 mt-2">{error}</p>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Réessayer
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Produit
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Catégorie
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Prix
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Statut
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-12 w-12">
-                            {product.images && product.images.length > 0 ? (
-                              <>
-                                <NextImage
-                                  src={getImageUrl(product.images[0])}
-                                  alt={product.name}
-                                  width={48}
-                                  height={48}
-                                  className="rounded-lg object-cover"
-                                  onError={(e) => {
-                                    const wrapper = (e.currentTarget.parentElement as HTMLElement | null)
-                                    if (wrapper) {
-                                      wrapper.style.display = 'none'
-                                      const fallback = wrapper.nextElementSibling as HTMLElement | null
-                                      fallback?.classList.remove('hidden')
-                                    }
-                                  }}
-                                  priority={false}
-                                />
-                                <div className="hidden h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
-                                  <ImageIcon className="h-6 w-6 text-gray-400" />
-                                </div>
-                              </>
-                            ) : null}
-                            <div className={`h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center ${product.images && product.images.length > 0 ? 'hidden' : ''}`}>
-                              <ImageIcon className="h-6 w-6 text-gray-400" />
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {product.name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {product.brand}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {categories.find(c => c.value === product.category)?.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {product.price.toLocaleString()} DA
-                        </div>
-                        {product.originalPrice && (
-                          <div className="text-sm text-gray-500 line-through">
-                            {product.originalPrice.toLocaleString()} DA
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {product.stockQuantity} unités
-                        </div>
-                        <div className={`text-xs ${
-                          product.inStock ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {product.inStock ? 'En stock' : 'Rupture'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col space-y-1">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={product.isActive}
-                              onChange={() => toggleProductStatus(product.id, 'isActive')}
-                              className="form-checkbox h-3 w-3"
-                            />
-                            <span className="ml-1 text-xs text-gray-600">Actif</span>
-                          </label>
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={product.isFeatured}
-                              onChange={() => toggleProductStatus(product.id, 'isFeatured')}
-                              className="form-checkbox h-3 w-3"
-                            />
-                            <span className="ml-1 text-xs text-gray-600">Vedette</span>
-                          </label>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Modifier"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Supprimer"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+      {/* Products Table */}
+      <div className="card overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr><td colSpan={6} className="text-center py-4">Chargement...</td></tr>
+            ) : filteredProducts.length === 0 ? (
+              <tr><td colSpan={6} className="text-center py-4">Aucun produit trouvé</td></tr>
+            ) : (
+              filteredProducts.map((product) => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 flex-shrink-0">
+                        <NextImage
+                          src={getImageUrl(product.product_images?.[0]?.url || '')}
+                          alt={product.name}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                        <div className="text-sm text-gray-500">{product.sku}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.category?.name || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.price} DA
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.stock_quantity}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                      {product.is_active ? 'Actif' : 'Inactif'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button onClick={() => handleEdit(product)} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   )

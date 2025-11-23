@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { AlertTriangle, Package, TrendingDown, TrendingUp, Search } from 'lucide-react'
-import { api } from '@/lib/api'
+import { createClient } from '@/lib/supabase/client'
 
+// Types matching Supabase schema
 interface InventoryAlert {
   id: string
-  productName: string
-  productId: string
-  currentStock: number
-  minimumStock: number
+  name: string
+  stock: number
+  min_stock: number
   status: 'LOW_STOCK' | 'OUT_OF_STOCK' | 'CRITICAL'
 }
 
@@ -20,32 +20,61 @@ export function InventoryManagement() {
   const [filter, setFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    fetchInventoryAlerts()
-  }, [])
+  const supabase = createClient()
 
   const fetchInventoryAlerts = async () => {
     setLoading(true)
     setError(null)
     try {
-      const result: any = await api.get('/admin/inventory/alerts')
-      const responseData = result.data || result
-      setAlerts(responseData.alerts || responseData || [])
+      // Fetch products where stock <= min_stock
+      // Note: Supabase doesn't support direct field comparison in .filter() (e.g. stock <= min_stock) easily without RPC
+      // So we fetch all products and filter in JS for now, or use a View.
+      // For efficiency in large DBs, a View or RPC is better.
+      // Here we will fetch all products and filter client-side for simplicity in migration.
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, stock, min_stock')
+        .order('stock', { ascending: true })
+
+      if (error) throw error
+
+      const inventoryAlerts: InventoryAlert[] = (data || [])
+        .filter(p => p.stock <= p.min_stock)
+        .map(p => {
+          let status: InventoryAlert['status'] = 'LOW_STOCK'
+          if (p.stock === 0) status = 'OUT_OF_STOCK'
+          else if (p.stock <= p.min_stock / 2) status = 'CRITICAL'
+
+          return {
+            id: p.id,
+            name: p.name,
+            stock: p.stock,
+            min_stock: p.min_stock,
+            status
+          }
+        })
+
+      setAlerts(inventoryAlerts)
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch inventory alerts')
       console.error('Error fetching inventory alerts:', err)
+      setError(err.message || 'Failed to fetch inventory alerts')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchInventoryAlerts()
+  }, [])
+
   const filteredAlerts = alerts.filter(alert => {
-    const matchesFilter = !filter || 
+    const matchesFilter = !filter ||
       (filter === 'low-stock' && alert.status === 'LOW_STOCK') ||
       (filter === 'out-of-stock' && alert.status === 'OUT_OF_STOCK') ||
       (filter === 'critical' && alert.status === 'CRITICAL')
-    const matchesSearch = !searchQuery || 
-      alert.productName.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = !searchQuery ||
+      alert.name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
@@ -98,7 +127,7 @@ export function InventoryManagement() {
               className="form-input pl-10 w-64"
             />
           </div>
-          <select 
+          <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="form-input w-auto"
@@ -158,15 +187,15 @@ export function InventoryManagement() {
 
       {/* Inventory Alerts Banner */}
       {alerts.length > 0 && (
-        <div className="bg-warning-50 border border-warning-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center">
-            <AlertTriangle className="w-5 h-5 text-warning-600 mr-2" />
-            <span className="text-warning-800 font-medium">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
+            <span className="text-yellow-800 font-medium">
               {alerts.length} product{alerts.length !== 1 ? 's' : ''} {alerts.length !== 1 ? 'require' : 'requires'} attention
             </span>
-            <button 
+            <button
               onClick={fetchInventoryAlerts}
-              className="ml-auto text-warning-600 hover:text-warning-800 text-sm font-medium"
+              className="ml-auto text-yellow-600 hover:text-yellow-800 text-sm font-medium"
             >
               Refresh
             </button>
@@ -212,52 +241,37 @@ export function InventoryManagement() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Current Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Minimum Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock Deficit
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Minimum Stock</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Deficit</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredAlerts.map((alert) => {
-                    const deficit = alert.minimumStock - alert.currentStock
+                    const deficit = alert.min_stock - alert.stock
                     return (
                       <tr key={alert.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {getStatusIcon(alert.status)}
                             <div className="ml-3">
-                              <div className="text-sm font-medium text-gray-900">
-                                {alert.productName}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                ID: {alert.productId.substring(0, 8)}
-                              </div>
+                              <div className="text-sm font-medium text-gray-900">{alert.name}</div>
+                              <div className="text-sm text-gray-500">ID: {alert.id.substring(0, 8)}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`text-sm font-semibold ${
-                            alert.currentStock === 0 ? 'text-red-600' : 
-                            alert.currentStock <= alert.minimumStock ? 'text-yellow-600' : 
-                            'text-gray-900'
-                          }`}>
-                            {alert.currentStock} units
+                          <span className={`text-sm font-semibold ${alert.stock === 0 ? 'text-red-600' :
+                              alert.stock <= alert.min_stock ? 'text-yellow-600' :
+                                'text-gray-900'
+                            }`}>
+                            {alert.stock} units
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {alert.minimumStock} units
+                          {alert.min_stock} units
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(alert.status)}`}>

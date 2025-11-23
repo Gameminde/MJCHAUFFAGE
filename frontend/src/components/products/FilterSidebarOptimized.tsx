@@ -3,7 +3,7 @@ import { X, SlidersHorizontal, Wrench, Info } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
-import { api } from '@/lib/api';
+import { createClient } from '@/lib/supabase/client';
 
 export type FilterValues = {
   search?: string;
@@ -19,7 +19,7 @@ export type FilterValues = {
   boilerModelId?: string; // Compatibility filter
 };
 
-type ListItem = { id: string; name: string; slug?: string; productCount?: number };
+type ListItem = { id: string; name: string; slug?: string; productCount?: number; children?: ListItem[]; parentId?: string };
 type BoilerModel = { id: string; name: string; series?: string; type?: string };
 
 type Props = {
@@ -49,6 +49,7 @@ export default function FilterSidebarOptimized({
   onClose,
 }: Props) {
   const isArabic = locale === "ar";
+  const supabase = createClient();
   const [localPriceRange, setLocalPriceRange] = useState({
     min: value.minPrice?.toString() || '',
     max: value.maxPrice?.toString() || '',
@@ -81,9 +82,16 @@ export default function FilterSidebarOptimized({
     const fetchModels = async () => {
       setLoadingModels(true);
       try {
-        const result = await api.get(`/boilers/models?manufacturerId=${selectedBoilerBrand}`) as any;
-        if (result.data?.success) {
-          setBoilerModels(result.data.data);
+        const { data, error } = await supabase
+          .from('boiler_models')
+          .select('id, name, series, type')
+          .eq('manufacturer_id', selectedBoilerBrand)
+          .eq('is_active', true)
+          .order('name');
+
+        if (error) throw error;
+        if (data) {
+          setBoilerModels(data);
         }
       } catch (error) {
         console.error('Failed to fetch boiler models', error);
@@ -174,7 +182,7 @@ export default function FilterSidebarOptimized({
               {isArabic ? 'البحث عن قطعة متوافقة' : 'Trouver ma pièce'}
             </h4>
           </div>
-          
+
           <div className="space-y-3">
             {/* Brand Select */}
             <div>
@@ -208,8 +216,8 @@ export default function FilterSidebarOptimized({
                 className="w-full text-sm rounded-lg border-orange-200 focus:border-orange-500 focus:ring-orange-200 bg-white disabled:opacity-50 disabled:bg-neutral-100"
               >
                 <option value="">
-                  {loadingModels 
-                    ? (isArabic ? 'جاري التحميل...' : 'Chargement...') 
+                  {loadingModels
+                    ? (isArabic ? 'جاري التحميل...' : 'Chargement...')
                     : (isArabic ? 'اختر الموديل...' : 'Choisir le modèle...')}
                 </option>
                 {boilerModels.map(m => (
@@ -221,41 +229,70 @@ export default function FilterSidebarOptimized({
             </div>
 
             {value.boilerModelId && (
-               <div className="flex items-start gap-2 p-2 bg-green-50 rounded text-xs text-green-700 border border-green-100">
-                 <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                 <span>
-                   {isArabic 
-                     ? 'يتم عرض القطع المتوافقة مع هذا الجهاز فقط.' 
-                     : 'Affichage des pièces 100% compatibles.'}
-                 </span>
-               </div>
+              <div className="flex items-start gap-2 p-2 bg-green-50 rounded text-xs text-green-700 border border-green-100">
+                <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <span>
+                  {isArabic
+                    ? 'يتم عرض القطع المتوافقة مع هذا الجهاز فقط.'
+                    : 'Affichage des pièces 100% compatibles.'}
+                </span>
+              </div>
             )}
           </div>
         </div>
 
         <hr className="border-neutral-100" />
 
-        {/* Categories */}
+        {/* Categories (Hierarchical) */}
         <div>
           <h4 className="font-medium text-neutral-900 mb-3">
             {isArabic ? 'نوع القطعة (الفئة)' : 'Type de pièce (Catégorie)'}
           </h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-200">
+          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-200">
             {categories.map((category) => (
-              <label key={category.id} className="flex items-center gap-3 cursor-pointer hover:bg-neutral-50 p-2 rounded transition-colors">
-                <input
-                  type="checkbox"
-                  checked={value.categories?.includes(category.id) || false}
-                  onChange={() => update({
-                    categories: toggleArrayValue(value.categories, category.id)
-                  })}
-                  className="w-4 h-4 text-orange-600 bg-neutral-100 border-neutral-300 rounded focus:ring-orange-500"
-                />
-                <span className="text-sm text-neutral-700 flex-1">{category.name}</span>
-                <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded-full">
-                  {category.productCount || 0}
-                </span>
-              </label>
+              <div key={category.id}>
+                {/* Parent Category */}
+                <label className="flex items-center gap-2 cursor-pointer hover:bg-neutral-50 p-2 rounded transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={value.categories?.includes(category.id) || false}
+                    onChange={() => update({
+                      categories: toggleArrayValue(value.categories, category.id)
+                    })}
+                    className="w-4 h-4 text-orange-600 bg-neutral-100 border-neutral-300 rounded focus:ring-orange-500"
+                  />
+                  <span className="text-sm font-semibold text-neutral-800 flex-1">{category.name}</span>
+                  {category.productCount !== undefined && (
+                    <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded-full">
+                      {category.productCount}
+                    </span>
+                  )}
+                </label>
+                
+                {/* Subcategories */}
+                {category.children && category.children.length > 0 && (
+                  <div className="ml-6 mt-1 space-y-1 border-l-2 border-neutral-100 pl-3">
+                    {category.children.map((subcategory) => (
+                      <label key={subcategory.id} className="flex items-center gap-2 cursor-pointer hover:bg-orange-50 p-1.5 rounded transition-colors text-sm">
+                        <input
+                          type="checkbox"
+                          checked={value.categories?.includes(subcategory.id) || false}
+                          onChange={() => update({
+                            categories: toggleArrayValue(value.categories, subcategory.id)
+                          })}
+                          className="w-3.5 h-3.5 text-orange-600 bg-neutral-100 border-neutral-300 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-neutral-700 flex-1">{subcategory.name}</span>
+                        {subcategory.productCount !== undefined && (
+                          <span className="text-xs text-neutral-400">
+                            {subcategory.productCount}
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -345,7 +382,7 @@ export default function FilterSidebarOptimized({
                 viewBox="0 0 12 12"
                 fill="none"
               >
-                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <span className="text-sm text-neutral-700 group-hover:text-neutral-900">
@@ -366,7 +403,7 @@ export default function FilterSidebarOptimized({
                 viewBox="0 0 12 12"
                 fill="none"
               >
-                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <span className="text-sm text-neutral-700 group-hover:text-neutral-900">

@@ -1,150 +1,65 @@
 import { cache } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import type { Product } from '@/services/productService';
-import { config } from './config';
 
-const DEFAULT_TIMEOUT = 5000;
-
-// Use centralized config for SSR API URL
-const API_URL = config.api.ssrBaseURL;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
+);
 
 const normalizeImageUrl = (img: any): string => {
-  const src = typeof img === 'string' ? img : img?.url;
-
-  // ✅ Retourner placeholder si pas d'image
-  if (!src) return '/placeholder-product.svg';
-
-  // ✅ Si déjà une URL absolue, retourner tel quel
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
-  }
-
-  // ✅ Décoder les entités HTML
-  let decodedSrc = src;
-  if (src.includes('&#x')) {
-    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-      const textarea = document.createElement('textarea');
-      textarea.innerHTML = src;
-      decodedSrc = textarea.value;
-    } else {
-      // Server-side decode for common entities
-      decodedSrc = src
-        .replace(/&#x2F;/g, '/')  // &#x2F; -> /
-        .replace(/&amp;/g, '&')  // &amp; -> &
-        .replace(/&lt;/g, '<')   // &lt; -> <
-        .replace(/&gt;/g, '>')   // &gt; -> >
-        .replace(/&quot;/g, '"') // &quot; -> "
-        .replace(/&#39;/g, "'"); // &#39; -> '
-    }
-  }
-
-  // ✅ Nettoyer les doubles /files/
-  let cleanSrc = decodedSrc;
-  if (cleanSrc.includes('/files//files/')) {
-    cleanSrc = cleanSrc.replace('/files//files/', '/files/');
-  }
-
-  // ✅ Si déjà un chemin /files/, retourner tel quel
-  if (cleanSrc.startsWith('/files/')) {
-    return cleanSrc;
-  }
-
-  // ✅ Pour les autres chemins, ajouter /files/ si nécessaire
-  const path = cleanSrc.startsWith('/') ? cleanSrc : `/${cleanSrc}`;
-  return path.startsWith('/files/') ? path : `/files${path}`;
+  if (typeof img === 'string') return img;
+  return img?.url || '/placeholder-product.svg';
 };
-
-type ApiResponse<T> = {
-  success: boolean;
-  data: T;
-};
-
-type ProductsApiResponse = ApiResponse<{
-  products?: Record<string, any>[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  total?: number;
-  hasMore?: boolean;
-}>;
-
-type ProductDetailApiResponse = ApiResponse<{
-  product?: Record<string, any>;
-}>;
-
-type CategoriesApiResponse = ApiResponse<{
-  categories?: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    description?: string | null;
-    image?: string | null;
-    productCount?: number;
-    sortOrder?: number;
-  }>;
-}>;
 
 const toNumber = (v: any): number => {
   if (v === null || v === undefined) return 0;
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') return parseFloat(v);
-  // Prisma Decimal or other objects
-  if (typeof v === 'object' && 'toString' in v) {
-    const s = (v as any).toString();
-    const n = parseFloat(s);
-    return isNaN(n) ? 0 : n;
-  }
   return Number(v) || 0;
 };
 
-const convertApiProduct = (product: Record<string, any>): Product => ({
+// Normalize search text by removing accents for fuzzy matching
+const normalizeSearchText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+};
+
+const convertSupabaseProduct = (product: any): Product => ({
   id: product.id,
   name: product.name,
-  slug:
-    product.slug ??
-    product.name?.toLowerCase?.().replace?.(/\s+/g, '-') ??
-    product.id,
-  sku: product.sku ?? `SKU-${product.id}`,
-  description: product.description ?? null,
-  shortDescription: product.shortDescription ?? null,
+  slug: product.slug || product.id,
+  sku: product.sku || `SKU-${product.id}`,
+  description: product.description,
+  shortDescription: product.short_description,
   price: toNumber(product.price),
-  salePrice:
-    product.salePrice !== undefined && product.salePrice !== null
-      ? toNumber(product.salePrice)
-      : null,
-  stockQuantity: toNumber(product.stockQuantity),
-  weight:
-    product.weight !== undefined && product.weight !== null
-      ? toNumber(product.weight)
-      : null,
-  dimensions: product.dimensions ?? null,
-  specifications: product.specifications ?? {},
-  features: Array.isArray(product.features) ? product.features : [],
-  images: Array.isArray(product.images)
-    ? product.images.map((img: any) => ({
-        id: img?.id ?? Math.random().toString(),
-        url: normalizeImageUrl(img),
-        altText: typeof img === 'object' ? img?.altText ?? null : null,
-      }))
-    : [],
+  salePrice: product.sale_price ? toNumber(product.sale_price) : null,
+  stockQuantity: toNumber(product.stock_quantity),
+  weight: product.weight ? toNumber(product.weight) : null,
+  dimensions: product.dimensions,
+  specifications: product.specifications || {},
+  features: product.features || [],
+  images: (product.product_images || []).map((img: any) => ({
+    id: img.id,
+    url: normalizeImageUrl(img.url),
+    altText: img.alt_text
+  })),
   category: {
-    id: product.category?.id ?? product.categoryId ?? 'unknown',
-    name: product.category?.name ?? 'Unknown Category',
-    slug: product.category?.slug ?? 'unknown',
+    id: product.category?.id || 'unknown',
+    name: product.category?.name || 'Unknown Category',
+    slug: product.category?.slug || 'unknown',
   },
   manufacturer: product.manufacturer
     ? {
-        id: product.manufacturer.id,
-        name: product.manufacturer.name,
-        slug: product.manufacturer.slug,
-      }
+      id: product.manufacturer.id,
+      name: product.manufacturer.name,
+      slug: product.manufacturer.slug,
+    }
     : null,
-  isFeatured: Boolean(product.isFeatured),
-  isActive: product.isActive !== false,
-  createdAt: product.createdAt ?? new Date().toISOString(),
-  updatedAt: product.updatedAt ?? new Date().toISOString(),
+  isFeatured: Boolean(product.is_featured),
+  isActive: product.is_active !== false,
+  createdAt: product.created_at,
+  updatedAt: product.updated_at,
 });
 
 export const FALLBACKS = {
@@ -153,224 +68,248 @@ export const FALLBACKS = {
     pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
   },
   categories: {
-    categories: [] as CategoriesApiResponse['data']['categories'],
+    categories: [] as any[],
   },
 };
 
-export const fetchSSR = cache(
-  async <T>(
-    endpoint: string,
-    init?: RequestInit & { timeout?: number },
-  ): Promise<T | null> => {
-    const controller = new AbortController();
-    const timeout = init?.timeout ?? DEFAULT_TIMEOUT;
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+export const fetchProductsSSR = cache(async (page = 1, limit = 20) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
-    try {
-      // API_URL already includes /api/v1 from config
-      const url = `${API_URL}${endpoint}`;
+  try {
+    const { data, count, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(*),
+        manufacturer:manufacturers(*),
+        product_images(*)
+      `, { count: 'exact' })
+      .range(from, to);
 
-      const response = await fetch(url, {
-        ...init,
-        signal: controller.signal,
-        next: init?.next,
-      });
+    if (error) throw error;
 
-      if (!response.ok) {
-        throw new Error(
-          `API error ${response.status}: ${response.statusText}`,
-        );
+    return {
+      products: (data || []).map(convertSupabaseProduct),
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
       }
-
-      return (await response.json()) as T;
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : JSON.stringify(error);
-
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`[SSR] Fetch failed (${endpoint}): ${message}`);
-      }
-
-      return null;
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  },
-);
-
-export async function fetchProductsSSR(
-  page = 1,
-  limit = 20,
-): Promise<{
-  products: Product[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}> {
-  const fallback = FALLBACKS.products;
-  const data = await fetchSSR<ProductsApiResponse>(
-    `/products?page=${page}&limit=${limit}&include=images,category,manufacturer`,
-    {
-      cache: 'no-store',
-    },
-  );
-
-  if (!data || !data.success) {
-    return fallback;
+    };
+  } catch (error) {
+    console.error('Error fetching products SSR:', error);
+    return FALLBACKS.products;
   }
+});
 
-  const pagination = (
-    data.data.pagination ?? {
-      page,
-      limit,
-      total: data.data.total ?? data.data.products?.length ?? 0,
-      totalPages:
-        data.data.total !== undefined
-          ? Math.ceil(data.data.total / limit)
-          : data.data.products
-          ? Math.ceil(data.data.products.length / limit)
-          : 0,
+export const fetchCategoriesSSR = cache(async (includeInactive = false) => {
+  try {
+    let query = supabase
+      .from('categories')
+      .select('*');
+    
+    if (!includeInactive) {
+      query = query.eq('is_active', true);
     }
-  ) as {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+    
+    const { data, error } = await query.order('sort_order').order('name');
 
-  return {
-    products: Array.isArray(data.data.products)
-      ? data.data.products.map(convertApiProduct)
-      : fallback.products,
-    pagination,
-  };
-}
+    if (error) throw error;
 
-export async function fetchCategoriesSSR() {
-  const data = await fetchSSR<CategoriesApiResponse>(
-    '/products/categories',
-    {
-      next: { revalidate: 7200 },
-    },
-  );
+    // Get product counts per category
+    const { data: productCounts } = await supabase
+      .from('products')
+      .select('category_id')
+      .eq('is_active', true);
 
-  if (!data || !data.success) {
+    const countMap = new Map<string, number>();
+    productCounts?.forEach(p => {
+      if (p.category_id) {
+        countMap.set(p.category_id, (countMap.get(p.category_id) || 0) + 1);
+      }
+    });
+
+    // Organize categories hierarchically
+    const categoriesMap = new Map(data.map(c => [c.id, { ...c, children: [] as any[] }]));
+    const rootCategories: any[] = [];
+    
+    data.forEach(cat => {
+      const category = categoriesMap.get(cat.id);
+      if (cat.parent_id && categoriesMap.has(cat.parent_id)) {
+        categoriesMap.get(cat.parent_id)!.children.push(category);
+      } else {
+        rootCategories.push(category);
+      }
+    });
+
+    return {
+      categories: rootCategories.map(c => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description,
+        image: c.image,
+        parentId: c.parent_id,
+        children: c.children.map((child: any) => ({
+          id: child.id,
+          name: child.name,
+          slug: child.slug,
+          description: child.description,
+          parentId: child.parent_id,
+          productCount: countMap.get(child.id) || 0
+        })),
+        productCount: countMap.get(c.id) || 0
+      })),
+      allCategories: data.map(c => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        parentId: c.parent_id,
+        sortOrder: c.sort_order
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching categories SSR:', error);
     return FALLBACKS.categories;
   }
+});
 
-  return {
-    categories: data.data.categories ?? FALLBACKS.categories.categories,
-  };
-}
-
-export async function fetchProductDetailSSR(id: string): Promise<Product | null> {
-  const data = await fetchSSR<ProductDetailApiResponse>(`/products/${id}`);
-
-  if (!data || !data.success || !data.data.product) {
+export const fetchProductDetailSSR = cache(async (id: string): Promise<Product | null> => {
+  // Validate UUID format to prevent PostgreSQL errors
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
     return null;
   }
 
-  return convertApiProduct(data.data.product);
-}
-// Helper: build query string from params (supports arrays)
-function buildQueryString(params: Record<string, any>): string {
-  const q = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === '') return;
-    if (Array.isArray(value)) {
-      value.filter(Boolean).forEach((v) => q.append(key, String(v)));
-    } else {
-      q.append(key, String(value));
-    }
-  });
-  return q.toString();
-}
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(*),
+        manufacturer:manufacturers(*),
+        product_images(*)
+      `)
+      .eq('id', id)
+      .single();
 
-export async function fetchProductsSSRWithParams(
-  params: Record<string, any> = {},
-): Promise<{
-  products: Product[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}> {
+    if (error) throw error;
+    if (!data) return null;
+
+    return convertSupabaseProduct(data);
+  } catch (error) {
+    console.error('Error fetching product detail SSR:', error);
+    return null;
+  }
+});
+
+export const fetchProductsSSRWithParams = cache(async (params: Record<string, any> = {}) => {
   const page = Number(params.page ?? 1) || 1;
   const limit = Number(params.limit ?? 20) || 20;
-  const fallback = FALLBACKS.products;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
-  const query = buildQueryString({
-    page,
-    limit,
-    search: params.search,
-    category: params.category, // single category
-    categories: params.categories, // multi categories[]
-    manufacturer: params.manufacturer, // single manufacturer
-    manufacturers: params.manufacturers, // multi manufacturers[]
-    minPrice: params.minPrice,
-    maxPrice: params.maxPrice,
-    inStock: params.inStock,
-    featured: params.featured,
-    sortBy: params.sortBy,
-    sortOrder: params.sortOrder,
-    include: 'images,category,manufacturer', // Always include related data
-  });
+  try {
+    let query = supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(*),
+        manufacturer:manufacturers(*),
+        product_images(*)
+      `, { count: 'exact' });
 
-  const data = await fetchSSR<ProductsApiResponse>(`/products?${query}`, {
-    cache: 'no-store',
-  });
-
-  if (!data || !data.success) {
-    return fallback;
-  }
-
-  const pagination = (
-    data.data.pagination ?? {
-      page,
-      limit,
-      total: data.data.total ?? data.data.products?.length ?? 0,
-      totalPages:
-        data.data.total !== undefined
-          ? Math.ceil((data.data.total as number) / limit)
-          : data.data.products
-          ? Math.ceil((data.data.products.length as number) / limit)
-          : 0,
+    if (params.search) {
+      // Support fuzzy search with and without accents
+      const normalizedSearch = normalizeSearchText(params.search);
+      // Use OR to search both original and normalized text
+      query = query.or(`name.ilike.%${params.search}%,name.ilike.%${normalizedSearch}%`);
     }
-  ) as { page: number; limit: number; total: number; totalPages: number };
+    
+    // Handle categories filter (can be single ID or comma-separated IDs)
+    if (params.categories) {
+      const categoryIds = typeof params.categories === 'string' 
+        ? params.categories.split(',').filter(Boolean)
+        : params.categories;
+      if (categoryIds.length > 0) {
+        query = query.in('category_id', categoryIds);
+      }
+    }
+    
+    // Handle manufacturers filter (can be single ID or comma-separated IDs)
+    if (params.manufacturers) {
+      const manufacturerIds = typeof params.manufacturers === 'string'
+        ? params.manufacturers.split(',').filter(Boolean)
+        : params.manufacturers;
+      if (manufacturerIds.length > 0) {
+        query = query.in('manufacturer_id', manufacturerIds);
+      }
+    }
+    
+    if (params.minPrice) query = query.gte('price', params.minPrice);
+    if (params.maxPrice) query = query.lte('price', params.maxPrice);
+    if (params.inStock) query = query.gt('stock_quantity', 0);
+    if (params.featured) query = query.eq('is_featured', true);
 
-  return {
-    products: Array.isArray(data.data.products)
-      ? (data.data.products as Record<string, any>[]).map(convertApiProduct)
-      : fallback.products,
-    pagination,
-  };
-}
-export async function fetchManufacturersSSR(): Promise<{
-  manufacturers: Array<{ id: string; name: string; slug: string; productCount?: number }>
-}> {
-  type ManufacturersApiResponse = ApiResponse<{
-    manufacturers?: Array<{ id: string; name: string; slug: string; _count?: { products: number } }>
-  }>;
+    // Sorting
+    if (params.sortBy === 'price') {
+      query = query.order('price', { ascending: params.sortOrder === 'asc' });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
 
-  const data = await fetchSSR<ManufacturersApiResponse>('/products/manufacturers', {
-    next: { revalidate: 7200 },
-  });
+    const { data, count, error } = await query.range(from, to);
 
-  if (!data || !data.success) {
+    if (error) throw error;
+
+    return {
+      products: (data || []).map(convertSupabaseProduct),
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching products with params SSR:', error);
+    return FALLBACKS.products;
+  }
+});
+
+export const fetchManufacturersSSR = cache(async () => {
+  try {
+    const { data, error } = await supabase
+      .from('manufacturers')
+      .select('*');
+
+    if (error) throw error;
+
+    // Get product counts per manufacturer
+    const { data: productCounts } = await supabase
+      .from('products')
+      .select('manufacturer_id')
+      .eq('is_active', true);
+
+    const countMap = new Map<string, number>();
+    productCounts?.forEach(p => {
+      if (p.manufacturer_id) {
+        countMap.set(p.manufacturer_id, (countMap.get(p.manufacturer_id) || 0) + 1);
+      }
+    });
+
+    return {
+      manufacturers: data.map(m => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        productCount: countMap.get(m.id) || 0
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching manufacturers SSR:', error);
     return { manufacturers: [] };
   }
-
-  const list = (data.data.manufacturers ?? []).map((m) => ({
-    id: m.id,
-    name: m.name,
-    slug: m.slug,
-    productCount: m._count?.products ?? undefined,
-  }));
-
-  return { manufacturers: list };
-}
+});

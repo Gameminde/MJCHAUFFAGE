@@ -1,14 +1,11 @@
-/**
- * Checkout Integration Test
- * Tests the complete checkout flow for cash on delivery orders
- */
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock fetch for API calls
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('Checkout Integration', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should create order with valid checkout data', async () => {
@@ -129,7 +126,7 @@ describe('Checkout Integration', () => {
     }
 
     const errors = validateCheckoutData(incompleteData)
-    
+
     expect(errors).toContain('First name is required')
     expect(errors).toContain('Phone is required')
     expect(errors).toContain('Street address is required')

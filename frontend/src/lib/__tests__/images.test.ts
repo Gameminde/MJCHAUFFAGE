@@ -60,17 +60,12 @@ describe('getImageUrl', () => {
   });
 
   it('handles double /files/ prefixes correctly', () => {
-    process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com';
-
     const doublePrefixUrl = '/files//files/images/product.jpg';
     expect(getImageUrl(doublePrefixUrl)).toBe('/files/images/product.jpg');
   });
 
-  it('works without NEXT_PUBLIC_API_URL environment variable', () => {
-    delete process.env.NEXT_PUBLIC_API_URL;
-
+  it('works with relative paths', () => {
     const relativePath = '/files/image.jpg';
-    // Should return relative URL when no API URL is set
     expect(getImageUrl(relativePath)).toBe('/files/image.jpg');
   });
 

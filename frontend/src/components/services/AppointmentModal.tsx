@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { X, Calendar, Clock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { X, Calendar, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { SERVICE_COVERAGE_WILAYAS } from '@/constants/locations';
 
 // Golden ratio constants
 const fibonacci = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
@@ -28,11 +30,11 @@ interface AppointmentForm {
   serviceTypeId: string;
   description: string;
   requestedDate: string;
-  requestedTime: string;
   priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
   equipmentDetails: string;
   contactName: string;
   contactPhone: string;
+  wilaya: string;
   address: string;
 }
 
@@ -42,15 +44,16 @@ const translations = {
     selectService: 'Sélectionnez un service',
     selectServicePlaceholder: 'Choisir un service...',
     date: 'Date souhaitée',
-    time: 'Heure souhaitée',
     description: 'Description du problème',
     descriptionPlaceholder: 'Décrivez votre problème en détail...',
     equipmentDetails: 'Détails de l\'équipement (optionnel)',
     equipmentPlaceholder: 'Marque, modèle, âge de l\'équipement...',
     contactName: 'Nom complet',
     contactPhone: 'Numéro de téléphone',
+    wilaya: 'Wilaya',
+    wilayaPlaceholder: 'Sélectionnez votre wilaya',
     address: 'Adresse complète',
-    addressPlaceholder: 'Wilaya, Commune, Rue...',
+    addressPlaceholder: 'Commune, Rue, N°...',
     priority: 'Priorité',
     priorities: {
       LOW: 'Basse',
@@ -77,15 +80,16 @@ const translations = {
     selectService: 'اختر خدمة',
     selectServicePlaceholder: 'اختر خدمة...',
     date: 'التاريخ المطلوب',
-    time: 'الوقت المطلوب',
     description: 'وصف المشكلة',
     descriptionPlaceholder: 'صف مشكلتك بالتفصيل...',
     equipmentDetails: 'تفاصيل المعدات (اختياري)',
     equipmentPlaceholder: 'العلامة التجارية، الطراز، عمر المعدات...',
     contactName: 'الاسم الكامل',
     contactPhone: 'رقم الهاتف',
+    wilaya: 'الولاية',
+    wilayaPlaceholder: 'اختر ولايتك',
     address: 'العنوان الكامل',
-    addressPlaceholder: 'الولاية، البلدية، الشارع...',
+    addressPlaceholder: 'البلدية، الشارع، الرقم...',
     priority: 'الأولوية',
     priorities: {
       LOW: 'منخفضة',
@@ -123,11 +127,11 @@ export default function AppointmentModal({
     serviceTypeId: selectedService?.id || '',
     description: '',
     requestedDate: '',
-    requestedTime: '',
     priority: 'NORMAL',
     equipmentDetails: '',
     contactName: '',
     contactPhone: '',
+    wilaya: '',
     address: '',
   });
 
@@ -135,32 +139,41 @@ export default function AppointmentModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<string>('idle');
-  const { data: session, status } = useSession();
-  const isAuthenticated = status === 'authenticated';
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const { user, loading } = useAuth();
+  const isAuthenticated = !!user;
+  const supabase = createClient();
 
   // Pre-fill user data if available
   useEffect(() => {
-    if (session?.user) {
+    if (user) {
+      const firstName = user.firstName || '';
+      const lastName = user.lastName || '';
+      const fullName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : '';
+
       setFormData(prev => ({
         ...prev,
-        contactName: prev.contactName || `${session.user?.name || ''}`,
-        contactPhone: prev.contactPhone || (session.user as any).phone || '',
-        address: prev.address || (session.user as any).address || '',
+        contactName: prev.contactName || fullName || user.email?.split('@')[0] || '',
+        contactPhone: prev.contactPhone || (user as any).phone || '', // Assuming phone is in user object or metadata
+        address: prev.address || (user as any).address || '',
       }));
     }
-  }, [session]);
+  }, [user]);
 
   // Fetch services if not provided
   useEffect(() => {
     const fetchServices = async () => {
       if (services.length === 0) {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/types`);
-          if (response.ok) {
-            const data = await response.json();
-            // Handle both array response and object with data property
-            const servicesList = Array.isArray(data) ? data : (data.data || []);
-            setFetchedServices(servicesList);
+          const { data, error } = await supabase
+            .from('services')
+            .select('*')
+            .eq('is_active', true);
+
+          if (error) throw error;
+
+          if (data) {
+            setFetchedServices(data);
           }
         } catch (error) {
           console.error('Failed to fetch services:', error);
@@ -171,7 +184,7 @@ export default function AppointmentModal({
     if (isOpen) {
       fetchServices();
     }
-  }, [isOpen, services.length]);
+  }, [isOpen, services.length, supabase]);
 
   // Merge passed services with fetched services, ensuring display of valid options
   const displayServices = services.length > 0 ? services : fetchedServices;
@@ -191,15 +204,16 @@ export default function AppointmentModal({
           serviceTypeId: '',
           description: '',
           requestedDate: '',
-          requestedTime: '',
           priority: 'NORMAL',
           equipmentDetails: '',
           contactName: '',
           contactPhone: '',
+          wilaya: '',
           address: '',
         });
         setErrors({});
         setSubmitStatus('idle');
+        setErrorMessage('');
       }, 300);
     }
   }, [isOpen]);
@@ -218,14 +232,14 @@ export default function AppointmentModal({
     if (!formData.requestedDate) {
       newErrors.requestedDate = t.required;
     }
-    if (!formData.requestedTime) {
-      newErrors.requestedTime = t.required;
-    }
     if (!formData.contactName) {
       newErrors.contactName = t.required;
     }
     if (!formData.contactPhone) {
       newErrors.contactPhone = t.required;
+    }
+    if (!formData.wilaya) {
+      newErrors.wilaya = t.required;
     }
     if (!formData.address) {
       newErrors.address = t.required;
@@ -242,85 +256,54 @@ export default function AppointmentModal({
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
+    setErrorMessage('');
 
     try {
-      // Combine date and time into ISO 8601 format
-      const requestedDateTime = new Date(`${formData.requestedDate}T${formData.requestedTime}`);
+      // Generate a request number
+      const requestNumber = `REQ-${Date.now()}`;
 
-      const payload = {
-        serviceTypeId: formData.serviceTypeId,
-        description: formData.description,
-        requestedDate: requestedDateTime.toISOString(),
-        priority: formData.priority,
-        equipmentDetails: formData.equipmentDetails || undefined,
-        contactName: formData.contactName,
-        contactPhone: formData.contactPhone,
-        address: formData.address,
-      };
-
-      const submitRequest = async () => {
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json',
-        };
-
-        // Add Authorization header if we have a session access token
-        const accessToken = (session?.user as any)?.accessToken;
-        if (accessToken) {
-          headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        return await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/requests`, {
-          method: 'POST',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify(payload),
+      const { error } = await supabase
+        .from('service_requests')
+        .insert({
+          request_number: requestNumber,
+          service_type_id: formData.serviceTypeId,
+          user_id: user?.id || null,
+          description: formData.description,
+          preferred_date: formData.requestedDate,
+          priority: formData.priority,
+          equipment_details: formData.equipmentDetails || null,
+          contact_name: formData.contactName,
+          contact_phone: formData.contactPhone,
+          address: `${formData.wilaya} - ${formData.address}`,
+          status: 'PENDING'
         });
-      };
 
-      let response = await submitRequest();
-
-      if (response.status === 401) {
-        // Access token might be expired, try to refresh
-        try {
-          const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
-            method: 'POST',
-            credentials: 'include',
-          });
-
-          if (refreshRes.ok) {
-            // Retry original request
-            response = await submitRequest();
-          }
-        } catch (e) {
-          console.error('Token refresh failed', e);
-        }
-      }
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Redirect to login if still unauthorized
-          window.location.href = `/${locale}/auth/login`;
-          return;
-        }
-        const errorData = await response.json();
-        
-        // Handle express-validator errors array
-        if (errorData.errors && Array.isArray(errorData.errors)) {
-          const messages = errorData.errors.map((e: any) => e.msg).join('. ');
-          throw new Error(messages);
-        }
-        
-        throw new Error(errorData.message || 'Failed to create appointment');
-      }
+      if (error) throw error;
 
       setSubmitStatus('success');
-      
+
       // Close modal after 2 seconds
       setTimeout(() => {
         onClose();
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Appointment creation error:', error);
+
+      let msg = t.errorMessage;
+      if (error?.message) {
+        msg += ` (${error.message})`;
+      }
+      if (error?.code) {
+        msg += ` [Code: ${error.code}]`;
+      }
+
+      setErrorMessage(msg);
+
+      // Show more specific error for debugging if table is missing (code 42P01)
+      if (error?.code === '42P01') {
+        alert("Configuration manquante: La table 'service_requests' n'existe pas. Veuillez contacter l'administrateur.");
+      }
+
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -396,9 +379,8 @@ export default function AppointmentModal({
                       type="text"
                       value={formData.contactName}
                       onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                        errors.contactName ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.contactName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                     {errors.contactName && (
                       <p className="mt-1 text-sm text-red-500">{errors.contactName}</p>
@@ -412,79 +394,98 @@ export default function AppointmentModal({
                       type="tel"
                       value={formData.contactPhone}
                       onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                        errors.contactPhone ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.contactPhone ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                     {errors.contactPhone && (
                       <p className="mt-1 text-sm text-red-500">{errors.contactPhone}</p>
                     )}
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    {t.address} <span className="text-orange-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder={t.addressPlaceholder}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                      errors.address ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  />
-                  {errors.address && (
-                    <p className="mt-1 text-sm text-red-500">{errors.address}</p>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {t.wilaya} <span className="text-orange-500">*</span>
+                    </label>
+                    <select
+                      value={formData.wilaya}
+                      onChange={(e) => setFormData({ ...formData, wilaya: e.target.value })}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.wilaya ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                    >
+                      <option value="">{t.wilayaPlaceholder}</option>
+                      {SERVICE_COVERAGE_WILAYAS.map((wilaya) => (
+                        <option key={wilaya.code} value={wilaya.name}>
+                          {locale === 'ar' ? wilaya.nameAr : wilaya.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.wilaya && (
+                      <p className="mt-1 text-sm text-red-500">{errors.wilaya}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {t.address} <span className="text-orange-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      placeholder={t.addressPlaceholder}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.address ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                    />
+                    {errors.address && (
+                      <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Service Selection */}
-            {!selectedService && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.selectService} <span className="text-orange-500">*</span>
-                </label>
-                <select
-                  value={formData.serviceTypeId}
-                  onChange={(e) => setFormData({ ...formData, serviceTypeId: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.serviceTypeId ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">{t.selectServicePlaceholder}</option>
-                  {displayServices.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.serviceTypeId && (
-                  <p className="mt-1 text-sm text-red-500">{errors.serviceTypeId}</p>
-                )}
-              </div>
-            )}
+              {!selectedService && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t.selectService} <span className="text-orange-500">*</span>
+                  </label>
+                  <select
+                    value={formData.serviceTypeId}
+                    onChange={(e) => setFormData({ ...formData, serviceTypeId: e.target.value })}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.serviceTypeId ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                  >
+                    <option value="">{t.selectServicePlaceholder}</option>
+                    {displayServices.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.serviceTypeId && (
+                    <p className="mt-1 text-sm text-red-500">{errors.serviceTypeId}</p>
+                  )}
+                </div>
+              )}
 
-            {/* Service Info Card - When pre-selected */}
-            {selectedServiceData && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{selectedServiceData.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{selectedServiceData.description}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">
-                      {selectedServiceData.duration} {t.minutes}
-                    </p>
+              {/* Service Info Card - When pre-selected */}
+              {selectedServiceData && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{selectedServiceData.name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{selectedServiceData.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">
+                        {selectedServiceData.duration} {t.minutes}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Date and Time - Side by side on desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Date Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <Calendar className="inline w-4 h-4 ltr:mr-1 rtl:ml-1" />
@@ -495,138 +496,116 @@ export default function AppointmentModal({
                   min={today}
                   value={formData.requestedDate}
                   onChange={(e) => setFormData({ ...formData, requestedDate: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.requestedDate ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${errors.requestedDate ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 {errors.requestedDate && (
                   <p className="mt-1 text-sm text-red-500">{errors.requestedDate}</p>
                 )}
               </div>
 
+              {/* Description */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  <Clock className="inline w-4 h-4 ltr:mr-1 rtl:ml-1" />
-                  {t.time} <span className="text-orange-500">*</span>
+                  {t.description} <span className="text-orange-500">*</span>
                 </label>
-                <input
-                  type="time"
-                  value={formData.requestedTime}
-                  onChange={(e) => setFormData({ ...formData, requestedTime: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
-                    errors.requestedTime ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.requestedTime && (
-                  <p className="mt-1 text-sm text-red-500">{errors.requestedTime}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {t.description} <span className="text-orange-500">*</span>
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t.descriptionPlaceholder}
-                rows={4}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              <div className="flex justify-between items-center mt-1">
-                {errors.description ? (
-                  <p className="text-sm text-red-500">{errors.description}</p>
-                ) : (
-                  <p className="text-xs text-gray-500">
-                    {formData.description.length} / 1000
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Equipment Details */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {t.equipmentDetails}
-              </label>
-              <textarea
-                value={formData.equipmentDetails}
-                onChange={(e) => setFormData({ ...formData, equipmentDetails: e.target.value })}
-                placeholder={t.equipmentPlaceholder}
-                rows={2}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
-              />
-            </div>
-
-            {/* Priority Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                {t.priority}
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as const).map((priority) => (
-                  <button
-                    key={priority}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, priority })}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-247 ${
-                      formData.priority === priority
-                        ? 'bg-orange-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder={t.descriptionPlaceholder}
+                  rows={4}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'
                     }`}
-                  >
-                    {t.priorities[priority]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Error Messages */}
-            {submitStatus === 'error' && (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-red-900">{t.error}</p>
-                  <p className="text-sm text-red-700">
-                    {errors.auth || t.errorMessage}
-                  </p>
+                />
+                <div className="flex justify-between items-center mt-1">
+                  {errors.description ? (
+                    <p className="text-sm text-red-500">{errors.description}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      {formData.description.length} / 1000
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
-          </form>
+
+              {/* Equipment Details */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  {t.equipmentDetails}
+                </label>
+                <textarea
+                  value={formData.equipmentDetails}
+                  onChange={(e) => setFormData({ ...formData, equipmentDetails: e.target.value })}
+                  placeholder={t.equipmentPlaceholder}
+                  rows={2}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                />
+              </div>
+
+              {/* Priority Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  {t.priority}
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as const).map((priority) => (
+                    <button
+                      key={priority}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, priority })}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-247 ${formData.priority === priority
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      {t.priorities[priority]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Error Messages */}
+              {submitStatus === 'error' && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-red-900">{t.error}</p>
+                    <p className="text-sm text-red-700">
+                      {errorMessage || errors.auth || t.errorMessage}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </form>
           )}
         </div>
 
         {/* Footer - Actions */}
         {submitStatus !== 'success' && (
-        <div className="border-t border-gray-200 px-8 py-4 bg-gray-50 flex flex-col-reverse sm:flex-row gap-3 justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-247 disabled:opacity-50"
-          >
-            {t.cancel}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting || submitStatus === 'success'}
-            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-247 flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>En cours...</span>
-              </>
-            ) : (
-              t.submit
-            )}
-          </button>
-        </div>
+          <div className="border-t border-gray-200 px-8 py-4 bg-gray-50 flex flex-col-reverse sm:flex-row gap-3 justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-247 disabled:opacity-50"
+            >
+              {t.cancel}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || submitStatus === 'success'}
+              className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-247 flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>En cours...</span>
+                </>
+              ) : (
+                t.submit
+              )}
+            </button>
+          </div>
         )}
       </div>
 

@@ -1,50 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-options'
-import { config } from '@/lib/config'
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
 
-function getBackendBase() {
-  return config.api.ssrBaseURL.replace(/\/$/, '')
-}
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const backendUrl = `${getBackendBase()}/auth/me`
-    const cookie = request.headers.get('cookie') || ''
+    const supabase = createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
 
-    // Get NextAuth session to retrieve access token for social login users
-    const session = await getServerSession(authOptions)
-    const accessToken = (session?.user as any)?.accessToken
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(cookie ? { cookie } : {}),
+    if (error || !user) {
+      return NextResponse.json({ user: null }, { status: 401 })
     }
 
-    // If we have an access token from NextAuth, add it as Bearer token
-    // This fixes the issue where social login cookies aren't set in the browser
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`
+    // Fetch full profile from users table
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      // Fallback if profile not found but user is authenticated
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.user_metadata?.role || 'CUSTOMER',
+          firstName: user.user_metadata?.first_name || '',
+          lastName: user.user_metadata?.last_name || ''
+        }
+      })
     }
 
-    const res = await fetch(backendUrl, {
-      method: 'GET',
-      headers,
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        role: profile.role,
+        phone: profile.phone,
+      }
     })
-
-    const body = await res.text()
-    const resp = new NextResponse(body || '{}', {
-      status: res.status,
-      headers: { 'Content-Type': res.headers.get('content-type') || 'application/json' },
-    })
-
-    // Forward set-cookie if any
-    const setCookie = res.headers.get('set-cookie')
-    if (setCookie) resp.headers.set('set-cookie', setCookie)
-
-    return resp
   } catch (err) {
-    console.error('Auth me proxy error:', err)
-    return NextResponse.json({ success: false, message: 'Auth me proxy failed' }, { status: 500 })
+    console.error('Auth me error:', err)
+    return NextResponse.json({ success: false, message: 'Auth me failed' }, { status: 500 })
   }
 }

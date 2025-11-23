@@ -1,8 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { config } from '@/lib/config';
-
-// API URL configuration
-const API_URL = config.api.baseURL;
+import { createClient } from '@/lib/supabase/client';
 
 // Types for analytics events
 export interface PageViewEvent {
@@ -66,12 +63,13 @@ class AnalyticsService {
   private flushInterval: NodeJS.Timeout | null = null;
   private backoffUntil: number | null = null;
   private disabled: boolean = process.env.NODE_ENV !== 'production';
+  private supabase = createClient();
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
     this.sessionStartTime = new Date();
     this.pageStartTime = new Date();
-    
+
     if (typeof window !== 'undefined') {
       // Initialize asynchronously to avoid blocking auth
       this.init().catch(error => {
@@ -112,7 +110,7 @@ class AnalyticsService {
 
   private getOrCreateSessionId(): string {
     if (typeof window === 'undefined') return uuidv4();
-    
+
     let sessionId = sessionStorage.getItem('analytics_session_id');
     if (!sessionId) {
       sessionId = uuidv4();
@@ -123,7 +121,7 @@ class AnalyticsService {
 
   private async initializeSession() {
     if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
-    
+
     const sessionData: SessionData = {
       sessionId: this.sessionId,
       userId: this.userId,
@@ -147,7 +145,7 @@ class AnalyticsService {
 
   private setupVisibilityTracking() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
-    
+
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         this.trackPageEnd();
@@ -159,7 +157,7 @@ class AnalyticsService {
 
   private setupUnloadTracking() {
     if (typeof window === 'undefined') return;
-    
+
     window.addEventListener('beforeunload', () => {
       this.trackPageEnd();
       this.flushEvents(true); // Synchronous flush on unload
@@ -181,7 +179,7 @@ class AnalyticsService {
 
   private trackPageEnd() {
     const duration = Math.round((Date.now() - this.pageStartTime.getTime()) / 1000);
-    
+
     if (duration > 0) {
       this.queueEvent('page_duration', {
         sessionId: this.sessionId,
@@ -206,36 +204,40 @@ class AnalyticsService {
 
   private async flushEvents(synchronous = false) {
     if (this.eventQueue.length === 0) return;
-    
-    // Skip if running on server (SSR) or disabled (development)
-    if (typeof window === 'undefined' || this.disabled) return;
+
+    // Skip if disabled (development)
+    if (this.disabled) return;
 
     const events = [...this.eventQueue];
     this.eventQueue = [];
 
-    // Respect backoff window if set (e.g., after 429)
+    // Respect backoff window if set
     if (this.backoffUntil && Date.now() < this.backoffUntil) {
       this.eventQueue.unshift(...events);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/analytics/events`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ events }),
-        keepalive: synchronous
-      });
+      // Map events to database schema
+      const dbEvents = events.map(event => ({
+        session_id: event.data.sessionId,
+        user_id: event.data.userId,
+        event_type: event.type,
+        page_path: event.data.pagePath,
+        event_data: event.data, // Store full data JSON
+        created_at: event.timestamp
+      }));
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          // Back off for 60 seconds to respect rate limits
-          this.backoffUntil = Date.now() + 60_000;
-        }
+      const { error } = await this.supabase
+        .from('analytics_events')
+        .insert(dbEvents);
+
+      if (error) {
+        console.warn('Supabase analytics insert failed:', error);
         // Re-queue events if failed
         this.eventQueue.unshift(...events);
+        // Back off
+        this.backoffUntil = Date.now() + 60_000;
       }
     } catch (error) {
       console.warn('Failed to send analytics events:', error);
@@ -253,10 +255,10 @@ class AnalyticsService {
   trackPageView(pagePath?: string, pageTitle?: string) {
     const path = pagePath || window.location.pathname;
     const title = pageTitle || document.title;
-    
+
     // Track end of previous page
     this.trackPageEnd();
-    
+
     // Start tracking new page
     this.pageStartTime = new Date();
 
@@ -320,7 +322,7 @@ class AnalyticsService {
     });
   }
 
-  trackBeginCheckout(value: number, items: Array<{productId: string, quantity: number, value: number}>) {
+  trackBeginCheckout(value: number, items: Array<{ productId: string, quantity: number, value: number }>) {
     this.trackEcommerceEvent({
       eventType: 'begin_checkout',
       value,
@@ -328,11 +330,11 @@ class AnalyticsService {
     });
   }
 
-  trackPurchase(orderId: string, value: number, items: Array<{productId: string, quantity: number, value: number}>) {
+  trackPurchase(orderId: string, value: number, items: Array<{ productId: string, quantity: number, value: number }>) {
     this.trackEcommerceEvent({
       eventType: 'purchase',
       value,
-      metadata: { 
+      metadata: {
         orderId,
         items,
         transactionId: orderId
@@ -351,17 +353,27 @@ class AnalyticsService {
   trackSearch(searchTerm: string, resultsCount?: number) {
     this.trackEcommerceEvent({
       eventType: 'search',
-      metadata: { 
+      metadata: {
         searchTerm,
         resultsCount
       }
     });
   }
 
+  trackError(error: Error, errorInfo?: any) {
+    this.queueEvent('error', {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo?.componentStack,
+      url: typeof window !== 'undefined' ? window.location.href : undefined,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined
+    });
+  }
+
   private trackTrafficSource() {
     const urlParams = new URLSearchParams(window.location.search);
     const referrer = document.referrer;
-    
+
     const trafficData: TrafficSourceData = {
       sessionId: this.sessionId,
       utmSource: urlParams.get('utm_source') || undefined,
@@ -412,16 +424,16 @@ class AnalyticsService {
   private isNewSession(): boolean {
     const lastActivity = sessionStorage.getItem('last_activity');
     if (!lastActivity) return true;
-    
+
     const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
     return timeSinceLastActivity > 30 * 60 * 1000; // 30 minutes
   }
 
   private getDeviceType(): string {
     if (typeof navigator === 'undefined') return 'unknown';
-    
+
     const userAgent = navigator.userAgent;
-    
+
     if (/tablet|ipad|playbook|silk/i.test(userAgent)) {
       return 'tablet';
     }
@@ -433,35 +445,35 @@ class AnalyticsService {
 
   private getBrowser(): string {
     if (typeof navigator === 'undefined') return 'unknown';
-    
+
     const userAgent = navigator.userAgent;
-    
+
     if (userAgent.includes('Chrome')) return 'Chrome';
     if (userAgent.includes('Firefox')) return 'Firefox';
     if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
     if (userAgent.includes('Edge')) return 'Edge';
     if (userAgent.includes('Opera')) return 'Opera';
-    
+
     return 'Unknown';
   }
 
   private getOS(): string {
     if (typeof navigator === 'undefined') return 'unknown';
-    
+
     const userAgent = navigator.userAgent;
-    
+
     if (userAgent.includes('Windows')) return 'Windows';
     if (userAgent.includes('Mac')) return 'macOS';
     if (userAgent.includes('Linux')) return 'Linux';
     if (userAgent.includes('Android')) return 'Android';
     if (userAgent.includes('iOS')) return 'iOS';
-    
+
     return 'Unknown';
   }
 
   private async getLocationData(): Promise<{ country?: string; city?: string }> {
     if (typeof window === 'undefined') return {};
-    
+
     try {
       // Resolve via frontend API route to avoid browser CORS issues
       const response = await fetch(`/api/geolocation`, {
@@ -474,7 +486,7 @@ class AnalyticsService {
         return {};
       }
       const data = await response.json();
-      
+
       return {
         country: data.country || data.country_name,
         city: data.city

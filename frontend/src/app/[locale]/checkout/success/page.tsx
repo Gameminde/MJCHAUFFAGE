@@ -45,7 +45,6 @@ function SuccessContent() {
 
     // Clear cart if requested
     if (shouldClearCart) {
-      console.log('🛒 Clearing cart via success page...');
       clearCart()
       // Optional: Remove the query param to prevent re-clearing on refresh (though harmless)
       // router.replace(`/${locale}/checkout/success?orderNumber=${orderNumber}`, { scroll: false })

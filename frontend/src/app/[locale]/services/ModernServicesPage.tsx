@@ -258,31 +258,16 @@ export default function ModernServicesPage({ services, locale }: ModernServicesP
                     {service.description || (isArabic ? 'خدمة احترافية' : 'Service professionnel')}
                   </p>
 
-                  {/* Price & Duration */}
-                  <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100">
-                    <div>
-                      <div className="text-3xl font-bold text-orange-600">
-                        {new Intl.NumberFormat(numberLocale, {
-                          style: 'decimal',
-                          minimumFractionDigits: 0,
-                        }).format(Number(service.price))}
-                        <span className="text-lg text-gray-500 ml-1">
-                          {isArabic ? 'د.ج' : 'DA'}
-                        </span>
+                  {/* Duration Only - No Price Display */}
+                  <div className="flex items-center justify-center mb-6 pb-6 border-b border-gray-100">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center text-gray-600">
+                        <Clock className="w-5 h-5 mr-2" />
+                        <span className="text-2xl font-bold">{service.duration}</span>
+                        <span className="text-lg ml-1">{isArabic ? 'دقيقة' : 'min'}</span>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {isArabic ? 'السعر التقديري' : 'Prix estimé'}
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="flex items-center text-gray-600">
-                        <Clock className="w-4 h-4 mr-1" />
-                        <span className="font-semibold">{service.duration}</span>
-                        <span className="text-sm ml-1">{isArabic ? 'دقيقة' : 'min'}</span>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {isArabic ? 'المدة' : 'Durée'}
+                      <div className="text-sm text-gray-500 mt-1">
+                        {isArabic ? 'المدة التقريبية' : 'Durée approximative'}
                       </div>
                     </div>
                   </div>

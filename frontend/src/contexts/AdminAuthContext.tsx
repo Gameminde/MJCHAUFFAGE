@@ -4,6 +4,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback } from 'react';
 import { config } from '@/lib/config';
+import { createClient } from '@/lib/supabase/client';
 
 interface AdminUser {
   id: string;
@@ -28,23 +29,25 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
 
-  // Fetch current admin user using token from localStorage
+  // Fetch current admin user using Supabase session
   const fetchAdminUser = useCallback(async () => {
     if (process.env.NODE_ENV === 'development') {
       console.debug('🔍 AdminAuth: Fetching admin user...');
     }
-    
+
     try {
       setLoading(true);
       setError(null);
 
-      // Get token from localStorage
-      const token = localStorage.getItem('authToken');
-      
-      if (!token) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      if (!session?.user) {
         if (process.env.NODE_ENV === 'development') {
-          console.debug('❌ AdminAuth: No token found in localStorage');
+          console.debug('❌ AdminAuth: No active session found');
         }
         setUser(null);
         setLoading(false);
@@ -52,94 +55,96 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.debug('✅ AdminAuth: Token found, calling /admin/me');
-      }
-      
-      // Call backend /admin/me endpoint
-      const response = await fetch(`${config.api.baseURL}/admin/me`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (process.env.NODE_ENV === 'development') {
-          console.debug('❌ AdminAuth: /admin/me returned', response.status);
-        }
-        // Token invalid or expired
-        localStorage.removeItem('authToken');
-        setUser(null);
-        setLoading(false);
-        return;
+        console.debug('✅ AdminAuth: Session found, fetching profile');
       }
 
-      const data = await response.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.debug('✅ AdminAuth: User fetched successfully', data);
+      // Fetch user profile from public.users to check role
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('❌ AdminAuth: Profile fetch error:', profileError);
+        // Fallback to metadata if profile fetch fails but session exists? 
+        // Better to enforce profile existence for admins.
+        throw profileError;
       }
-      
-      // Backend returns { success: true, data: { user: {...} } }
-      const adminUser = data.data?.user || data.user;
-      
+
+      const adminUser: AdminUser = {
+        id: profile.id,
+        email: profile.email,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        role: profile.role,
+        avatar: profile.avatar
+      };
+
       if (adminUser && ['ADMIN', 'SUPER_ADMIN'].includes(adminUser.role)) {
         setUser(adminUser);
       } else {
         if (process.env.NODE_ENV === 'development') {
           console.debug('❌ AdminAuth: User is not admin', adminUser);
         }
-        localStorage.removeItem('authToken');
+        await supabase.auth.signOut();
         setUser(null);
+        setError('Unauthorized: Admin access required');
       }
     } catch (err) {
       console.error('❌ AdminAuth: Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch user');
-      localStorage.removeItem('authToken');
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   // Admin login
   const login = async (email: string, password: string) => {
     if (process.env.NODE_ENV === 'development') {
       console.debug('🔐 AdminAuth: Logging in...');
     }
-    
+
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${config.api.baseURL}/admin/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
+      if (error) throw error;
 
-      const data = await response.json();
       if (process.env.NODE_ENV === 'development') {
         console.debug('✅ AdminAuth: Login successful', data);
       }
 
-      // Store token in localStorage
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
+      // Fetch profile to verify role immediately
+      if (data.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError || !['ADMIN', 'SUPER_ADMIN'].includes(profile?.role)) {
+          await supabase.auth.signOut();
+          throw new Error('Unauthorized: Admin access required');
+        }
+
+        const adminUser: AdminUser = {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.first_name,
+          lastName: profile.last_name,
+          role: profile.role,
+          avatar: profile.avatar
+        };
+        setUser(adminUser);
       }
 
-      // Set user from response
-      const adminUser = data.user || data.data?.user;
-      setUser(adminUser);
     } catch (err) {
       console.error('❌ AdminAuth: Login error:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -154,28 +159,14 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (process.env.NODE_ENV === 'development') {
       console.debug('🚪 AdminAuth: Logging out...');
     }
-    
+
     try {
       setLoading(true);
-      
-      const token = localStorage.getItem('authToken');
-      
-      // Call backend logout endpoint
-      if (token) {
-        await fetch(`${config.api.baseURL}/admin/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          credentials: 'include',
-        });
-      }
+      await supabase.auth.signOut();
+      setUser(null);
     } catch (err) {
       console.error('AdminAuth: Logout error:', err);
     } finally {
-      // Always clear local state
-      localStorage.removeItem('authToken');
-      setUser(null);
       setLoading(false);
     }
   };

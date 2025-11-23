@@ -1,11 +1,5 @@
-// frontend/src/services/cartService.ts
-// 🛒 Service panier refactorisé avec client API centralisé
+import { supabase } from '@/lib/supabaseClient';
 
-import { api } from '@/lib/api';
-
-/**
- * Types pour le service panier
- */
 export interface CartItem {
   id: string;
   productId: string;
@@ -13,6 +7,8 @@ export interface CartItem {
   price: number;
   name: string;
   image?: string;
+  sku?: string;
+  maxStock?: number;
 }
 
 export interface Cart {
@@ -33,121 +29,234 @@ export interface UpdateCartItemRequest {
   quantity: number;
 }
 
-/**
- * Service de gestion du panier
- * Utilise le client API centralisé (@/lib/api)
- */
 export const cartService = {
-  /**
-   * Récupère le panier actuel
-   */
-  async getCart(userId?: string): Promise<Cart> {
-    const result = await api.get<{ success: boolean; data: Cart }>(
-      `/cart${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`
-    );
-    return result.data as Cart;
+  async getCart(userId?: string): Promise<Cart | null> {
+    if (!userId) return null;
+
+    try {
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!customer) return null;
+
+      const { data: items, error } = await supabase
+        .from('cart_items')
+        .select(`
+          id,
+          quantity,
+          product:products (
+            id,
+            name,
+            price,
+            sku,
+            stock_quantity,
+            product_images (url)
+          )
+        `)
+        .eq('customer_id', customer.id);
+
+      if (error) throw error;
+
+      const cartItems: CartItem[] = items.map((item: any) => ({
+        id: item.id,
+        productId: item.product.id,
+        quantity: item.quantity,
+        price: Number(item.product.price),
+        name: item.product.name,
+        image: item.product.product_images?.[0]?.url,
+        sku: item.product.sku,
+        maxStock: item.product.stock_quantity
+      }));
+
+      return {
+        id: customer.id,
+        items: cartItems,
+        total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        userId
+      };
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      return null;
+    }
   },
 
-  /**
-   * Ajoute un produit au panier
-   */
-  async addToCart(data: AddToCartRequest): Promise<Cart> {
-    const result = await api.post<{ success: boolean; data: Cart }>(
-      '/cart/items',
-      data
-    );
-    return result.data as Cart;
-  },
+  async addToCart(data: AddToCartRequest): Promise<Cart | null> {
+    if (!data.userId) return null;
 
-  /**
-   * Met à jour la quantité d'un article
-   * Uses PUT for complete resource replacement (REST best practice)
-   */
-  async updateCartItem(data: UpdateCartItemRequest): Promise<Cart> {
-    const { itemId, ...payload } = data;
-    const result = await api.put<{ success: boolean; data: Cart }>(
-      `/cart/items/${itemId}`,
-      payload
-    );
-    return result.data as Cart;
-  },
-  /**
-   * Supprime un article du panier
-   */
-  async removeCartItem(itemId: string): Promise<Cart> {
-    const result = await api.delete<{ success: boolean; data: Cart }>(
-      `/cart/items/${itemId}`
-    );
-    return result.data as Cart;
-  },
+    try {
+      // 1. Try to find existing customer
+      let { data: customer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', data.userId)
+        .maybeSingle();
 
-  /**
-   * Vide le panier
-   */
-  async clearCart(userId?: string): Promise<void> {
-    await api.delete(`/cart${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`);
-  },
+      // 2. If not found, try to create one
+      if (!customer) {
+        // Fetch user details from Auth to get email
+        const { data: { user } } = await supabase.auth.getUser();
 
-  /**
-   * Synchronise le panier local avec le serveur
-   * Utile après connexion ou pour réconcilier panier invité
-   */
-  async syncCart(localItems: CartItem[], userId: string): Promise<Cart> {
-    const result = await api.post<{ success: boolean; data: Cart }>(
-      '/cart/sync',
-      {
-        items: localItems,
-        userId,
+        if (user && user.id === data.userId) {
+          const { data: newCustomer, error: createError } = await supabase
+            .from('customers')
+            .insert({
+              user_id: data.userId,
+              email: user.email,
+              // We don't have name/phone here, but they might be optional or updated later
+            })
+            .select('id')
+            .maybeSingle();
+
+          if (createError) {
+            console.error('Failed to create customer record:', createError);
+            throw new Error('Customer not found and could not be created');
+          }
+          customer = newCustomer;
+        } else {
+          throw new Error('Customer not found and user details unavailable');
+        }
       }
-    );
-    return result.data as Cart;
+
+      if (!customer) throw new Error('Customer not found');
+
+      // Check if item exists
+      const { data: existing } = await supabase
+        .from('cart_items')
+        .select('id, quantity')
+        .eq('customer_id', customer.id)
+        .eq('product_id', data.productId)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from('cart_items')
+          .update({ quantity: existing.quantity + data.quantity })
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('cart_items')
+          .insert({
+            customer_id: customer.id,
+            product_id: data.productId,
+            quantity: data.quantity
+          });
+        if (error) throw error;
+      }
+
+      return this.getCart(data.userId);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      throw error;
+    }
   },
 
-  /**
-   * Validate guest cart items (public endpoint)
-   * Check if products are available and in stock
-   */
+  async updateCartItem(data: UpdateCartItemRequest, userId?: string): Promise<Cart | null> {
+    // Note: We need userId to return the full cart, but strictly speaking we update by itemId (cart_item id)
+    // However, for security, we should verify ownership if possible, or rely on RLS.
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .update({ quantity: data.quantity })
+        .eq('id', data.itemId);
+
+      if (error) throw error;
+
+      return userId ? this.getCart(userId) : null;
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      throw error;
+    }
+  },
+
+  async removeCartItem(itemId: string, userId?: string): Promise<Cart | null> {
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) throw error;
+
+      return userId ? this.getCart(userId) : null;
+    } catch (error) {
+      console.error('Error removing cart item:', error);
+      throw error;
+    }
+  },
+
+  async clearCart(userId?: string): Promise<void> {
+    if (!userId) return;
+    try {
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!customer) return;
+
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('customer_id', customer.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      throw error;
+    }
+  },
+
+  async syncCart(localItems: CartItem[], userId: string): Promise<Cart | null> {
+    if (!userId) return null;
+    // Strategy: Merge local items into server cart.
+    // For simplicity: Add local items to server if they don't exist or update quantity.
+    // Then clear local items (handled by store).
+
+    try {
+      for (const item of localItems) {
+        await this.addToCart({
+          userId,
+          productId: item.productId,
+          quantity: item.quantity
+        });
+      }
+      return this.getCart(userId);
+    } catch (error) {
+      console.error('Error syncing cart:', error);
+      return null;
+    }
+  },
+
   async validateCart(items: Array<{ productId: string; quantity: number }>): Promise<{
     success: boolean;
     unavailableItems?: string[];
   }> {
-    const result = await api.post<{ success: boolean; unavailableItems?: string[] }>(
-      '/cart/validate',
-      { items },
-      { skipAuth: true } // Public endpoint
-    );
-    return result;
+    const unavailableItems: string[] = [];
+    for (const item of items) {
+      const { data: product } = await supabase
+        .from('products')
+        .select('stock_quantity')
+        .eq('id', item.productId)
+        .single();
+
+      if (!product || (product.stock_quantity || 0) < item.quantity) {
+        unavailableItems.push(item.productId);
+      }
+    }
+    return {
+      success: unavailableItems.length === 0,
+      unavailableItems
+    };
   },
 
-  /**
-   * Calcule le total du panier
-   * (peut être fait côté client ou serveur selon votre logique)
-   */
   calculateTotal(items: CartItem[]): number {
     return items.reduce((total, item) => total + item.price * item.quantity, 0);
   },
 };
-
-/**
- * Hook React pour gérer le panier (optionnel)
- * Exemple d'utilisation avec le client API
- */
-export function useCart() {
-  // À implémenter selon votre state management (Redux, Zustand, React Query, etc.)
-  // Exemple avec React Query:
-  /*
-  const { data: cart, isLoading, error, refetch } = useQuery({
-    queryKey: ['cart'],
-    queryFn: () => cartService.getCart(),
-  });
-
-  const addToCart = useMutation({
-    mutationFn: cartService.addToCart,
-    onSuccess: () => refetch(),
-  });
-
-  return { cart, isLoading, error, addToCart };
-  */
-}
 
 export default cartService;

@@ -4,14 +4,11 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/hooks/useLanguage';
-import PaymentService from '@/services/paymentService';
+import { ordersService } from '@/services/ordersService';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import {
-  User,
-  Mail,
   Phone,
   MapPin,
   Truck,
@@ -19,28 +16,25 @@ import {
   CreditCard,
   ShieldCheck,
   CheckCircle,
+  Mail,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ShippingAddress {
   firstName: string;
   lastName: string;
   phone: string;
-  email?: string; // Optionnel
+  email?: string;
   street: string;
   city: string;
   postalCode: string;
   region: string;
-  profession?: string; // Optionnel : "technicien", "particulier", "autre"
+  profession?: string;
 }
 
-import { api } from '@/lib/api';
+import { toast } from 'react-hot-toast';
 
-// Remove hardcoded wilayas, will fetch from API
-const ALGERIA_REGIONS: string[] = [];
-
-import { useAuth } from '@/contexts/AuthContext';
-
-// ... existing imports ...
+import { ALGERIA_WILAYAS } from '@/constants/locations';
 
 export function ModernCheckoutForm() {
   const { user } = useAuth();
@@ -61,13 +55,24 @@ export function ModernCheckoutForm() {
     profession: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [wilayas, setWilayas] = useState<any[]>([]);
-  const [loadingWilayas, setLoadingWilayas] = useState(false);
+  const [wilayas] = useState<any[]>(ALGERIA_WILAYAS);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const shippingCost = 600; // Default or calculated
   const finalTotal = total + shippingCost;
   const locale = useLanguage().language;
+
+  // Sync user data when available
+  useEffect(() => {
+    if (user) {
+      setShippingAddress(prev => ({
+        ...prev,
+        firstName: prev.firstName || user.firstName || '',
+        lastName: prev.lastName || user.lastName || '',
+        email: prev.email || user.email || '',
+      }));
+    }
+  }, [user]);
 
   const handleInputChange = (field: keyof ShippingAddress, value: string) => {
     setShippingAddress(prev => ({ ...prev, [field]: value }));
@@ -83,52 +88,21 @@ export function ModernCheckoutForm() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!shippingAddress.firstName) newErrors.firstName = 'Requis';
-    if (!shippingAddress.lastName) newErrors.lastName = 'Requis';
-    if (!shippingAddress.phone) newErrors.phone = 'Requis';
-    if (!shippingAddress.street) newErrors.street = 'Requis';
-    if (!shippingAddress.city) newErrors.city = 'Requis';
-    if (!shippingAddress.region) newErrors.region = 'Requis';
-    
+    if (!shippingAddress.firstName) newErrors.firstName = locale === 'ar' ? 'مطلوب' : 'Requis';
+    if (!shippingAddress.lastName) newErrors.lastName = locale === 'ar' ? 'مطلوب' : 'Requis';
+    if (!shippingAddress.phone) newErrors.phone = locale === 'ar' ? 'مطلوب' : 'Requis';
+    if (!shippingAddress.street) newErrors.street = locale === 'ar' ? 'مطلوب' : 'Requis';
+    if (!shippingAddress.city) newErrors.city = locale === 'ar' ? 'مطلوب' : 'Requis';
+    if (!shippingAddress.region) newErrors.region = locale === 'ar' ? 'مطلوب' : 'Requis';
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Pre-fill form with user data
-  useEffect(() => {
-    if (user) {
-      setShippingAddress((prev) => ({
-        ...prev,
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        // Phone might not be in user object depending on interface, but if it is:
-        // phone: user.phone || '', 
-      }));
+    if (Object.keys(newErrors).length > 0) {
+      const firstError = Object.values(newErrors)[0];
+      toast.error(locale === 'ar' ? `يرجى التحقق من الحقول: ${firstError}` : `Veuillez vérifier les champs requis`);
+      return false;
     }
-  }, [user]);
-
-  // Fetch Wilayas
-  useEffect(() => {
-    const fetchWilayas = async () => {
-      setLoadingWilayas(true);
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wilayas`);
-        if (res.ok) {
-          const data = await res.json();
-          setWilayas(data.data || []);
-        }
-      } catch (e) {
-        console.error('Failed to fetch wilayas', e);
-      } finally {
-        setLoadingWilayas(false);
-      }
-    };
-    fetchWilayas();
-  }, []);
-
-
-  // ... existing useEffects ...
+    return true;
+  };
 
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,11 +110,16 @@ export function ModernCheckoutForm() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const endpoint = user ? '/api/orders' : '/api/orders/guest';
+    if (!agreeToTerms) {
+      toast.error(locale === 'ar' ? 'يرجى الموافقة على الشروط' : 'Veuillez accepter les conditions');
+      return;
+    }
 
-      const basePayload = {
+    setIsLoading(true);
+    const toastId = toast.loading(locale === 'ar' ? 'جاري معالجة الطلب...' : 'Traitement de la commande...');
+
+    try {
+      const orderData = {
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -149,55 +128,33 @@ export function ModernCheckoutForm() {
         shippingAddress: {
           street: shippingAddress.street,
           city: shippingAddress.city,
-          postalCode: shippingAddress.postalCode.trim() || undefined,
+          postalCode: shippingAddress.postalCode,
           region: shippingAddress.region,
           country: 'Algeria',
+        },
+        customerInfo: {
+          firstName: shippingAddress.firstName,
+          lastName: shippingAddress.lastName,
+          phone: shippingAddress.phone,
+          email: shippingAddress.email || user?.email, // Fallback to auth email
+          profession: shippingAddress.profession,
         },
         paymentMethod: 'CASH_ON_DELIVERY',
         subtotal: total,
         shippingAmount: shippingCost,
         totalAmount: finalTotal,
-        currency: 'DZD',
+        userId: user?.id
       };
 
-      const payload = user
-        ? basePayload
-        : {
-          ...basePayload,
-          customerInfo: {
-            firstName: shippingAddress.firstName.trim(),
-            lastName: shippingAddress.lastName.trim(),
-            phone: shippingAddress.phone,
-            email: shippingAddress.email?.trim() || undefined,
-            profession: shippingAddress.profession?.trim() || undefined,
-          },
-        };
+      const order = await ordersService.createOrder(orderData);
 
-      // Use Next.js proxy to avoid duplicate /api/v1/api/v1
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        credentials: 'include', // Important for authenticated requests
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create order');
+      if (!order || !order.orderNumber) {
+        throw new Error('Order number not received');
       }
 
-      const result = await response.json();
-
-      // Use orderNumber for tracking instead of orderId
-      const orderNumber = result.data?.order?.orderNumber || result.data?.order?.id;
-
-      if (!orderNumber) {
-        throw new Error('Order number not received from server');
-      }
-
-      // Navigate to success page with clearCart flag
-      // Use replace to prevent back navigation to checkout
-      router.replace(`/${locale}/checkout/success?orderNumber=${orderNumber}&clearCart=true`);
+      await clearCart();
+      toast.success(locale === 'ar' ? 'تم استلام الطلب بنجاح!' : 'Commande confirmée !', { id: toastId });
+      router.replace(`/${locale}/checkout/success?orderNumber=${order.orderNumber}`);
     } catch (err) {
       const errorMessage = err instanceof Error
         ? err.message
@@ -205,9 +162,8 @@ export function ModernCheckoutForm() {
           ? 'فشل في إنشاء الطلب'
           : 'Échec de la commande';
 
-      // Show error in a user-friendly way
-      alert(errorMessage);
       console.error('Order creation error:', err);
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setIsLoading(false);
     }
@@ -348,21 +304,16 @@ export function ModernCheckoutForm() {
                         <select
                           value={shippingAddress.region}
                           onChange={(e) => handleInputChange('region', e.target.value)}
-                          className={`form-input w-full px-4 py-3 rounded-lg border transition-all ${loadingWilayas
-                            ? 'opacity-50 cursor-wait border-neutral-300 bg-neutral-50'
-                            : wilayas.length === 0
+                          className={`form-input w-full px-4 py-3 rounded-lg border transition-all ${wilayas.length === 0
                               ? 'border-red-300 bg-red-50'
                               : 'border-neutral-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
                             }`}
                           required
-                          disabled={loadingWilayas}
                         >
                           <option value="">
-                            {loadingWilayas
-                              ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement des wilayas...')
-                              : wilayas.length === 0
-                                ? (locale === 'ar' ? 'لا توجد ولايات متاحة - Rechargez la page' : 'Aucune wilaya disponible - Rechargez la page')
-                                : (locale === 'ar' ? 'اختر ولاية' : 'Sélectionner une wilaya')}
+                            {wilayas.length === 0
+                              ? (locale === 'ar' ? 'لا توجد ولايات متاحة - Rechargez la page' : 'Aucune wilaya disponible - Rechargez la page')
+                              : (locale === 'ar' ? 'اختر ولاية' : 'Sélectionner une wilaya')}
                           </option>
                           {wilayas.map((w) => {
                             const code = w.code || w.id || '';

@@ -1,7 +1,5 @@
-import { api, ApiError } from '@/lib/api'
+import { supabase } from '@/lib/supabaseClient'
 import React from 'react'
-import { productCache } from './cacheService'
-import { config } from '@/lib/config'
 
 export interface Product {
   id: string
@@ -50,120 +48,63 @@ export interface Category {
   sortOrder: number
 }
 
-export interface ProductsResponse {
-  success: boolean
-  data: {
-    products: any[]
-    total: number
-    hasMore: boolean
-  }
-}
-
-export interface CategoriesResponse {
-  success: boolean
-  data: {
-    categories: Category[]
-  }
-}
-
-// Normalize image URLs to absolute backend URLs when needed
-const BASE_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-const DEFAULT_IMAGE = '/placeholder-product.jpg'; // ✅ Image placeholder pertinente
-
-const normalizeImageUrl = (img: any): string => {
-  let src = typeof img === 'string' ? img : img?.url;
-
-  // ✅ Retourner placeholder si pas d'image
-  if (!src) return DEFAULT_IMAGE;
-
-  // ✅ Décoder les entités HTML dans l'URL
-  src = src.replace(/&#x2F;/g, '/').replace(/&amp;/g, '&');
-
-  // ✅ Si déjà une URL absolue, retourner tel quel
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
+const convertSupabaseProduct = (data: any): Product => {
+  // Handle JSON fields
+  let specifications = {};
+  try {
+    specifications = typeof data.specifications === 'string'
+      ? JSON.parse(data.specifications)
+      : data.specifications || {};
+  } catch (e) {
+    console.warn('Failed to parse specifications:', e);
   }
 
-  // ✅ Ajouter le base URL pour les chemins relatifs
-  const path = src.startsWith('/') ? src : `/${src}`;
-  return `${BASE_API}${path}`;
-};
-
-const convertApiProduct = (apiProduct: any): Product => {
-  // ✅ FIX: Définir les variables de prix AVANT de les utiliser
-  const price = typeof apiProduct.price === 'number'
-    ? apiProduct.price
-    : parseFloat(apiProduct.price) || 0;
-
-  const salePrice = apiProduct.salePrice !== null && apiProduct.salePrice !== undefined
-    ? (typeof apiProduct.salePrice === 'number'
-        ? apiProduct.salePrice
-        : parseFloat(apiProduct.salePrice) || 0)
-    : null;
-
-  // ✅ FIX: Gérer les features comme array OU string
   let features: string[] = [];
-  if (Array.isArray(apiProduct.features)) {
-    features = apiProduct.features;
-  } else if (typeof apiProduct.features === 'string' && apiProduct.features) {
-    // Split par virgule si c'est une string (venant de SQLite)
-    features = apiProduct.features.split(',').map((f: string) => f.trim()).filter(Boolean);
+  if (Array.isArray(data.features)) {
+    features = data.features;
+  } else if (typeof data.features === 'string') {
+    features = data.features.split(',').map((f: string) => f.trim()).filter(Boolean);
   }
 
-  // ✅ FIX: Gérer les specifications comme object OU string JSON
-  let specifications: any = {};
-  if (typeof apiProduct.specifications === 'object' && apiProduct.specifications !== null) {
-    specifications = apiProduct.specifications;
-  } else if (typeof apiProduct.specifications === 'string' && apiProduct.specifications) {
-    try {
-      specifications = JSON.parse(apiProduct.specifications);
-    } catch (e) {
-      console.warn('Failed to parse specifications JSON:', e);
-    }
-  }
-
-  const result = {
-    id: apiProduct.id,
-    name: apiProduct.name,
-    slug: apiProduct.slug || apiProduct.name?.toLowerCase()?.replace(/\s+/g, '-') || `${apiProduct.id}`,
-    sku: apiProduct.sku || `SKU-${apiProduct.id}`,
-    description: apiProduct.description ?? null,
-    shortDescription: apiProduct.shortDescription ?? null,
-    price: price, // ✅ Utiliser la variable définie
-    salePrice: salePrice, // ✅ Utiliser la variable définie
-    stockQuantity: apiProduct.stockQuantity ? Number(apiProduct.stockQuantity) : 0,
-    weight: apiProduct.weight ? Number(apiProduct.weight) : null,
-    dimensions: apiProduct.dimensions || null,
-    specifications: specifications,
-    features: features, // ✅ Array correctement formé
-    images: Array.isArray(apiProduct.images)
-      ? apiProduct.images.map((img: any) => ({
-          id: (typeof img === 'object' && img.id) ? img.id : Math.random().toString(),
-          url: normalizeImageUrl(img),
-          altText: typeof img === 'object' ? (img.altText ?? null) : null,
-        }))
+  return {
+    id: data.id,
+    name: data.name,
+    slug: data.slug,
+    sku: data.sku,
+    description: data.description,
+    shortDescription: data.short_description, // snake_case from DB
+    price: Number(data.price),
+    salePrice: data.sale_price ? Number(data.sale_price) : null,
+    stockQuantity: data.stock_quantity,
+    weight: data.weight ? Number(data.weight) : null,
+    dimensions: data.dimensions,
+    specifications,
+    features,
+    images: Array.isArray(data.product_images)
+      ? data.product_images.map((img: any) => ({
+        id: img.id,
+        url: img.url,
+        altText: img.alt_text
+      }))
       : [],
-    category: {
-      id: apiProduct.category?.id || apiProduct.categoryId || 'unknown',
-      name: apiProduct.category?.name || 'Unknown Category',
-      slug: apiProduct.category?.slug || 'unknown',
-    },
-    manufacturer: apiProduct.manufacturer
-      ? {
-          id: apiProduct.manufacturer.id,
-          name: apiProduct.manufacturer.name,
-          slug: apiProduct.manufacturer.slug,
-        }
-      : null,
-    isFeatured: Boolean(apiProduct.isFeatured),
-    isActive: apiProduct.isActive !== false,
-    createdAt: apiProduct.createdAt || new Date().toISOString(),
-    updatedAt: apiProduct.updatedAt || new Date().toISOString(),
+    category: data.categories ? {
+      id: data.categories.id,
+      name: data.categories.name,
+      slug: data.categories.slug
+    } : { id: 'unknown', name: 'Unknown', slug: 'unknown' },
+    manufacturer: data.manufacturers ? {
+      id: data.manufacturers.id,
+      name: data.manufacturers.name,
+      slug: data.manufacturers.slug
+    } : null,
+    isFeatured: data.is_featured,
+    isActive: data.is_active,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
   }
-  return result;
 }
 
-export const productService = {
+const productService = {
   async getProducts(filters?: {
     search?: string;
     category?: string;
@@ -178,159 +119,187 @@ export const productService = {
     limit?: number;
   }): Promise<Product[]> {
     try {
-      // Build query parameters
-      const params = new URLSearchParams();
+      let query = supabase
+        .from('products')
+        .select(`
+  *,
+  categories!inner(*),
+    manufacturers(*),
+    product_images(*)
+      `)
+        .eq('is_active', true);
 
-      if (filters?.search) params.set('search', filters.search);
-      if (filters?.category) params.set('category', filters.category);
-      if (filters?.categories?.length) params.set('categories', filters.categories.join(','));
-      if (filters?.minPrice !== undefined) params.set('minPrice', filters.minPrice.toString());
-      if (filters?.maxPrice !== undefined) params.set('maxPrice', filters.maxPrice.toString());
-      if (filters?.inStock !== undefined) params.set('inStock', filters.inStock.toString());
-      if (filters?.featured !== undefined) params.set('featured', filters.featured.toString());
-      if (filters?.sortBy) params.set('sortBy', filters.sortBy);
-      if (filters?.sortOrder) params.set('sortOrder', filters.sortOrder);
-      if (filters?.page) params.set('page', filters.page.toString());
-      if (filters?.limit) params.set('limit', filters.limit.toString());
-
-      const queryString = params.toString();
-      const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
-
-      const result = await api.get<{ success: boolean; data: { products: any[]; pagination: any; total: number } }>(endpoint);
-
-      if (result.success && result.data && Array.isArray(result.data.products)) {
-        return result.data.products
-          .filter(product => product && product.id) // Filter out null/undefined products
-          .map(convertApiProduct);
+      if (filters?.search) {
+        query = query.ilike('name', `% ${filters.search}% `);
+      }
+      if (filters?.category) {
+        query = query.eq('categories.slug', filters.category);
+      }
+      if (filters?.categories?.length) {
+        query = query.in('categories.slug', filters.categories);
+      }
+      if (filters?.minPrice !== undefined) {
+        query = query.gte('price', filters.minPrice);
+      }
+      if (filters?.maxPrice !== undefined) {
+        query = query.lte('price', filters.maxPrice);
+      }
+      if (filters?.inStock) {
+        query = query.gt('stock_quantity', 0);
+      }
+      if (filters?.featured) {
+        query = query.eq('is_featured', true);
       }
 
-      console.warn('Products API returned unexpected format:', result);
-      return [];
+      // Sorting
+      const sortColumn = filters?.sortBy === 'price' ? 'price' : 'created_at';
+      const ascending = filters?.sortOrder === 'asc';
+      query = query.order(sortColumn, { ascending });
+
+      // Pagination
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 20;
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return (data || []).map(convertSupabaseProduct);
     } catch (error) {
       console.error('Error fetching products:', error);
-      console.error('API Config - Base URL:', config.api.baseURL);
-      console.error('Full URL will be constructed based on config');
       return [];
     }
   },
 
-  async getProduct(id: string): Promise<Product | null> {
+  async getProduct(slugOrId: string): Promise<Product | null> {
     try {
-      const result = await api.get<{ success: boolean; data: { product: any } }>(`/products/${id}`)
-      if (result.success && result.data?.product) {
-        return convertApiProduct(result.data.product)
+      // Try by slug first, then ID
+      let query = supabase
+        .from('products')
+        .select(`
+  *,
+  categories(*),
+  manufacturers(*),
+  product_images(*)
+    `);
+
+      // Check if it looks like a UUID
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
+
+      if (isUuid) {
+        query = query.eq('id', slugOrId);
+      } else {
+        query = query.eq('slug', slugOrId);
       }
-      return null
+
+      const { data, error } = await query.single();
+
+      if (error) {
+        if (error.code === 'PGRST116') return null; // Not found
+        throw error;
+      }
+
+      return convertSupabaseProduct(data);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        return null
-      }
-      console.error('Error fetching product:', error)
-      throw error
+      console.error('Error fetching product:', error);
+      return null;
     }
   },
 
   async getCategories(): Promise<Category[]> {
     try {
-      const result = await api.get<{ success: boolean; data: { categories: Category[] } }>('/products/categories')
-      if (process.env.NODE_ENV === 'development') {
-      console.debug('📦 Categories response:', result);
-    }
-      return result.data?.categories ?? []
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+
+      return (data || []).map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        image: cat.image,
+        productCount: 0, // TODO: Count products
+        sortOrder: cat.sort_order
+      }));
     } catch (error) {
-      console.error('Error fetching categories:', error)
-      throw error
+      console.error('Error fetching categories:', error);
+      return [];
     }
   },
 
   async getManufacturers(): Promise<any[]> {
     try {
-      const result = await api.get<{ success: boolean; data: { manufacturers: any[] } }>(
-        '/products/manufacturers'  // ✅ Correct route: /api/v1/products/manufacturers
-      )
-      return result.data?.manufacturers ?? []
+      const { data, error } = await supabase
+        .from('manufacturers')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      return data || [];
     } catch (error) {
-      console.error('Error fetching manufacturers:', error)
-      return []
+      console.error('Error fetching manufacturers:', error);
+      return [];
     }
   },
 
   async getFeaturedProducts(): Promise<Product[]> {
-    try {
-      const result = await api.get<ProductsResponse>('/products/featured')
-      const products = Array.isArray(result.data?.products) ? result.data!.products : []
-      return products.map(convertApiProduct)
-    } catch (error) {
-      console.error('Error fetching featured products:', error)
-      throw error
-    }
+    return this.getProducts({ featured: true, limit: 8 });
   },
 
+  // Admin methods - simplified for now
   async createProduct(productData: any): Promise<Product> {
-    try {
-      const result = await api.post<{ success: boolean; data: { product: any } }>(
-        '/products',
-        productData
-      )
-      if (result.success && result.data?.product) {
-        return convertApiProduct(result.data.product)
-      }
-      throw new Error('Failed to create product')
-    } catch (error) {
-      console.error('Error creating product:', error)
-      throw error
-    }
+    throw new Error('Not implemented in simple mode');
   },
 
   async updateProduct(id: string, productData: any): Promise<Product> {
-    try {
-      const result = await api.put<{ success: boolean; data: { product: any } }>(
-        `/products/${id}`,
-        productData
-      )
-      if (result.success && result.data?.product) {
-        return convertApiProduct(result.data.product)
-      }
-      throw new Error('Failed to update product')
-    } catch (error) {
-      console.error('Error updating product:', error)
-      throw error
-    }
+    throw new Error('Not implemented in simple mode');
   },
 
   async deleteProduct(id: string): Promise<void> {
-    try {
-      await api.delete(`/products/${id}`)
-    } catch (error) {
-      console.error('Error deleting product:', error)
-      throw error
-    }
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async uploadImages(files: File[]): Promise<string[]> {
-    try {
-      const formData = new FormData()
-      files.forEach((file) => formData.append('images', file))
+    const urls: string[] = [];
+    for (const file of files) {
+      const fileName = `${Date.now()} -${file.name} `;
+      const { data, error } = await supabase.storage
+        .from('products')
+        .upload(fileName, file);
 
-      const result = await api.upload<{ success: boolean; data: { urls: string[] } }>(
-        `/uploads`,
-        formData
-      )
+      if (error) throw error;
 
-      return result.data?.urls ?? []
-    } catch (error) {
-      console.error("Error uploading images:", error)
-      throw error
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(fileName);
+
+      urls.push(publicUrl);
     }
+    return urls;
   },
 
   async getBatchProducts(productIds: string[]): Promise<Product[]> {
     try {
-      // Since the backend doesn't have a batch endpoint, fetch products individually
-      // In a real app, we'd implement a batch endpoint in the backend
-      const promises = productIds.map(id => this.getProduct(id));
-      const results = await Promise.all(promises);
-      return results.filter((product): product is Product => product !== null);
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+  *,
+  categories(*),
+  manufacturers(*),
+  product_images(*)
+    `)
+        .in('id', productIds);
+
+      if (error) throw error;
+      return (data || []).map(convertSupabaseProduct);
     } catch (error) {
       console.error('Error fetching batch products:', error);
       return [];
@@ -352,8 +321,6 @@ export const useProducts = (initialFilters?: {
   limit?: number;
 }) => {
   const [products, setProducts] = React.useState<Product[]>([])
-  const [total, setTotal] = React.useState(0)
-  const [hasMore, setHasMore] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -370,6 +337,10 @@ export const useProducts = (initialFilters?: {
       setLoading(false)
     }
   }
+
+  React.useEffect(() => {
+    loadProducts()
+  }, [])
 
   return { products, loading, error, loadProducts }
 }

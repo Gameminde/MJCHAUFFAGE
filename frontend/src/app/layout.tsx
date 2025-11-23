@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="fr" className="h-full">
-      <body className="h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900">
+      <body className="h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900" suppressHydrationWarning={true}>
         <NextIntlClientProvider locale="fr" messages={messages}>
           <AnalyticsProvider>
             {children}

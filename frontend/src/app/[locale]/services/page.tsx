@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import ModernServicesPage from './ModernServicesPage';
+import { createClient } from '@/lib/supabase/server';
 
 type Props = {
   params: { locale: string };
@@ -12,40 +13,34 @@ interface Service {
   description: string | null;
   price: number;
   duration: number;
-  // Assuming you might add an icon identifier in your model later
-  icon?: 'settings' | 'wrench' | 'alert'; 
+  icon?: 'settings' | 'wrench' | 'alert';
 }
 
-// This function fetches data from your backend API
+// This function fetches data from Supabase
 async function getServices(): Promise<Service[]> {
-  // Try to fetch from backend API
-  const backendUrl = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  
-  try {
-    const url = `${backendUrl}/api/services/types`;
-    const res = await fetch(url, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+  const supabase = createClient();
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch services: ${res.status} ${res.statusText}`);
+  try {
+    const { data, error } = await supabase
+      .from('services')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching services:', error);
+      return [];
     }
-    
-    const data = await res.json();
-    
-    if (data.success && Array.isArray(data.data)) {
-      return data.data;
-    } else {
-      throw new Error('Invalid response format from services API');
-    }
+
+    // Cast the data to match the Service interface
+    return (data as any[])?.map(service => ({
+      ...service,
+      // Ensure icon is one of the expected values or undefined
+      icon: ['settings', 'wrench', 'alert'].includes(service.icon) ? service.icon : undefined
+    })) || [];
+
   } catch (error) {
-    console.error('Error fetching services:', error);
-    
-    // Return empty array instead of mock data
-    // The UI should handle empty state gracefully
+    console.error('Unexpected error fetching services:', error);
     return [];
   }
 }
@@ -54,7 +49,7 @@ export default async function ServicesPage({ params: { locale } }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'ServicesPage' });
   const services = await getServices();
-  
+
   return <ModernServicesPage services={services} locale={locale} />;
 }
 

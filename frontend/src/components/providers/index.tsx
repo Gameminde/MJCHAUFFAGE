@@ -1,25 +1,25 @@
 'use client';
 
-import { SessionProvider } from 'next-auth/react';
+import { ReactNode } from 'react';
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { ComparisonProvider } from '@/contexts/ComparisonContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from 'react-hot-toast';
 
 interface ProvidersProps {
-  children: React.ReactNode;
+  children: ReactNode;
   locale?: string;
 }
 
 export function Providers({ children, locale }: ProvidersProps) {
   return (
-    <SessionProvider>
-      <AuthProvider>
-        <WishlistProvider>
-          <ComparisonProvider>
-            {children}
-          </ComparisonProvider>
-        </WishlistProvider>
-      </AuthProvider>
-    </SessionProvider>
+    <AuthProvider>
+      <WishlistProvider>
+        <ComparisonProvider>
+          {children}
+          <Toaster position="bottom-right" />
+        </ComparisonProvider>
+      </WishlistProvider>
+    </AuthProvider>
   );
 }

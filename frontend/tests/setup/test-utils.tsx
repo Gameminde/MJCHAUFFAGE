@@ -94,6 +94,33 @@ export const mockUseLanguage = () => ({
   t: (key: string) => key,
 });
 
+// Stable spies for Router
+const mockRouterPush = vi.fn();
+const mockRouterReplace = vi.fn();
+const mockRouterBack = vi.fn();
+const mockRouterForward = vi.fn();
+const mockRouterRefresh = vi.fn();
+const mockRouterPrefetch = vi.fn();
+
+export const mockUseRouter = () => ({
+  push: mockRouterPush,
+  replace: mockRouterReplace,
+  back: mockRouterBack,
+  forward: mockRouterForward,
+  refresh: mockRouterRefresh,
+  prefetch: mockRouterPrefetch,
+});
+
+// Stable spies for Cart
+const mockCartAddItem = vi.fn();
+const mockCartRemoveItem = vi.fn();
+const mockCartUpdateQuantity = vi.fn();
+const mockCartClearCart = vi.fn();
+const mockCartToggleCart = vi.fn();
+const mockCartClearError = vi.fn();
+const mockCartValidateStock = vi.fn().mockResolvedValue(true);
+const mockCartRefreshItemStock = vi.fn();
+
 export const mockUseCart = () => ({
   items: [],
   total: 0,
@@ -101,27 +128,43 @@ export const mockUseCart = () => ({
   currencyCode: 'DZD',
   isLoading: false,
   error: null,
-  addItem: vi.fn(),
-  removeItem: vi.fn(),
-  updateQuantity: vi.fn(),
-  clearCart: vi.fn(),
-  toggleCart: vi.fn(),
-  clearError: vi.fn(),
+  addItem: mockCartAddItem,
+  removeItem: mockCartRemoveItem,
+  updateQuantity: mockCartUpdateQuantity,
+  clearCart: mockCartClearCart,
+  toggleCart: mockCartToggleCart,
+  clearError: mockCartClearError,
   formatPrice: (price: number) => `${price} د.ج`,
-  validateStock: vi.fn().mockResolvedValue(true),
-  refreshItemStock: vi.fn(),
+  validateStock: mockCartValidateStock,
+  refreshItemStock: mockCartRefreshItemStock,
 });
 
-export const mockUseAuth = () => mockAuthContext;
+// Stable spies for Wishlist
+const mockWishlistAddTo = vi.fn();
+const mockWishlistRemoveFrom = vi.fn();
+const mockWishlistIsIn = vi.fn(() => false);
+const mockWishlistClear = vi.fn();
 
-export const mockUseWishlist = () => mockWishlistContext;
+export const mockUseWishlist = () => ({
+  wishlist: [],
+  addToWishlist: mockWishlistAddTo,
+  removeFromWishlist: mockWishlistRemoveFrom,
+  isInWishlist: mockWishlistIsIn,
+  clearWishlist: mockWishlistClear,
+  loading: false,
+  error: null,
+});
 
-// Mock next/navigation
-export const mockUseRouter = () => ({
-  push: vi.fn(),
-  replace: vi.fn(),
-  back: vi.fn(),
-  forward: vi.fn(),
-  refresh: vi.fn(),
-  prefetch: vi.fn(),
+// Stable spies for Auth
+const mockAuthLogin = vi.fn();
+const mockAuthRegister = vi.fn();
+const mockAuthLogout = vi.fn();
+
+export const mockUseAuth = () => ({
+  user: null,
+  loading: false,
+  error: null,
+  login: mockAuthLogin,
+  register: mockAuthRegister,
+  logout: mockAuthLogout,
 });

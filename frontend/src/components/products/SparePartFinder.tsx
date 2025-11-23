@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { createClient } from '@/lib/supabase/client';
 import { Search, Wrench, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -22,13 +22,14 @@ interface BoilerModel {
 export function SparePartFinder() {
   const router = useRouter();
   const { locale } = useLanguage();
-  
+  const supabase = createClient();
+
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [models, setModels] = useState<BoilerModel[]>([]);
-  
+
   const [selectedManufacturer, setSelectedManufacturer] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('');
-  
+
   const [loadingManufacturers, setLoadingManufacturers] = useState(true);
   const [loadingModels, setLoadingModels] = useState(false);
 
@@ -36,9 +37,15 @@ export function SparePartFinder() {
   useEffect(() => {
     const fetchManufacturers = async () => {
       try {
-        const result = await api.get('/products/manufacturers') as any;
-        if (result.data?.success) {
-          setManufacturers(result.data.data);
+        const { data, error } = await supabase
+          .from('manufacturers')
+          .select('id, name, slug')
+          .eq('is_active', true)
+          .order('name');
+
+        if (error) throw error;
+        if (data) {
+          setManufacturers(data);
         }
       } catch (error) {
         console.error('Failed to fetch manufacturers', error);
@@ -60,9 +67,16 @@ export function SparePartFinder() {
     const fetchModels = async () => {
       setLoadingModels(true);
       try {
-        const result = await api.get(`/boilers/models?manufacturerId=${selectedManufacturer}`) as any;
-        if (result.data?.success) {
-          setModels(result.data.data);
+        const { data, error } = await supabase
+          .from('boiler_models')
+          .select('id, name, series, type')
+          .eq('manufacturer_id', selectedManufacturer)
+          .eq('is_active', true)
+          .order('name');
+
+        if (error) throw error;
+        if (data) {
+          setModels(data);
         }
       } catch (error) {
         console.error('Failed to fetch models', error);
@@ -89,7 +103,7 @@ export function SparePartFinder() {
           </h2>
         </div>
         <p className="text-primary-100 text-sm">
-          {locale === 'ar' 
+          {locale === 'ar'
             ? 'اختر ماركة وموديل جهازك للعثور على القطع المتوافقة 100%'
             : 'Sélectionnez la marque et le modèle pour voir les pièces 100% compatibles'
           }
@@ -110,8 +124,8 @@ export function SparePartFinder() {
               disabled={loadingManufacturers}
             >
               <option value="">
-                {loadingManufacturers 
-                  ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement...') 
+                {loadingManufacturers
+                  ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement...')
                   : (locale === 'ar' ? 'اختر الماركة...' : 'Choisir la marque...')}
               </option>
               {manufacturers.map((man) => (
@@ -121,7 +135,7 @@ export function SparePartFinder() {
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-500">
-              <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+              <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
             </div>
           </div>
         </div>
@@ -139,7 +153,7 @@ export function SparePartFinder() {
               disabled={!selectedManufacturer || loadingModels}
             >
               <option value="">
-                {loadingModels 
+                {loadingModels
                   ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement...')
                   : !selectedManufacturer
                     ? (locale === 'ar' ? 'اختر الماركة أولاً' : 'Sélectionnez la marque d\'abord')
@@ -152,7 +166,7 @@ export function SparePartFinder() {
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-500">
-              <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+              <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
             </div>
             {selectedManufacturer && !loadingModels && models.length === 0 && (
               <p className="text-sm text-amber-600 mt-2">
@@ -166,11 +180,10 @@ export function SparePartFinder() {
         <button
           onClick={handleSearch}
           disabled={!selectedModel}
-          className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all ${
-            selectedModel
+          className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all ${selectedModel
               ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-primary-500/30 transform hover:-translate-y-0.5'
               : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-          }`}
+            }`}
         >
           <Search className="w-5 h-5" />
           {locale === 'ar' ? 'بحث عن القطع' : 'Voir les pièces compatibles'}
@@ -192,4 +205,3 @@ export function SparePartFinder() {
     </div>
   );
 }
-

@@ -44,7 +44,7 @@ export function ModernHero() {
           src="/chaudiere-a-gaz-1024x683-removebg-preview.png"
           alt="Chaudière à gaz moderne - Fond"
           fill
-          className="object-cover"
+          className="w-full h-full"
           priority
           sizes="100vw"
         />

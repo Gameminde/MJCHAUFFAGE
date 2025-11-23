@@ -84,11 +84,11 @@ describe('ModernProductCard', () => {
     renderWithProviders(<ModernProductCard product={mockProduct} />);
 
     // Check for discount badge in the corner
-    const discountBadge = screen.getByText('-20%').closest('.bg-gradient-to-r');
-    expect(discountBadge).toBeInTheDocument();
+    const discountBadges = screen.getAllByText('-20%');
+    expect(discountBadges).toHaveLength(2);
 
-    // Check for discount percentage in price section
-    expect(screen.getByText('-20%')).toBeInTheDocument();
+    const badge = discountBadges[0].closest('.bg-gradient-to-r');
+    expect(badge).toBeInTheDocument();
   });
 
   it('shows featured badge when product is featured', () => {

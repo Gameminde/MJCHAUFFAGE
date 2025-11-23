@@ -12,17 +12,23 @@ interface MiniCartProps {
 
 export function MiniCart({ locale = 'fr' }: MiniCartProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const { 
-    items, 
-    total, 
-    itemCount, 
-    updateQuantity, 
-    removeItem, 
-    formatPrice 
+  const {
+    items,
+    total,
+    itemCount,
+    updateQuantity,
+    removeItem,
+    formatPrice
   } = useCart()
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null)
   const isRTL = locale === 'ar'
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -44,6 +50,14 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
     }
   }
 
+  if (!mounted) {
+    return (
+      <button className="relative p-2 text-gray-600">
+        <ShoppingBag className="h-6 w-6" />
+      </button>
+    )
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Cart Button */}
@@ -53,7 +67,7 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
         aria-label={locale === 'ar' ? 'فتح سلة التسوق' : 'Ouvrir le panier'}
       >
         <ShoppingBag className="h-6 w-6" />
-        
+
         {/* Item Count Badge */}
         {itemCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
@@ -76,9 +90,8 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className={`absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 ${
-          isRTL ? 'left-0' : 'right-0'
-        }`}>
+        <div className={`absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 ${isRTL ? 'left-0' : 'right-0'
+          }`}>
           {/* Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -134,7 +147,7 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
                       <p className="text-xs text-gray-500">
                         {formatPrice(item.price)}
                       </p>
-                      
+
                       {/* Quantity Controls */}
                       <div className="flex items-center mt-1 space-x-1">
                         <button
@@ -177,8 +190,8 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
                 {items.length > 4 && (
                   <div className="text-center pt-2 border-t border-gray-200">
                     <p className="text-xs text-gray-500">
-                      {locale === 'ar' 
-                        ? `و ${items.length - 4} منتجات أخرى` 
+                      {locale === 'ar'
+                        ? `و ${items.length - 4} منتجات أخرى`
                         : `et ${items.length - 4} autres articles`
                       }
                     </p>
@@ -201,8 +214,8 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
 
               {/* Shipping Note */}
               <p className="text-xs text-gray-500">
-                {locale === 'ar' 
-                  ? 'الشحن محسوب عند الخروج' 
+                {locale === 'ar'
+                  ? 'الشحن محسوب عند الخروج'
                   : 'Frais de livraison calculés à la commande'
                 }
               </p>
@@ -217,7 +230,7 @@ export function MiniCart({ locale = 'fr' }: MiniCartProps) {
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   {locale === 'ar' ? 'عرض السلة' : 'Voir le panier'}
                 </Link>
-                
+
                 <Link
                   href={`/${locale}/checkout`}
                   onClick={() => setIsOpen(false)}

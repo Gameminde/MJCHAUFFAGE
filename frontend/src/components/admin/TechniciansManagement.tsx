@@ -1,24 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, User, CheckCircle, XCircle, Plus, Edit } from 'lucide-react'
-import { api } from '@/lib/api'
+import { Search, Plus, Edit, XCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
+// Types matching Supabase schema
 interface Technician {
   id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string
-  employeeId: string
   specialties: string[]
-  isActive: boolean
-  createdAt: string
-  user?: {
+  status: 'active' | 'inactive'
+  created_at: string
+  user: {
+    id: string
     email: string
-    firstName: string
-    lastName: string
-    phone?: string
+    first_name: string
+    last_name: string
+    phone: string
   }
 }
 
@@ -30,59 +27,97 @@ export function TechniciansManagement() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedTechnician, setSelectedTechnician] = useState<Technician | null>(null)
-  
+
   // Form Data
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
-    employeeId: '',
     specialties: ''
   })
 
-  useEffect(() => {
-    fetchTechnicians()
-  }, [])
+  const supabase = createClient()
 
   const fetchTechnicians = async () => {
     setLoading(true)
     try {
-      const result: any = await api.get('/admin/technicians')
-      const data = result.data || result
-      // Handle nested user structure
-      const formattedTechnicians = (data.technicians || []).map((tech: any) => ({
-        ...tech,
-        firstName: tech.firstName || tech.user?.firstName || '',
-        lastName: tech.lastName || tech.user?.lastName || '',
-        email: tech.email || tech.user?.email || '',
-        phone: tech.phone || tech.user?.phone || '',
-      }))
-      setTechnicians(formattedTechnicians)
+      const { data, error } = await supabase
+        .from('technicians')
+        .select(`
+          id,
+          specialties,
+          status,
+          created_at,
+          user:users(id, email, first_name, last_name)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setTechnicians(data || [])
     } catch (err: any) {
+      console.error('Error fetching technicians:', err)
       setError(err.message || 'Failed to fetch technicians')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchTechnicians()
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const payload = {
-        ...formData,
-        specialties: formData.specialties.split(',').map(s => s.trim()).filter(Boolean)
-      }
+      const specialtiesArray = formData.specialties.split(',').map(s => s.trim()).filter(Boolean)
 
       if (showEditModal && selectedTechnician) {
-        await api.put(`/admin/technicians/${selectedTechnician.id}`, payload)
+        // Update technician details
+        const { error: techError } = await supabase
+          .from('technicians')
+          .update({ specialties: specialtiesArray })
+          .eq('id', selectedTechnician.id)
+
+        if (techError) throw techError
+
+        // Update user details
+        const { error: userError } = await supabase
+          .from('users')
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            // phone: formData.phone // Removed to avoid schema error
+          })
+          .eq('id', selectedTechnician.user.id)
+
+        if (userError) throw userError
+
+        alert('Technician updated successfully!')
+
       } else {
-        await api.post('/admin/technicians', payload)
+        // Create new technician using Server Action
+        const { createTechnician } = await import('@/app/actions/technicians')
+
+        const result = await createTechnician({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          specialties: formData.specialties
+        })
+
+        if (!result.success) {
+          throw new Error(result.message)
+        }
+
+        alert(result.message)
       }
 
       await fetchTechnicians()
       resetForm()
     } catch (err: any) {
+      console.error('Error saving technician:', err)
       alert(err.message || 'Operation failed')
     }
   }
@@ -93,7 +128,6 @@ export function TechniciansManagement() {
       lastName: '',
       email: '',
       phone: '',
-      employeeId: '',
       specialties: ''
     })
     setShowAddModal(false)
@@ -104,28 +138,26 @@ export function TechniciansManagement() {
   const openEditModal = (tech: Technician) => {
     setSelectedTechnician(tech)
     setFormData({
-      firstName: tech.firstName,
-      lastName: tech.lastName,
-      email: tech.email,
-      phone: tech.phone || '',
-      employeeId: tech.employeeId,
+      firstName: tech.user.first_name,
+      lastName: tech.user.last_name,
+      email: tech.user.email,
+      phone: tech.user.phone || '',
       specialties: Array.isArray(tech.specialties) ? tech.specialties.join(', ') : tech.specialties || ''
     })
     setShowEditModal(true)
   }
 
-  const filteredTechnicians = technicians.filter(tech => 
-    tech.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tech.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tech.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tech.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredTechnicians = technicians.filter(tech => {
+    const fullName = `${tech.user.first_name} ${tech.user.last_name}`.toLowerCase()
+    return fullName.includes(searchQuery.toLowerCase()) ||
+      tech.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  })
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-neutral-900">Technicians Management</h2>
-        <button 
+        <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
@@ -156,7 +188,6 @@ export function TechniciansManagement() {
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialties</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -168,20 +199,17 @@ export function TechniciansManagement() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        {tech.firstName.charAt(0)}
+                        {tech.user.first_name.charAt(0)}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{tech.firstName} {tech.lastName}</div>
-                        <div className="text-sm text-gray-500">Joined {new Date(tech.createdAt).toLocaleDateString()}</div>
+                        <div className="text-sm font-medium text-gray-900">{tech.user.first_name} {tech.user.last_name}</div>
+                        <div className="text-sm text-gray-500">Joined {new Date(tech.created_at).toLocaleDateString()}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{tech.email}</div>
-                    <div className="text-sm text-gray-500">{tech.phone || 'N/A'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">{tech.employeeId}</span>
+                    <div className="text-sm text-gray-900">{tech.user.email}</div>
+                    <div className="text-sm text-gray-500">{tech.user.phone || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
@@ -193,14 +221,13 @@ export function TechniciansManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      tech.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {tech.isActive ? 'Active' : 'Inactive'}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tech.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                      {tech.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button 
+                    <button
                       onClick={() => openEditModal(tech)}
                       className="text-blue-600 hover:text-blue-900 flex items-center"
                     >
@@ -226,8 +253,15 @@ export function TechniciansManagement() {
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {showAddModal && (
+                <div className="bg-yellow-50 p-3 rounded text-sm text-yellow-800 mb-4">
+                  Note: A default email will be generated for the technician (firstname.lastname@mjchauffage.com).
+                  Default password: Technician123!
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
@@ -235,7 +269,7 @@ export function TechniciansManagement() {
                     required
                     type="text"
                     value={formData.firstName}
-                    onChange={e => setFormData({...formData, firstName: e.target.value})}
+                    onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
@@ -245,44 +279,22 @@ export function TechniciansManagement() {
                     required
                     type="text"
                     value={formData.lastName}
-                    onChange={e => setFormData({...formData, lastName: e.target.value})}
+                    onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
+
+              {/* Email field removed as per request */}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                 <input
-                  required
-                  type="email"
-                  disabled={showEditModal} // Email typically unique/immutable identifier
-                  value={formData.email}
-                  onChange={e => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.employeeId}
-                    onChange={e => setFormData({...formData, employeeId: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
               </div>
 
               <div>
@@ -294,7 +306,7 @@ export function TechniciansManagement() {
                   type="text"
                   placeholder="e.g. Installation, Repair, Gas"
                   value={formData.specialties}
-                  onChange={e => setFormData({...formData, specialties: e.target.value})}
+                  onChange={e => setFormData({ ...formData, specialties: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>

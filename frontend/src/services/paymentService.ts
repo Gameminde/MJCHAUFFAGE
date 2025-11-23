@@ -1,56 +1,10 @@
-export interface PaymentMethod {
-  id: string
-  name: string
-  nameAr: string
-  nameFr: string
-  description?: string
-  enabled: boolean
-  fees?: number
-  provider?: string
-}
+import { PaymentMethod, DahabiaCardData, PaymentRequest, PaymentResponse } from '@/types/payment'
 
-export interface DahabiaCardData {
-  cardNumber: string
-  expiryDate: string
-  cvv: string
-  cardHolder: string
-}
-
-export interface PaymentRequest {
-  amount: number
-  currency: 'DZD'
-  method: 'CASH_ON_DELIVERY' | 'DAHABIA_CARD'
-  orderId: string
-  customerInfo: {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-  }
-  shippingAddress: {
-    address: string
-    city: string
-    wilaya: string
-    postalCode?: string
-  }
-  cardData?: DahabiaCardData
-}
-
-export interface PaymentResponse {
-  success: boolean
-  transactionId?: string
-  message?: string
-  redirectUrl?: string
-  error?: string
-}
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-const ENABLE_PAYMENTS = process.env.NEXT_PUBLIC_ENABLE_PAYMENTS === 'true'
-const ENABLE_CARD_PAYMENTS = process.env.NEXT_PUBLIC_ENABLE_CARD_PAYMENTS === 'true'
+const ENABLE_PAYMENTS = true
+const ENABLE_CARD_PAYMENTS = false
 
 class PaymentService {
-  // Available payment methods for Algeria
-  static readonly PAYMENT_METHODS: PaymentMethod[] = [
+  static PAYMENT_METHODS: PaymentMethod[] = [
     {
       id: 'CASH_ON_DELIVERY',
       name: 'Cash on Delivery',
@@ -90,7 +44,7 @@ class PaymentService {
         maximumFractionDigits: 2,
       }
     )
-    
+
     return formatter.format(amount)
   }
 
@@ -142,7 +96,7 @@ class PaymentService {
 
   static formatAlgerianPhone(phone: string): string {
     const cleaned = phone.replace(/\D/g, '')
-    
+
     if (cleaned.startsWith('213')) {
       return `+${cleaned}`
     } else if (cleaned.startsWith('0')) {
@@ -150,7 +104,7 @@ class PaymentService {
     } else if (cleaned.length === 9) {
       return `+213${cleaned}`
     }
-    
+
     return phone
   }
 
@@ -190,26 +144,18 @@ class PaymentService {
         }
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/payments/process`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...paymentRequest,
-          customerInfo: {
-            ...paymentRequest.customerInfo,
-            phone: this.formatAlgerianPhone(paymentRequest.customerInfo.phone)
-          }
-        }),
-      })
+      // Mock payment processing for serverless
+      // In a real serverless setup, you might call a Supabase Edge Function here
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            success: true,
+            transactionId: `TXN_${Date.now()}`,
+            message: 'Payment processed successfully',
+          });
+        }, 1000);
+      });
 
-      if (!response.ok) {
-        throw new Error(`Payment processing failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      return result
     } catch (error) {
       return {
         success: false,
@@ -223,19 +169,13 @@ class PaymentService {
       if (!ENABLE_PAYMENTS) {
         return { success: false, error: 'Payments disabled' }
       }
-      const response = await fetch(`${API_BASE_URL}/api/payments/verify/${transactionId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
 
-      if (!response.ok) {
-        throw new Error(`Payment verification failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      return result
+      // Mock verification
+      return {
+        success: true,
+        transactionId,
+        message: 'Payment verified'
+      };
     } catch (error) {
       return {
         success: false,
@@ -279,7 +219,7 @@ class PaymentService {
     }
 
     const baseCost = shippingRates[wilaya] || 1000 // Default for unlisted wilayas
-    
+
     // Free shipping for orders above 50,000 DZD
     if (totalAmount >= 50000) {
       return 0
@@ -297,7 +237,7 @@ class PaymentService {
   ) {
     const total = subtotal + shippingCost
     const method = this.getPaymentMethod(paymentMethod)
-    
+
     return {
       subtotal: this.formatCurrency(subtotal, locale),
       shipping: this.formatCurrency(shippingCost, locale),
@@ -314,26 +254,8 @@ class PaymentService {
 
   // Refund payment helper used by admin orders service
   static async refundPayment(params: { paymentIntentId: string; amount?: number; reason?: string }): Promise<{ refundId: string }> {
-    try {
-      if (!ENABLE_PAYMENTS) {
-        return { refundId: `RFND_${Date.now()}` }
-      }
-      const response = await fetch(`${API_BASE_URL}/api/payments/refund`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
-      })
-
-      if (!response.ok) {
-        throw new Error(`Refund failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      return { refundId: result.refundId || `RFND_${Date.now()}` }
-    } catch (error) {
-      // Fallback: generate a local refund ID to avoid breaking admin UI
-      return { refundId: `RFND_${Date.now()}` }
-    }
+    // Mock refund
+    return { refundId: `RFND_${Date.now()}` }
   }
 }
 

@@ -201,10 +201,8 @@ export function Header({ locale }: HeaderProps) {
             {/* Menu Button - Simplified for debugging */}
             <button
               onClick={() => {
-                console.log('Menu button clicked - BEFORE:', isMobileMenuOpen);
                 setIsMobileMenuOpen(prev => {
                   const newState = !prev;
-                  console.log('Menu button clicked - AFTER:', newState);
                   return newState;
                 });
               }}

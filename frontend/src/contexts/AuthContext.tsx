@@ -1,17 +1,17 @@
 // src/contexts/AuthContext.tsx
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { config } from '@/lib/config';
-
+import { createClient } from '@/lib/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 
 // Define types for user and context - matching backend roles
-interface User {
+export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'CUSTOMER' | 'TECHNICIAN' | 'SUPER_ADMIN' | null; // Backend role values
-  // Add other fields as needed (e.g., name, preferences)
+  role: 'ADMIN' | 'CUSTOMER' | 'TECHNICIAN' | 'SUPER_ADMIN' | null;
 }
 
 interface AuthContextType {
@@ -27,6 +27,7 @@ interface AuthContextType {
     phone: string;
   }) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 }
 
 const defaultContext: AuthContextType = {
@@ -36,145 +37,117 @@ const defaultContext: AuthContextType = {
   login: async () => { },
   register: async () => ({ success: false }),
   logout: async () => { },
+  loginWithGoogle: async () => { },
 };
 
-// Create context
 export const AuthContext = createContext<AuthContextType>(defaultContext);
 
-// Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
+  const router = useRouter();
 
-  // Function to fetch current user (calls backend API that checks HTTP-only cookie)
-  const fetchUser = async () => {
+  const fetchUserProfile = async (userId: string) => {
     try {
-      setLoading(true);
-      setError(null);
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-      // Check if we're in admin context (window.location.pathname starts with /admin)
-      const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-
-      // For admin, check authToken from localStorage or try admin endpoint
-      if (isAdminRoute) {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-
-        if (!token) {
-          // No token, not authenticated
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // Try to fetch admin user with token - call backend directly
-        const response = await fetch(`${config.api.ssrBaseURL}/admin/me`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          // Token invalid, clear it
-          if (typeof window !== 'undefined') localStorage.removeItem('authToken');
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-        setUser(data.data?.user || data.user || null);
-      } else {
-        // Regular user authentication - call Next.js API route to avoid cross-origin noise
-        const response = await fetch('/api/auth/me', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-        });
-
-        if (!response.ok) {
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-        setUser(data.data?.user || data.user || null);
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
       }
+
+      return {
+        id: data.id,
+        email: data.email,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        role: data.role as User['role'],
+      };
     } catch (err) {
-      console.error('Auth fetch error:', err);
-      setError((err as Error).message);
-      setUser(null);
-    } finally {
-      setLoading(false);
+      console.error('Error in fetchUserProfile:', err);
+      return null;
     }
   };
 
-  // Login: Send credentials to backend, which sets HTTP-only cookie and returns user
+  useEffect(() => {
+    const initializeAuth = async () => {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const profile = await fetchUserProfile(session.user.id);
+        if (profile) {
+          setUser(profile);
+        } else {
+          // Fallback if profile doesn't exist yet (e.g. trigger delay)
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            firstName: session.user.user_metadata.first_name || '',
+            lastName: session.user.user_metadata.last_name || '',
+            role: (session.user.user_metadata.role as any) || 'CUSTOMER'
+          });
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const profile = await fetchUserProfile(session.user.id);
+        if (profile) {
+          setUser(profile);
+        } else {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            firstName: session.user.user_metadata.first_name || '',
+            lastName: session.user.user_metadata.last_name || '',
+            role: (session.user.user_metadata.role as any) || 'CUSTOMER'
+          });
+        }
+        router.refresh();
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        router.refresh();
+        router.push('/');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, router]);
+
   const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // Check if we're on admin route
-      const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-
-      let userData = null;
-
-      if (isAdminRoute) {
-        // Admin login - call backend directly (no Next.js API proxy for admin routes)
-        const response = await fetch(`${config.api.ssrBaseURL}/admin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Login failed');
-        }
-
-        const data = await response.json();
-
-        // Store token in localStorage for admin
-        if (data.token && typeof window !== 'undefined') {
-          localStorage.setItem('authToken', data.token);
-        }
-
-        userData = data.user || data.data?.user || null;
-        setUser(userData);
-      } else {
-        // Regular user login - call backend API directly
-        const response = await fetch(`${config.api.baseURL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Login failed');
-        }
-
-        const data = await response.json();
-        userData = data.data?.user || data.user || null;
-        setUser(userData);
-      }
-
-      return userData; // Return user data for redirection logic
+      if (error) throw error;
+      return data.user;
     } catch (err) {
       setError((err as Error).message);
-      throw err; // Re-throw so login page can handle it
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Register: Send registration data to backend
   const register = async (data: {
     email: string;
     password: string;
@@ -182,23 +155,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     lastName: string;
     phone: string;
   }) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      // Call backend API directly
-      console.log('Sending registration data:', data);
-      const response = await fetch(`${config.api.baseURL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            phone: data.phone,
+            role: 'CUSTOMER', // Default role
+          },
+        },
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Registration failed');
-      }
+      if (error) throw error;
 
       return { success: true };
     } catch (err) {
@@ -210,62 +183,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Logout: Call backend to invalidate session/cookie
   const logout = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // Check if we're on admin route
-      const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-
-      if (isAdminRoute) {
-        // Admin logout - clear localStorage token
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('authToken');
-        }
-
-        // Call backend to clear cookie - call backend directly
-        const response = await fetch(`${config.api.ssrBaseURL}/admin/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('authToken') || '' : ''}`,
-          },
-          credentials: 'include',
-        });
-
-        // Don't throw error if logout fails, just clear local state
-      } else {
-        // Regular user logout - call backend API directly
-        const response = await fetch(`${config.api.baseURL}/auth/logout`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-
-        // Don't throw error if logout fails, just clear local state
-      }
-
+      await supabase.auth.signOut();
       setUser(null);
     } catch (err) {
       console.error('Logout error:', err);
       setError((err as Error).message);
-      // Always clear user on logout attempt
-      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial fetch on mount
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  const loginWithGoogle = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout, loginWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook for consumption
 export const useAuth = () => React.useContext(AuthContext);
