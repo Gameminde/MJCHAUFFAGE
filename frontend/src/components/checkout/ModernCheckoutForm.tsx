@@ -56,6 +56,7 @@ export function ModernCheckoutForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [wilayas] = useState<any[]>(ALGERIA_WILAYAS);
+  const [loadingWilayas] = useState(false); // Added missing state
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const shippingCost = 600; // Default or calculated
@@ -305,8 +306,8 @@ export function ModernCheckoutForm() {
                           value={shippingAddress.region}
                           onChange={(e) => handleInputChange('region', e.target.value)}
                           className={`form-input w-full px-4 py-3 rounded-lg border transition-all ${wilayas.length === 0
-                              ? 'border-red-300 bg-red-50'
-                              : 'border-neutral-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                            ? 'border-red-300 bg-red-50'
+                            : 'border-neutral-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
                             }`}
                           required
                         >

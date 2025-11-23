@@ -196,14 +196,14 @@ export const ModernProductCardOptimized = React.memo(function ModernProductCardO
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="group cursor-pointer"
+      className="group cursor-pointer h-full"
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 border border-neutral-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 border border-neutral-100 overflow-hidden flex flex-col h-full">
         {/* Image Container */}
-        <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
+        <div className="relative w-full aspect-square overflow-hidden bg-gray-50 flex-shrink-0">
           <Image
             src={productImage}
             alt={product.name}
@@ -286,7 +286,7 @@ export const ModernProductCardOptimized = React.memo(function ModernProductCardO
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 flex-1 flex flex-col min-h-[160px]">
           {/* Category & Brand */}
           <div className="flex items-center justify-between text-xs text-neutral-500">
             <span>{product.category?.name}</span>
@@ -294,7 +294,7 @@ export const ModernProductCardOptimized = React.memo(function ModernProductCardO
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-neutral-900 line-clamp-2 group-hover:text-orange-600 transition-colors">
+          <h3 className="font-semibold text-neutral-900 line-clamp-2 group-hover:text-orange-600 transition-colors min-h-[48px]">
             {product.name}
           </h3>
 
@@ -310,7 +310,7 @@ export const ModernProductCardOptimized = React.memo(function ModernProductCardO
           </div>
 
           {/* Price */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-auto">
             <span className="text-lg font-bold text-neutral-900">
               {new Intl.NumberFormat(numberLocale).format(displayPrice)} DA
             </span>

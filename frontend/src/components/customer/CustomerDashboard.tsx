@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { useWishlist } from '@/contexts/WishlistContext'
 import {
   User,
   ShoppingBag,
@@ -44,38 +45,13 @@ interface CustomerDashboardProps {
 
 type DashboardSection = 'overview' | 'orders' | 'services' | 'profile' | 'addresses' | 'favorites'
 
-// Mock Data for development
-const MOCK_FAVORITES: Product[] = [
-  {
-    id: '1',
-    name: 'Chaudière Murale Gaz',
-    slug: 'chaudiere-murale-gaz',
-    sku: 'CH-GAZ-001',
-    description: 'Chaudière haute performance',
-    shortDescription: 'Chaudière gaz',
-    price: 125000,
-    salePrice: null,
-    stockQuantity: 10,
-    weight: 25,
-    dimensions: null,
-    specifications: {},
-    features: [],
-    images: [{ id: '1', url: '/chaudiere-a-gaz-1024x683-removebg-preview.png', altText: 'Chaudière' }],
-    category: { id: '1', name: 'Chaudières', slug: 'chaudieres' },
-    manufacturer: { id: '1', name: 'Saunier Duval', slug: 'saunier-duval' },
-    isFeatured: true,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-]
-
 import AppointmentModal from '@/components/services/AppointmentModal'
 
 export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
   const t = useTranslations('dashboard')
   const router = useRouter()
   const { logout } = useAuth()
+  const { items: wishlistItems } = useWishlist()
   const supabase = createClient()
   const [activeSection, setActiveSection] = useState<DashboardSection>('overview')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -101,12 +77,13 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
   const [orders, setOrders] = useState<any[]>([])
   const [services, setServices] = useState<any[]>([])
   const [addresses, setAddresses] = useState<any[]>([])
-  const [favorites, setFavorites] = useState<Product[]>([])
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
 
   useEffect(() => {
     fetchDashboardData()
-  }, [])
+  }, [wishlistItems])
 
   const fetchDashboardData = async () => {
     setIsLoading(true)
@@ -210,8 +187,67 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
         setAddresses([]);
       }
 
-      // Favorites - Mock for now as no endpoint exists
-      setFavorites(MOCK_FAVORITES);
+      // Fetch Favorites - Get full product details for wishlist items
+      if (wishlistItems.length > 0) {
+        const productIds = wishlistItems.map(item => item.productId);
+
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select(`
+            *,
+            category:categories(id, name, slug),
+            manufacturer:manufacturers(id, name, slug),
+            images:product_images(id, url, alt_text, sort_order)
+          `)
+          .in('id', productIds)
+          .eq('is_active', true);
+
+        if (productsData) {
+          const mappedProducts: Product[] = productsData.map(product => ({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            sku: product.sku,
+            description: product.description || '',
+            shortDescription: product.short_description || '',
+            price: Number(product.price),
+            salePrice: product.sale_price ? Number(product.sale_price) : null,
+            stockQuantity: product.stock_quantity,
+            weight: product.weight,
+            dimensions: product.dimensions,
+            specifications: typeof product.specifications === 'string'
+              ? JSON.parse(product.specifications)
+              : product.specifications || {},
+            features: Array.isArray(product.features) ? product.features : [],
+            images: product.images
+              .sort((a: any, b: any) => a.sort_order - b.sort_order)
+              .map((img: any) => ({
+                id: img.id,
+                url: img.url,
+                altText: img.alt_text || product.name
+              })),
+            category: product.category ? {
+              id: product.category.id,
+              name: product.category.name,
+              slug: product.category.slug
+            } : { id: '', name: '', slug: '' },
+            manufacturer: product.manufacturer ? {
+              id: product.manufacturer.id,
+              name: product.manufacturer.name,
+              slug: product.manufacturer.slug
+            } : undefined,
+            isFeatured: product.is_featured,
+            isActive: product.is_active,
+            createdAt: product.created_at,
+            updatedAt: product.updated_at
+          }));
+          setFavoriteProducts(mappedProducts);
+        } else {
+          setFavoriteProducts([]);
+        }
+      } else {
+        setFavoriteProducts([]);
+      }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -231,20 +267,26 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
   }
 
   const renderStatusBadge = (status: string) => {
+    // Normalize status to lowercase for consistent matching
+    const normalizedStatus = status?.toLowerCase().replace('_', '') || 'pending';
+
     const styles = {
       delivered: 'bg-green-100 text-green-800',
       completed: 'bg-green-100 text-green-800',
       processing: 'bg-blue-100 text-blue-800',
       scheduled: 'bg-blue-100 text-blue-800',
+      inprogress: 'bg-blue-100 text-blue-800',
       pending: 'bg-yellow-100 text-yellow-800',
-      cancelled: 'bg-red-100 text-red-800'
+      cancelled: 'bg-red-100 text-red-800',
+      canceled: 'bg-red-100 text-red-800'
     }
+
     const statusKey = `status_${status}` as any;
     // Fallback for untranslated status or specific keys
     const label = t(statusKey) === statusKey ? status : t(statusKey);
 
     return (
-      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status as keyof typeof styles] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[normalizedStatus as keyof typeof styles] || 'bg-gray-100 text-gray-800'}`}>
         {label}
       </span>
     )
@@ -393,9 +435,9 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t('favorites')}</h1>
 
-      {favorites.length > 0 ? (
+      {favoriteProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favorites.map((product) => (
+          {favoriteProducts.map((product) => (
             <ModernProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -507,7 +549,7 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
             </div>
             <div className={`${isRTL ? 'mr-4' : 'ml-4'}`}>
               <p className="text-sm font-medium text-gray-500">{t('upcomingServices')}</p>
-              <p className="text-2xl font-bold text-gray-900">2</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.upcomingServices.length}</p>
             </div>
           </div>
         </div>
@@ -528,21 +570,24 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
             </button>
           </div>
           <div className="space-y-4">
-            {/* Sample order items */}
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
-              <div>
-                <p className="font-medium text-gray-900">#ORD-001234</p>
-                <p className="text-sm text-gray-500">{t('orderDate')}: 15/01/2024</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">
-                  {formatCurrency(45000, locale as 'fr' | 'ar')}
-                </p>
-                <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full mt-1">
-                  {t('delivered')}
-                </span>
-              </div>
-            </div>
+            {stats.recentOrders.length > 0 ? (
+              stats.recentOrders.map((order: any) => (
+                <div key={order.id} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
+                  <div>
+                    <p className="font-medium text-gray-900">#{order.orderNumber || order.id.substring(0, 8)}</p>
+                    <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString(locale)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-gray-900">
+                      {formatCurrency(order.totalAmount, locale as 'fr' | 'ar')}
+                    </p>
+                    {renderStatusBadge(order.status)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">{t('noOrders')}</p>
+            )}
           </div>
         </div>
 
@@ -559,20 +604,24 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
             </button>
           </div>
           <div className="space-y-4">
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
-                  <Calendar className="w-5 h-5" />
+            {stats.upcomingServices.length > 0 ? (
+              stats.upcomingServices.map((service: any) => (
+                <div key={service.id} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${service.serviceType?.name?.toLowerCase().includes('maintenance') ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+                      <Calendar className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{service.serviceType?.name || t('serviceRequest')}</p>
+                      <p className="text-sm text-gray-500">{new Date(service.requestedDate).toLocaleDateString(locale)}</p>
+                    </div>
+                  </div>
+                  {renderStatusBadge(service.status)}
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">{t('maintenanceService')}</p>
-                  <p className="text-sm text-gray-500">25/01/2024 - 14:00</p>
-                </div>
-              </div>
-              <span className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                {t('scheduled')}
-              </span>
-            </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">{t('noServices')}</p>
+            )}
           </div>
         </div>
       </div>

@@ -214,17 +214,49 @@ export const cartService = {
   async syncCart(localItems: CartItem[], userId: string): Promise<Cart | null> {
     if (!userId) return null;
     // Strategy: Merge local items into server cart.
-    // For simplicity: Add local items to server if they don't exist or update quantity.
-    // Then clear local items (handled by store).
+    // Handle duplicates gracefully with upsert logic
 
     try {
-      for (const item of localItems) {
-        await this.addToCart({
-          userId,
-          productId: item.productId,
-          quantity: item.quantity
-        });
+      // Get customer ID first
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!customer) {
+        console.error('Customer not found for user:', userId);
+        return null;
       }
+
+      // Sync each item with upsert logic
+      for (const item of localItems) {
+        // Check if item already exists in cart
+        const { data: existing } = await supabase
+          .from('cart_items')
+          .select('id, quantity')
+          .eq('customer_id', customer.id)
+          .eq('product_id', item.productId)
+          .maybeSingle();
+
+        if (existing) {
+          // Update quantity if item exists
+          await supabase
+            .from('cart_items')
+            .update({ quantity: existing.quantity + item.quantity })
+            .eq('id', existing.id);
+        } else {
+          // Insert new item if it doesn't exist
+          await supabase
+            .from('cart_items')
+            .insert({
+              customer_id: customer.id,
+              product_id: item.productId,
+              quantity: item.quantity
+            });
+        }
+      }
+      
       return this.getCart(userId);
     } catch (error) {
       console.error('Error syncing cart:', error);
