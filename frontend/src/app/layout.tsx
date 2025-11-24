@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 // Removed next/font for build reliability - using system fonts
 import '../styles/globals.css'
 import { AnalyticsListener } from '../components/analytics/AnalyticsListener'
+import { AnalyticsProvider } from '../components/analytics/AnalyticsProvider'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
+import { BrowserExtensionCleaner } from '../components/common/BrowserExtensionCleaner'
 
 export const metadata: Metadata = {
   title: 'MJ CHAUFFAGE - Professional Heating Solutions',
@@ -37,8 +40,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="fr" className="h-full">
       <body className="h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900" suppressHydrationWarning={true}>
         <NextIntlClientProvider locale="fr" messages={messages}>
-          <AnalyticsListener />
-          {children}
+          <BrowserExtensionCleaner />
+          <AnalyticsProvider>
+            <Suspense fallback={null}>
+              <AnalyticsListener />
+            </Suspense>
+            {children}
+          </AnalyticsProvider>
         </NextIntlClientProvider>
         {/* Service Worker Registration - Fixed for client-side */}
         <script

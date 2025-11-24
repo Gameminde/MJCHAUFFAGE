@@ -5,6 +5,8 @@ import { RevenueTrendChart, ConversionFunnelChart, DeviceBreakdownChart } from '
 import { DateRangeFilter } from '@/components/admin/analytics/DateRangeFilter';
 import { LowStockList } from '@/components/admin/analytics/LowStockList';
 import { ExportButton } from '@/components/admin/analytics/ExportButton';
+import { TopProductsList } from '@/components/admin/analytics/TopProductsList';
+import { extendedAnalyticsService } from '@/services/extendedAnalyticsService';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,12 +48,13 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
   const dateRange = getDateRange(range);
 
   // Fetch all data in parallel
-  const [metrics, funnel, revenueTrend, deviceBreakdown, lowStockProducts] = await Promise.all([
+  const [metrics, funnel, revenueTrend, deviceBreakdown, lowStockProducts, topProducts] = await Promise.all([
     analyticsDashboardService.getDashboardMetrics(dateRange),
     analyticsDashboardService.getConversionFunnel(dateRange),
     analyticsDashboardService.getRevenueTrend(dateRange),
     analyticsDashboardService.getDeviceBreakdown(dateRange),
-    analyticsDashboardService.getLowStockProducts()
+    analyticsDashboardService.getLowStockProducts(),
+    extendedAnalyticsService.getTopProducts(dateRange, 5)
   ]);
 
   const exportData = {
@@ -99,6 +102,9 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
 
         {/* Sidebar Column */}
         <div className="space-y-8">
+          {/* Top Products */}
+          <TopProductsList products={topProducts} />
+
           {/* Low Stock Alert */}
           <LowStockList products={lowStockProducts} />
 

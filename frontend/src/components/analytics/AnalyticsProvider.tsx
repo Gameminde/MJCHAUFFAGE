@@ -1,15 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
-import analyticsService from '../../services/analyticsService';
+import { analyticsService } from '../../services/analyticsService';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface AnalyticsContextType {
   trackProductView: (productId: string, categoryId?: string, value?: number) => void;
   trackAddToCart: (productId: string, quantity: number, value: number, categoryId?: string) => void;
   trackRemoveFromCart: (productId: string, quantity: number, value: number) => void;
-  trackBeginCheckout: (value: number, items: Array<{productId: string, quantity: number, value: number}>) => void;
-  trackPurchase: (orderId: string, value: number, items: Array<{productId: string, quantity: number, value: number}>) => void;
+  trackBeginCheckout: (value: number, items: Array<{ productId: string, quantity: number, value: number }>) => void;
+  trackPurchase: (orderId: string, value: number, items: Array<{ productId: string, quantity: number, value: number }>) => void;
   trackCategoryView: (categoryId: string, categoryName?: string) => void;
   trackSearch: (searchTerm: string, resultsCount?: number) => void;
   setUserId: (userId: string) => void;

@@ -12,7 +12,7 @@ export function ModernHero() {
   const { isMobile } = useMobile();
 
   return (
-    <section className="relative h-screen min-h-[600px] w-full overflow-hidden">
+    <section className="relative h-screen min-h-[100vh] w-full overflow-hidden">
       {/* Background Image */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat bg-gray-900"

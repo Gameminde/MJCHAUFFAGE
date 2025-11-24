@@ -191,7 +191,7 @@ export default function ServiceBooking({ locale }: ServiceBookingProps) {
         notes: `Address details: Building ${bookingForm.address.building || '-'}, Floor ${bookingForm.address.floor || '-'}, Apt ${bookingForm.address.apartment || '-'}`
       }
 
-      console.log('🚀 Submitting booking data:', bookingData);
+
 
       const { error } = await supabase
         .from('service_requests')

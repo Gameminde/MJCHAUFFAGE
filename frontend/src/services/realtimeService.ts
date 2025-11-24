@@ -25,7 +25,7 @@ class RealtimeService {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Connected to Supabase Realtime');
+          // Successfully connected to realtime
         }
       });
 

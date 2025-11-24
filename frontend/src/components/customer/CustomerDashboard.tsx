@@ -262,7 +262,7 @@ export function CustomerDashboard({ locale, user }: CustomerDashboardProps) {
   }
 
   const handlePlaceholderAction = (action: string) => {
-    console.log(`Action triggered: ${action}`)
+    // Action handler for dashboard interactions
     // Could add a toast notification here
   }
 
