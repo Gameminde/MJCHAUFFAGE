@@ -94,7 +94,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 space-y-6">
           <div>
             <span className="text-sm uppercase text-blue-600">{product.category?.name}</span>
-            <h1 className="mt-2 text-3xl font-bold text-gray-900">{product.name}</h1>
+            <h1 className="mt-2 text-xl md:text-3xl font-bold text-gray-900">{product.name}</h1>
           </div>
 
           <p className="text-gray-600 leading-relaxed">
@@ -110,8 +110,8 @@ export default async function ProductDetailPage({ params }: Props) {
             </span>
             {product.salePrice && (
               <span className="text-sm text-gray-500 line-through">
--                {product.price.toLocaleString()} {isArabic ? 'د.ج' : 'DA'}
-+                {product.price.toLocaleString(numberLocale)} {isArabic ? 'د.ج' : 'DA'}
+                -                {product.price.toLocaleString()} {isArabic ? 'د.ج' : 'DA'}
+                +                {product.price.toLocaleString(numberLocale)} {isArabic ? 'د.ج' : 'DA'}
               </span>
             )}
           </div>

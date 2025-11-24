@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, AlertCircle, Tool } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts'
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, AlertCircle, Wrench } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts'
 import {
   getBusinessMetrics,
   getSalesTrends,
@@ -97,7 +97,7 @@ export function AnalyticsDashboard() {
   }
 
   const formatCurrency = (value: number) => {
-    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD', maximumFractionDigits: 0 })
   }
 
   const formatGrowth = (growth: number) => {
@@ -252,7 +252,7 @@ export function AnalyticsDashboard() {
               <p className="text-xs font-medium text-neutral-600 uppercase">Service Requests</p>
               <p className="text-xl font-bold text-neutral-900 mt-1">{metrics.totalServiceRequests}</p>
             </div>
-            <Tool className="w-8 h-8 text-primary-600" />
+            <Wrench className="w-8 h-8 text-primary-600" />
           </div>
           {formatGrowth(metrics.serviceGrowth)}
         </div>
@@ -300,8 +300,8 @@ export function AnalyticsDashboard() {
               <button
                 onClick={() => setChartView('trends')}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${chartView === 'trends'
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
                   }`}
               >
                 📈 Trends
@@ -309,8 +309,8 @@ export function AnalyticsDashboard() {
               <button
                 onClick={() => setChartView('categories')}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${chartView === 'categories'
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
                   }`}
               >
                 🥧 Categories
@@ -318,8 +318,8 @@ export function AnalyticsDashboard() {
               <button
                 onClick={() => setChartView('segments')}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${chartView === 'segments'
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
                   }`}
               >
                 👥 Segments
@@ -332,7 +332,17 @@ export function AnalyticsDashboard() {
           {chartView === 'trends' && (
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <AreaChart data={salesData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis
                     dataKey="date"
@@ -385,27 +395,27 @@ export function AnalyticsDashboard() {
                       return null
                     }}
                   />
-                  <Line
+                  <Area
                     yAxisId="revenue"
                     type="monotone"
                     dataKey="revenue"
                     stroke="#3b82f6"
                     strokeWidth={3}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6 }}
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
                     name="Revenue"
                   />
-                  <Line
+                  <Area
                     yAxisId="orders"
                     type="monotone"
                     dataKey="orders"
                     stroke="#f59e0b"
                     strokeWidth={3}
-                    dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6 }}
+                    fillOpacity={1}
+                    fill="url(#colorOrders)"
                     name="Orders"
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
@@ -455,13 +465,23 @@ export function AnalyticsDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={customerSegments}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="segment" fontSize={12} />
-                    <YAxis fontSize={12} />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Bar dataKey="totalRevenue" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                  </BarChart>
+                  <PieChart>
+                    <Pie
+                      data={customerSegments}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ segment, percentage }) => `${segment}: ${percentage.toFixed(1)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="count"
+                    >
+                      {customerSegments.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number) => value} />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
               <div className="space-y-3">
@@ -469,10 +489,13 @@ export function AnalyticsDashboard() {
                 {customerSegments.map((seg, idx) => (
                   <div key={idx} className="p-3 bg-neutral-50 rounded-lg">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-neutral-900">{seg.segment}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                        <span className="font-medium text-neutral-900">{seg.segment}</span>
+                      </div>
                       <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded">{seg.count} customers</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2 text-sm pl-5">
                       <div>
                         <span className="text-neutral-600">Revenue:</span>
                         <div className="font-semibold">{formatCurrency(seg.totalRevenue)}</div>

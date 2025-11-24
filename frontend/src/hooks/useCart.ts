@@ -43,7 +43,8 @@ export const useCart = () => {
       new Intl.NumberFormat(locale === 'ar' ? 'ar-DZ' : 'fr-DZ', {
         style: 'currency',
         currency: currencyConfig.code,
-        minimumFractionDigits: currencyConfig.decimalPlaces,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
       }).format(price),
     [currencyConfig, locale],
   );

@@ -22,6 +22,8 @@ import { ModernHero } from '@/components/modern-home/ModernHero';
 import { ModernCategories } from '@/components/modern-home/ModernCategories';
 import { ModernWhyChooseUs } from '@/components/modern-home/ModernWhyChooseUs';
 import { SparePartFinder } from '@/components/products/SparePartFinder';
+import { TrustBar } from '@/components/home/TrustBar';
+import { MobileCallButton } from '@/components/home/MobileCallButton';
 
 type Props = {
   params: { locale: string };
@@ -92,6 +94,9 @@ export default function ModernHomePage({ params }: Props) {
       {/* Hero Section - Nouveau design moderne */}
       <ModernHero />
 
+      {/* Trust Bar - Desktop Only */}
+      <TrustBar />
+
       {/* Categories Section - Nouveau design moderne */}
       <ModernCategories />
 
@@ -121,7 +126,11 @@ export default function ModernHomePage({ params }: Props) {
           </Card>
         </div>
       </section>
+
+      {/* Mobile Call Button - Mobile Only */}
+      <MobileCallButton />
     </>
   );
 }
+
 

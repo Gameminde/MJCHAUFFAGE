@@ -58,7 +58,7 @@ export function CustomersManagement() {
         // Ideally we should fetch customers table first, but for now we will rely on the fact 
         // that we need to map user_id (from users) -> customer_id (in orders)
         // This logic is slightly flawed because orders use customer_id, not user_id directly.
-        
+
         // Let's fetch customers table mapping first
         return user
       })
@@ -67,7 +67,7 @@ export function CustomersManagement() {
       const { data: customersData, error: custError } = await supabase
         .from('customers')
         .select('*')
-      
+
       if (custError) throw custError
 
       const customersMap = new Map(customersData.map(c => [c.user_id, c]))
@@ -80,12 +80,12 @@ export function CustomersManagement() {
           .from('orders')
           .select('customer_id, total_amount, created_at')
           .in('customer_id', customerIds)
-        
+
         if (ordError) {
-             console.warn("Orders fetch failed (likely 406 due to empty list or RLS). Continuing without orders data.");
-             // We don't throw here to avoid crashing the whole page if just orders fail
+          console.warn("Orders fetch failed (likely 406 due to empty list or RLS). Continuing without orders data.");
+          // We don't throw here to avoid crashing the whole page if just orders fail
         } else {
-             allOrders = data || [];
+          allOrders = data || [];
         }
       }
 
@@ -292,7 +292,7 @@ export function CustomersManagement() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {customer.total_spent.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
+                        {customer.total_spent.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD', maximumFractionDigits: 0 })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
@@ -354,7 +354,7 @@ export function CustomersManagement() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Total Spent</p>
-                        <p className="font-medium">{selectedCustomer.total_spent.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}</p>
+                        <p className="font-medium">{selectedCustomer.total_spent.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD', maximumFractionDigits: 0 })}</p>
                       </div>
                     </div>
                   </div>

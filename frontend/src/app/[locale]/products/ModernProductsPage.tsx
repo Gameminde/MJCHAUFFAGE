@@ -56,7 +56,7 @@ export default function ModernProductsPage({
 
   const applyFilters = (filters: FilterValues) => {
     const params = new URLSearchParams();
-    
+
     if (filters.search) params.set('search', filters.search);
     if (filters.categories && filters.categories.length) {
       params.set('categories', filters.categories.join(','));
@@ -71,7 +71,7 @@ export default function ModernProductsPage({
     if (filters.limit != null) params.set('limit', String(filters.limit));
     if (filters.sortBy) params.set('sortBy', filters.sortBy);
     if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
-    
+
     params.set('page', '1');
     router.push(`/${locale}/products?${params.toString()}`);
   };
@@ -122,7 +122,7 @@ export default function ModernProductsPage({
             <Button
               variant="outline"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden h-11 px-4"
               onClick={() => setShowFilters(true)}
             >
               <Menu className="w-5 h-5" />
@@ -222,7 +222,7 @@ export default function ModernProductsPage({
             ) : (
               <div className={
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                  ? 'grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6'
                   : 'space-y-4'
               }>
                 {initialProducts.map(product => (
@@ -252,11 +252,10 @@ export default function ModernProductsPage({
                           params.set('page', String(page));
                           router.push(`/${locale}/products?${params.toString()}`);
                         }}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                          page === initialPagination.page
-                            ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
-                            : 'bg-white text-neutral-700 hover:bg-orange-50 hover:text-orange-700 border border-neutral-200'
-                        }`}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${page === initialPagination.page
+                          ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
+                          : 'bg-white text-neutral-700 hover:bg-orange-50 hover:text-orange-700 border border-neutral-200'
+                          }`}
                       >
                         {page}
                       </button>

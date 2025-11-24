@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 // Removed next/font for build reliability - using system fonts
 import '../styles/globals.css'
-import { AnalyticsProvider } from '../components/analytics/AnalyticsProvider'
+import { AnalyticsListener } from '../components/analytics/AnalyticsListener'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 
@@ -37,9 +37,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="fr" className="h-full">
       <body className="h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900" suppressHydrationWarning={true}>
         <NextIntlClientProvider locale="fr" messages={messages}>
-          <AnalyticsProvider>
-            {children}
-          </AnalyticsProvider>
+          <AnalyticsListener />
+          {children}
         </NextIntlClientProvider>
         {/* Service Worker Registration - Fixed for client-side */}
         <script

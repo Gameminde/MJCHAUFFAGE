@@ -191,11 +191,15 @@ export async function getBusinessMetrics(timeframe: '7d' | '30d' | '90d' | '1y' 
         .lte('created_at', previousRange.endDate);
 
     // Low stock products
-    const { data: lowStock } = await supabase
+    const { data: allProducts } = await supabase
         .from('products')
-        .select('id')
-        .lte('stock_quantity', supabase.rpc('COALESCE', { value: 'min_stock', fallback: 5 }))
+        .select('id, stock_quantity, min_stock')
         .eq('is_active', true);
+
+    const lowStock = allProducts?.filter((p: any) => {
+        const minStock = p.min_stock || 5;
+        return p.stock_quantity <= minStock;
+    }) || [];
 
     // Calculate conversion rate (orders / unique sessions)
     // For now, use a simplified metric: completed orders / total orders initiated
@@ -440,33 +444,51 @@ export async function getCustomerSegments(): Promise<CustomerSegment[]> {
     }
 
     // Fallback: calculate on the fly
+    // Fetch customers with their orders to calculate metrics
     const { data: customers } = await supabase
         .from('customers')
         .select(`
-      id,
-      total_spent,
-      order_count,
-      last_order_at,
-      created_at
-    `);
+            id,
+            created_at,
+            orders (
+                id,
+                total_amount,
+                created_at,
+                status
+            )
+        `);
 
     if (!customers) return [];
 
     const customerSegmentData = customers.map((c: any) => {
-        const daysSinceLastOrder = c.last_order_at
-            ? Math.floor((Date.now() - new Date(c.last_order_at).getTime()) / (1000 * 60 * 60 * 24))
+        const validOrders = c.orders?.filter((o: any) => o.status !== 'CANCELLED') || [];
+        const totalSpent = validOrders.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
+        const orderCount = validOrders.length;
+
+        // Find last order date
+        let lastOrderDate = null;
+        if (validOrders.length > 0) {
+            // Sort orders by date descending
+            const sortedOrders = [...validOrders].sort((a: any, b: any) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            lastOrderDate = sortedOrders[0].created_at;
+        }
+
+        const daysSinceLastOrder = lastOrderDate
+            ? Math.floor((Date.now() - new Date(lastOrderDate).getTime()) / (1000 * 60 * 60 * 24))
             : 999;
 
         let segment = 'NEW';
-        if (c.total_spent > 50000) segment = 'VIP';
+        if (totalSpent > 50000) segment = 'VIP';
         else if (daysSinceLastOrder > 180) segment = 'LOST';
         else if (daysSinceLastOrder > 90) segment = 'AT_RISK';
-        else if (c.order_count > 1) segment = 'REGULAR';
+        else if (orderCount > 1) segment = 'REGULAR';
 
         return {
             segment,
-            revenue: c.total_spent || 0,
-            avgOrder: c.order_count > 0 ? (c.total_spent || 0) / c.order_count : 0,
+            revenue: totalSpent,
+            avgOrder: orderCount > 0 ? totalSpent / orderCount : 0,
         };
     });
 

@@ -308,149 +308,26 @@ export const ordersService = {
   },
 
   async createOrder(
-    data: any // Typed as any for flexibility during migration, but should be strictly typed
+    data: any // Should be typed with a DTO
   ): Promise<Order> {
-    const { items, shippingAddress, customerInfo, paymentMethod, subtotal, shippingAmount, totalAmount, userId } = data;
+    const { items, shippingAddress, customerInfo, paymentMethod, userId } = data;
 
-    // 1. Get or Create Customer
-    let customerId = data.customerId;
-
-    if (!customerId) {
-      if (userId) {
-        // Ensure user exists in public.users to satisfy FK constraint
-        // This is a fallback for when triggers fail or don't exist
-        const { data: publicUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (!publicUser) {
-           console.log('User not found in public.users, creating sync record...');
-           const { error: userError } = await supabase
-             .from('users')
-             .insert({
-               id: userId,
-               email: customerInfo?.email || `missing-email-${userId}@placeholder.com`,
-               first_name: customerInfo?.firstName,
-               last_name: customerInfo?.lastName,
-               role: 'CUSTOMER'
-             });
-            
-           if (userError) {
-             console.error('Error creating public user:', userError);
-             // We continue, hoping for the best (or explicit failure downstream)
-           }
-        }
-
-        // Try to find existing customer for user
-        const { data: existingCustomer } = await supabase
-          .from('customers')
-          .select('id')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (existingCustomer) {
-          customerId = existingCustomer.id;
-        } else {
-          // Create customer for user
-          const { data: newCustomer, error: custError } = await supabase
-            .from('customers')
-            .insert({
-              user_id: userId,
-              first_name: customerInfo?.firstName,
-              last_name: customerInfo?.lastName,
-              email: customerInfo?.email,
-              phone: customerInfo?.phone,
-            })
-            .select()
-            .single();
-
-          if (custError) throw custError;
-          customerId = newCustomer.id;
-        }
-      } else {
-        // Guest customer
-        const { data: newCustomer, error: custError } = await supabase
-          .from('customers')
-          .insert({
-            first_name: customerInfo?.firstName,
-            last_name: customerInfo?.lastName,
-            email: customerInfo?.email,
-            phone: customerInfo?.phone,
-            customer_type: 'GUEST'
-          })
-          .select()
-          .single();
-
-        if (custError) throw custError;
-        customerId = newCustomer.id;
-      }
-    }
-
-    // 2. Create Address
-    const { data: address, error: addrError } = await supabase
-      .from('addresses')
-      .insert({
-        customer_id: customerId,
-        type: 'SHIPPING',
-        street: shippingAddress.street,
-        city: shippingAddress.city,
-        postal_code: shippingAddress.postalCode,
-        country: shippingAddress.country || 'Algeria',
-        // region: shippingAddress.region // Add if schema supports it
-      })
-      .select()
-      .single();
-
-    if (addrError) throw addrError;
-
-    // 3. Create Order
-    const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        order_number: orderNumber,
-        customer_id: customerId,
-        address_id: address.id,
-        status: 'pending',
-        payment_status: 'pending', // Cash on delivery
-        subtotal,
-        shipping_amount: shippingAmount,
-        total_amount: totalAmount,
-        tax_amount: 0,
-        discount_amount: 0
-      })
-      .select()
-      .single();
-
-    if (orderError) throw orderError;
-
-    // 4. Create Order Items
-    const orderItems = items.map((item: any) => ({
-      order_id: order.id,
-      product_id: item.productId,
-      quantity: item.quantity,
-      unit_price: item.unitPrice,
-      total_price: item.unitPrice * item.quantity
-    }));
-
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems);
-
-    if (itemsError) throw itemsError;
-
-    // 5. Create Payment Record (Pending)
-    await supabase.from('payments').insert({
-      order_id: order.id,
-      method: paymentMethod || 'CASH_ON_DELIVERY',
-      provider: 'MANUAL',
-      amount: totalAmount,
-      status: 'pending'
+    // Call the secure RPC function
+    const { data: result, error } = await supabase.rpc('create_order_transaction', {
+      p_user_id: userId,
+      p_items: items,
+      p_shipping_address: shippingAddress,
+      p_customer_info: customerInfo,
+      p_payment_method: paymentMethod || 'CASH_ON_DELIVERY'
     });
 
-    return this.getOrderById(order.id);
+    if (error) {
+      console.error('Error creating order via transaction:', error);
+      throw error;
+    }
+
+    // Fetch the full order details to return
+    return this.getOrderById(result.id);
   },
 
   async updateOrder(orderId: string, data: UpdateOrderRequest): Promise<Order> {

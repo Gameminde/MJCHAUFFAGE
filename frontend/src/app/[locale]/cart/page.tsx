@@ -12,18 +12,18 @@ interface CartPageProps {
 }
 
 export default function CartPage({ params: { locale } }: CartPageProps) {
-  const { 
-    items, 
-    total, 
-    itemCount, 
-    updateQuantity, 
-    removeItem, 
-    clearCart, 
+  const {
+    items,
+    total,
+    itemCount,
+    updateQuantity,
+    removeItem,
+    clearCart,
     formatPrice,
     error,
-    isLoading 
+    isLoading
   } = useCart()
-  
+
   const router = useRouter()
   const [isClearing, setIsClearing] = useState(false)
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
@@ -34,9 +34,9 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return
-    
+
     setUpdatingItems(prev => new Set(prev).add(itemId))
-    
+
     try {
       updateQuantity(itemId, newQuantity)
       // Simulate API delay for better UX
@@ -52,7 +52,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
 
   const handleRemoveItem = async (itemId: string) => {
     setUpdatingItems(prev => new Set(prev).add(itemId))
-    
+
     try {
       removeItem(itemId)
       await new Promise(resolve => setTimeout(resolve, 200))
@@ -69,7 +69,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
     if (!confirm(locale === 'ar' ? 'هل أنت متأكد من إفراغ السلة؟' : 'Êtes-vous sûr de vider le panier?')) {
       return
     }
-    
+
     setIsClearing(true)
     try {
       clearCart()
@@ -94,8 +94,8 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
               {locale === 'ar' ? 'سلة التسوق فارغة' : 'Votre panier est vide'}
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              {locale === 'ar' 
-                ? 'أضف بعض المنتجات لبدء التسوق' 
+              {locale === 'ar'
+                ? 'أضف بعض المنتجات لبدء التسوق'
                 : 'Ajoutez des produits pour commencer vos achats'
               }
             </p>
@@ -133,7 +133,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {locale === 'ar' ? 'متابعة التسوق' : 'Continuer les achats'}
           </Link>
-          
+
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">
               {locale === 'ar' ? 'سلة التسوق' : 'Panier d\'achat'}
@@ -141,15 +141,15 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                 ({itemCount} {locale === 'ar' ? 'عنصر' : 'articles'})
               </span>
             </h1>
-            
+
             {items.length > 0 && (
               <button
                 onClick={handleClearCart}
                 disabled={isClearing}
                 className="text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isClearing 
-                  ? (locale === 'ar' ? 'جاري الإفراغ...' : 'Vidage...') 
+                {isClearing
+                  ? (locale === 'ar' ? 'جاري الإفراغ...' : 'Vidage...')
                   : (locale === 'ar' ? 'إفراغ السلة' : 'Vider le panier')
                 }
               </button>
@@ -173,11 +173,11 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                   {locale === 'ar' ? 'المنتجات المضافة' : 'Articles ajoutés'}
                 </h2>
               </div>
-              
+
               <div className="divide-y divide-gray-200">
                 {items.map((item) => {
                   const isUpdating = updatingItems.has(item.id)
-                  
+
                   return (
                     <div key={item.id} className={`p-6 ${isUpdating ? 'opacity-50' : ''}`}>
                       <div className="flex items-start space-x-4">
@@ -197,7 +197,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                           <h3 className="text-lg font-medium text-gray-900 mb-2">
                             {item.name}
                           </h3>
-                          
+
                           <div className="space-y-1 text-sm text-gray-600 mb-4">
                             <p>
                               <span className="font-medium">SKU:</span> {item.sku}
@@ -224,7 +224,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                               >
                                 <Minus className="h-4 w-4" />
                               </button>
-                              
+
                               <input
                                 type="number"
                                 min="1"
@@ -239,7 +239,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                                 disabled={isUpdating}
                                 className="w-16 text-center border-0 focus:ring-0 disabled:opacity-50"
                               />
-                              
+
                               <button
                                 onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                                 disabled={isUpdating || item.quantity >= item.maxStock}
@@ -270,7 +270,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                               </p>
                             )}
                           </div>
-                          
+
                           <button
                             onClick={() => handleRemoveItem(item.id)}
                             disabled={isUpdating}
@@ -294,7 +294,7 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
               <h2 className="text-lg font-medium text-gray-900 mb-6">
                 {locale === 'ar' ? 'ملخص الطلب' : 'Résumé de la commande'}
               </h2>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">
@@ -302,41 +302,60 @@ export default function CartPage({ params: { locale } }: CartPageProps) {
                   </span>
                   <span className="font-medium">{formatPrice(total)}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-gray-600">
                     {locale === 'ar' ? 'الشحن' : 'Livraison'}
                   </span>
                   <span className="font-medium">{formatPrice(shippingCost)}</span>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex justify-between text-lg font-semibold">
                     <span>{locale === 'ar' ? 'المجموع الإجمالي' : 'Total'}</span>
                     <span className="text-primary-600">{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-gray-600">
-                  {locale === 'ar' 
-                    ? 'الضرائب محسوبة عند الخروج' 
+                  {locale === 'ar'
+                    ? 'الضرائب محسوبة عند الخروج'
                     : 'Taxes calculées lors du checkout'
                   }
                 </p>
               </div>
-              
+
+              {/* Mobile Sticky Checkout Bar */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 lg:hidden">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-medium text-gray-900">{locale === 'ar' ? 'المجموع:' : 'Total:'}</span>
+                  <span className="text-lg font-bold text-primary-600">{formatPrice(finalTotal)}</span>
+                </div>
+                <button
+                  onClick={handleCheckout}
+                  disabled={isLoading || items.length === 0}
+                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-lg h-[48px]"
+                >
+                  {isLoading
+                    ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement...')
+                    : (locale === 'ar' ? 'إتمام الطلب' : 'Procéder au checkout')
+                  }
+                </button>
+              </div>
+
+              {/* Desktop Button (Hidden on Mobile) */}
               <button
                 onClick={handleCheckout}
                 disabled={isLoading || items.length === 0}
-                className="w-full mt-6 bg-primary-600 text-white py-3 px-4 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="hidden lg:block w-full mt-6 bg-primary-600 text-white py-3 px-4 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
-                {isLoading 
-                  ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement...') 
+                {isLoading
+                  ? (locale === 'ar' ? 'جاري التحميل...' : 'Chargement...')
                   : (locale === 'ar' ? 'إتمام الطلب' : 'Procéder au checkout')
                 }
               </button>
-              
-              <div className="mt-4 text-center">
+
+              <div className="mt-4 text-center pb-24 lg:pb-0"> {/* Added padding bottom for mobile sticky bar */}
                 <Link
                   href={`/${locale}/products`}
                   className="text-primary-600 hover:text-primary-700 text-sm"
