@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { headers } from 'next/headers'
 // Removed next/font for build reliability - using system fonts
 import '../styles/globals.css'
 import { AnalyticsListener } from '../components/analytics/AnalyticsListener'
 import { AnalyticsProvider } from '../components/analytics/AnalyticsProvider'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
+import { getMessages, getLocale } from 'next-intl/server'
 import { BrowserExtensionCleaner } from '../components/common/BrowserExtensionCleaner'
 
 export const metadata: Metadata = {
@@ -35,11 +36,15 @@ export { viewport } from './viewport'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
+  const locale = await getLocale();
+  
+  // Determine text direction based on locale
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang="fr" className="h-full">
+    <html lang={locale} dir={dir} className="h-full">
       <body className="h-full flex flex-col font-sans antialiased bg-neutral-50 text-neutral-900" suppressHydrationWarning={true}>
-        <NextIntlClientProvider locale="fr" messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <BrowserExtensionCleaner />
           <AnalyticsProvider>
             <Suspense fallback={null}>

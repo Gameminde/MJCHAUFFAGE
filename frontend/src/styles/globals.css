@@ -747,3 +747,147 @@ textarea {
     @apply shadow-none border border-neutral-300;
   }
 }
+
+/* ===========================================
+   RTL (Right-to-Left) Support for Arabic
+   =========================================== */
+
+/* RTL Base Styles */
+[dir="rtl"] {
+  /* Font family for Arabic */
+  font-family: 'Noto Sans Arabic', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* RTL Layout Adjustments */
+[dir="rtl"] .nav-link::after {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* RTL Flex Direction */
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .space-x-2 > * + *,
+[dir="rtl"] .space-x-3 > * + *,
+[dir="rtl"] .space-x-4 > * + *,
+[dir="rtl"] .gap-2,
+[dir="rtl"] .gap-3,
+[dir="rtl"] .gap-4 {
+  /* Gap works correctly in RTL, but margins might need adjustment */
+}
+
+/* RTL Margin Adjustments */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+[dir="rtl"] .ml-2, [dir="rtl"] .ml-3, [dir="rtl"] .ml-4 {
+  margin-left: 0;
+}
+
+[dir="rtl"] .mr-2, [dir="rtl"] .mr-3, [dir="rtl"] .mr-4 {
+  margin-right: 0;
+}
+
+/* RTL Padding Adjustments */
+[dir="rtl"] .pl-4 {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+
+[dir="rtl"] .pr-4 {
+  padding-right: 0;
+  padding-left: 1rem;
+}
+
+/* RTL Transform Adjustments */
+[dir="rtl"] .translate-x-1,
+[dir="rtl"] .hover\:translate-x-1:hover {
+  --tw-translate-x: -0.25rem;
+}
+
+[dir="rtl"] .-translate-x-1\/2 {
+  --tw-translate-x: 50%;
+}
+
+/* RTL Animation Adjustments */
+[dir="rtl"] .animate-slideInLeft {
+  animation-name: slideInRight;
+}
+
+[dir="rtl"] .animate-slideInRight {
+  animation-name: slideInLeft;
+}
+
+/* RTL Icon Rotations */
+[dir="rtl"] .rotate-chevron {
+  transform: rotate(180deg);
+}
+
+/* RTL Scrollbar */
+[dir="rtl"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* RTL Form Inputs */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
+}
+
+/* RTL Button Icon Positions */
+[dir="rtl"] .btn svg:first-child {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+[dir="rtl"] .btn svg:last-child {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+/* RTL Card Content */
+[dir="rtl"] .card-content {
+  text-align: right;
+}
+
+/* RTL Navigation */
+[dir="rtl"] nav {
+  direction: rtl;
+}
+
+/* Arabic Typography Enhancements */
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, 
+[dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 {
+  font-family: 'Noto Sans Arabic', 'Tahoma', 'Arial', sans-serif;
+  font-weight: 700;
+}
+
+[dir="rtl"] p, [dir="rtl"] span, [dir="rtl"] a {
+  font-family: 'Noto Sans Arabic', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* Import Arabic Font */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
