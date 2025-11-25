@@ -1,62 +1,68 @@
-import { CheckCircle, Truck, Headphones } from "lucide-react";
-import { useTranslations } from "next-intl";
+'use client';
 
-const features = [
-  {
-    icon: CheckCircle,
-    title: "Pièces d'origine",
-    description: "Toutes nos pièces sont certifiées par les fabricants pour garantir qualité et durabilité",
-    color: "from-orange-500 to-amber-500"
-  },
-  {
-    icon: Truck,
-    title: "Livraison rapide",
-    description: "Service de livraison express pour répondre à vos besoins urgents",
-    color: "from-blue-500 to-cyan-500"
-  },
-  {
-    icon: Headphones,
-    title: "Service client pro",
-    description: "Notre équipe d'experts est à votre écoute pour tous vos besoins",
-    color: "from-green-500 to-emerald-500"
-  }
-];
+import { CheckCircle, Truck, Headphones } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 
 export function ModernWhyChooseUs() {
-  const t = useTranslations();
+  const t = useTranslations('whyChoose');
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
+
+  const features = [
+    {
+      icon: CheckCircle,
+      titleKey: 'originalParts.title',
+      descriptionKey: 'originalParts.description',
+      color: "from-orange-500 to-amber-500"
+    },
+    {
+      icon: Truck,
+      titleKey: 'fastDelivery.title',
+      descriptionKey: 'fastDelivery.description',
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: Headphones,
+      titleKey: 'proService.title',
+      descriptionKey: 'proService.description',
+      color: "from-green-500 to-emerald-500"
+    }
+  ];
 
   return (
-    <section className="py-golden-8 px-golden-4 relative overflow-hidden bg-neutral-50">
-      <div className="golden-ratio-container relative z-10">
-        <div className="text-center m-golden-8">
-          <h2 className="text-orange-800 text-golden-2xl font-bold m-golden-3">
-            Pourquoi nous choisir ?
+    <section className="py-12 md:py-20 px-4 relative overflow-hidden bg-neutral-50" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-orange-800 text-2xl md:text-4xl font-bold mb-4">
+            {t('title')}
           </h2>
-          <p className="text-neutral-600 max-w-2xl mx-auto text-golden-base sm:text-golden-lg">
-            Des solutions fiables pour votre chauffage avec un engagement sans compromis envers la qualité
+          <p className="text-neutral-600 max-w-2xl mx-auto text-base md:text-lg">
+            {t('subtitle')}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 space-golden-5">
+        {/* Mobile: Stack, Desktop: 3 cols */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div key={index} className="group h-full">
-                <div className="relative h-full bg-white rounded-golden-xl p-golden-5 shadow-lg hover:shadow-2xl transition-golden-normal border border-neutral-100 flex flex-col items-center text-center md:items-start md:text-left">
+                <div className="relative h-full bg-white rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-neutral-100 flex flex-col items-center text-center">
                   {/* Gradient background on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 rounded-golden-xl transition-opacity duration-300`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`}></div>
 
-                  <div className="relative z-10">
-                    <div className={`w-golden-6 h-golden-6 bg-gradient-to-br ${feature.color} rounded-golden-xl flex items-center justify-center m-golden-4 transform group-hover:scale-110 group-hover:rotate-3 transition-golden-normal shadow-lg`}>
-                      <Icon className="w-golden-5 h-golden-5 text-white" />
+                  <div className="relative z-10 flex flex-col items-center">
+                    {/* Touch-friendly icon - 56x56px */}
+                    <div className={`w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br ${feature.color} rounded-xl md:rounded-2xl flex items-center justify-center mb-5 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
+                      <Icon className="w-7 h-7 md:w-8 md:h-8 text-white" />
                     </div>
 
-                    <h3 className="m-golden-2 text-neutral-900 font-semibold text-golden-lg">
-                      {feature.title}
+                    <h3 className="mb-3 text-neutral-900 font-semibold text-lg md:text-xl">
+                      {t(feature.titleKey)}
                     </h3>
 
-                    <p className="text-neutral-600 leading-relaxed text-golden-sm">
-                      {feature.description}
+                    <p className="text-neutral-600 leading-relaxed text-sm md:text-base">
+                      {t(feature.descriptionKey)}
                     </p>
                   </div>
                 </div>

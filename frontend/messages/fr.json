@@ -12,7 +12,168 @@
     "filter": "Filtrer",
     "next": "Suivant",
     "previous": "Précédent",
-    "close": "Fermer"
+    "close": "Fermer",
+    "discover": "Découvrir",
+    "products": "produits",
+    "learnMore": "En savoir plus"
+  },
+  "trust": {
+    "experience": "10 Ans",
+    "experienceLabel": "d'Expérience",
+    "support": "Service Client",
+    "supportLabel": "24/7",
+    "installation": "Installation",
+    "installationLabel": "Certifiée",
+    "callUs": "Appelez-nous:",
+    "phone": "0774 102 255"
+  },
+  "whyChoose": {
+    "title": "Pourquoi nous choisir ?",
+    "subtitle": "Des solutions fiables pour votre chauffage avec un engagement sans compromis envers la qualité",
+    "originalParts": {
+      "title": "Pièces d'origine",
+      "description": "Toutes nos pièces sont certifiées par les fabricants pour garantir qualité et durabilité"
+    },
+    "fastDelivery": {
+      "title": "Livraison rapide",
+      "description": "Service de livraison express pour répondre à vos besoins urgents"
+    },
+    "proService": {
+      "title": "Service client pro",
+      "description": "Notre équipe d'experts est à votre écoute pour tous vos besoins"
+    }
+  },
+  "categories": {
+    "title": "Nos principales catégories",
+    "subtitle": "Trouvez la pièce dont vous avez besoin parmi nos nombreuses références",
+    "boilers": {
+      "title": "Chaudières",
+      "description": "Large gamme de chaudières murales et au sol de toutes les grandes marques",
+      "products": "80+"
+    },
+    "spareParts": {
+      "title": "Pièces détachées",
+      "description": "Pièces détachées et accessoires pour chaudières de toutes marques",
+      "products": "200+"
+    },
+    "radiators": {
+      "title": "Radiateurs et convecteurs",
+      "description": "Collection complète de radiateurs et systèmes de chauffage modernes",
+      "products": "100+"
+    }
+  },
+  "stats": {
+    "experience": "Années d'expérience",
+    "clients": "Clients satisfaits",
+    "productsAvailable": "Produits disponibles",
+    "support": "Support client"
+  },
+  "about": {
+    "title": "À propos de nous",
+    "subtitle": "MJChauffage est une entreprise familiale spécialisée dans la vente de chaudières, pièces détachées, ainsi que dans la réparation et la maintenance des chaudières domestiques.",
+    "mission": {
+      "title": "Notre mission",
+      "description": "Offrir aux clients des produits fiables, un accompagnement professionnel et des services de réparation de haute qualité, le tout avec la rigueur et la confiance d'une entreprise familiale."
+    },
+    "expertise": {
+      "title": "Une expertise transmise de génération en génération",
+      "description": "La famille Hablal est au cœur de MJChauffage. Chacun apporte son savoir-faire unique pour offrir un service complet et fiable."
+    },
+    "team": {
+      "madjid": {
+        "name": "Madjid Hablal",
+        "role": "Expert en Chaudières",
+        "experience": "30+ ans d'expérience",
+        "description": "Fondateur et pilier de l'entreprise, Madjid possède plus de trois décennies d'expérience dans la réparation, la maintenance et l'installation de chaudières."
+      },
+      "karim": {
+        "name": "Karim Hablal",
+        "role": "Responsable Commercial",
+        "experience": "Gestion Produits",
+        "description": "Titulaire d'une licence en commerce, Karim maîtrise parfaitement le fonctionnement des chaudières et de leurs pièces détachées."
+      },
+      "tarek": {
+        "name": "Tarek Hablal",
+        "role": "Technicien Supérieur",
+        "experience": "Diagnostic & Réparation",
+        "description": "Spécialisé dans le diagnostic et la réparation des chaudières. Il identifie rapidement les pannes et propose les meilleures solutions."
+      }
+    },
+    "values": {
+      "expertise": {
+        "title": "Expertise technique solide",
+        "description": "Plus de 30 ans d'expérience cumulée dans le domaine des chaudières et du chauffage"
+      },
+      "choice": {
+        "title": "Large choix de pièces",
+        "description": "Pièces détachées authentiques et fiables des meilleures marques"
+      },
+      "service": {
+        "title": "Service rapide et professionnel",
+        "description": "Interventions immédiates et efficaces avec une équipe de techniciens qualifiés"
+      },
+      "family": {
+        "title": "Entreprise familiale honnête",
+        "description": "Valeurs familiales et passion pour le travail bien fait et la confiance mutuelle"
+      }
+    },
+    "whyChoose": "Pourquoi choisir MJChauffage ?",
+    "cta": {
+      "title": "Contactez-nous",
+      "description": "Notre équipe d'experts est prête à vous aider dans tous vos besoins de chauffage",
+      "contact": "Nous contacter",
+      "discover": "Découvrir nos produits"
+    },
+    "stats": {
+      "experience": "Années d'expérience",
+      "experienceDesc": "Expérience cumulée",
+      "clients": "Clients satisfaits",
+      "clientsDesc": "Clients heureux",
+      "installations": "Installations réalisées",
+      "installationsDesc": "Installations réussies",
+      "support": "Support technique",
+      "supportDesc": "Support continu"
+    }
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Nous sommes là pour vous servir.",
+    "form": {
+      "title": "Envoyer un message",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
+      "email": "Email",
+      "phone": "Téléphone",
+      "wilaya": "Sélectionnez votre wilaya",
+      "serviceType": "Sélectionnez un service",
+      "message": "Votre message",
+      "submit": "Envoyer le message",
+      "sending": "Envoi...",
+      "success": "Message envoyé avec succès !",
+      "required": "*"
+    },
+    "info": {
+      "title": "Informations de contact",
+      "phone": "Téléphone",
+      "phoneValue": "+213 774 102 255",
+      "phoneDesc": "Appelez-nous à tout moment",
+      "email": "Email",
+      "emailValue": "contact@mjchauffage.com",
+      "emailDesc": "Envoyez-nous un email",
+      "address": "Adresse",
+      "addressValue": "Rue Maure, Djasr Kasentina, Alger",
+      "addressDesc": "Notre bureau principal",
+      "hours": "Heures d'ouverture",
+      "hoursValue": "Dimanche - Jeudi: 8h00 - 18h00",
+      "hoursDesc": "Vendredi - Samedi: Fermé"
+    },
+    "services": {
+      "installation": "Installation",
+      "maintenance": "Maintenance",
+      "repair": "Réparation",
+      "consultation": "Consultation",
+      "other": "Autre"
+    }
   },
   "navigation": {
     "home": "Accueil",
